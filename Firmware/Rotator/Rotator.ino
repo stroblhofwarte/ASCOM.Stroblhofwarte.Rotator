@@ -23,12 +23,15 @@
 #define CMD_POSITION "GP"
 #define CMD_STOP "ST"
 #define CMD_IS_MOVING "MV"
+#define CMD_MOTOR_POWER_OFF "MOFF"
+#define CMD_MOTOR_POWER_ON "MON"
 
 float g_steps_per_degree;
 long g_pos_mech = 0;
 long g_pos_goal = 0;
 long g_max_steps = 0;
 
+bool _notMotorPowerOff = false;
 
 String g_command = "";
 bool g_commandComplete = false;
@@ -145,6 +148,16 @@ void Dispatcher()
     else
       Serial.print("1#");
   }
+  else if(g_command.startsWith(CMD_MOTOR_POWER_OFF))
+  {
+    _notMotorPowerOff = false;
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(CMD_MOTOR_POWER_ON))
+  {
+    _notMotorPowerOff = true;
+    Serial.print("1#");
+  }
   else
     Serial.print("0#");
   
@@ -179,7 +192,7 @@ void loop() {
     digitalWrite(STEP, LOW); 
     g_pos_mech--;
   }
-  if(g_pos_goal == g_pos_mech)
+  if(g_pos_goal == g_pos_mech && _notMotorPowerOff == false)
     digitalWrite(EN, LOW); 
 }
 
