@@ -7,6 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASCOM.Stroblhofwarte.Rotato
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASCOM.Stroblhofwarte.Rotator.test", "ASCOM.Stroblhofwarte.Rotator.test\ASCOM.Stroblhofwarte.Rotator.test.csproj", "{D5207217-61C7-4E94-8097-91DBACE57D2A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Firmware", "Firmware", "{B56226B9-5AD4-4E92-A7A5-917A20DCD95F}"
+	ProjectSection(SolutionItems) = preProject
+		Firmware\Rotator\Rotator.ino = Firmware\Rotator\Rotator.ino
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
