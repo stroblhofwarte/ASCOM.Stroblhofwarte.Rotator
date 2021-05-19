@@ -42,6 +42,7 @@ namespace ASCOM
             // TODO add more code to test the driver.
             device.Connected = true;
 
+            device.SetupDialog();
             device.MoveMechanical(180);
             device.MoveMechanical(200);
             device.MoveMechanical(0);

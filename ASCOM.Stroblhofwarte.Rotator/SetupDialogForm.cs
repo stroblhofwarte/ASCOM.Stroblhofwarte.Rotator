@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
@@ -14,16 +15,19 @@ namespace ASCOM.Stroblhofwarte
     public partial class SetupDialogForm : Form
     {
         TraceLogger tl; // Holder for a reference to the driver's trace logger
-
-        public SetupDialogForm(TraceLogger tlDriver)
+        Rotator _driver;
+        public SetupDialogForm(Rotator driver)
         {
             InitializeComponent();
 
-            // Save the provided trace logger for use within the setup dialogue
-            tl = tlDriver;
-
+            _driver = driver;
+            tl = driver.Logger;
+            driver.ReadProfile();
+            checkBoxPower.Checked = _driver.DoNotSwitchOffMotorPower;
             // Initialise current values of user settings from the ASCOM Profile
             InitUI();
+
+            labelPosition.Text = _driver.Position.ToString(CultureInfo.InvariantCulture) + "°";
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
@@ -67,6 +71,50 @@ namespace ASCOM.Stroblhofwarte
             {
                 comboBoxComPort.SelectedItem = Rotator.comPort;
             }
+        }
+
+        private void buttonMove_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                float pos = (float)Convert.ToDouble(textBoxAngle.Text, CultureInfo.InvariantCulture);
+                _driver.MoveAbsolute(pos);
+            }
+            catch (Exception ex)
+            {
+                textBoxAngle.Text = "0.0";
+            }
+        }
+
+        private void timerPosition_Tick(object sender, EventArgs e)
+        {
+            labelPosition.Text = _driver.Position.ToString(CultureInfo.InvariantCulture) + "°";
+            labelSyncValue.Text = _driver.SyncValue().ToString(CultureInfo.InvariantCulture) + "°";
+            labelMechanicalPosition.Text = _driver.MechanicalPosition.ToString(CultureInfo.InvariantCulture) + "°";
+            labelTargetPosition.Text = _driver.TargetPosition.ToString(CultureInfo.InvariantCulture) + "°";
+        }
+
+        private void checkBoxPower_CheckStateChanged(object sender, EventArgs e)
+        {
+            _driver.DoNotSwitchOffMotorPower = checkBoxPower.Checked;
+        }
+
+        private void buttonSync_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                float pos = (float)Convert.ToDouble(textBoxSync.Text, CultureInfo.InvariantCulture);
+                _driver.Sync(pos);
+            }
+            catch (Exception ex)
+            {
+                textBoxSync.Text = "0.0";
+            }
+        }
+
+        private void buttonUnsync_Click(object sender, EventArgs e)
+        {
+            _driver.ResetSync();
         }
     }
 }

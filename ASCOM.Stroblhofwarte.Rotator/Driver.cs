@@ -80,6 +80,14 @@ namespace ASCOM.Stroblhofwarte
 
         private bool _isReverse = false;
 
+        internal static string _doNotSwitchPoerOffProfileName = "DoNotSwitchPowerOff";
+        private bool _doNotSwitchPowerOff = false;
+
+        internal static string _syncDiffProfileName = "SyncDiff";
+        private float _syncDiff = 0.0f;
+
+        private float _targetPosition = 0.0f;
+
         private object _lock = new object();
         /// <summary>
         /// Private variable to hold the connected state
@@ -100,7 +108,7 @@ namespace ASCOM.Stroblhofwarte
         /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
         internal TraceLogger tl;
-
+        public TraceLogger Logger { get { return tl; } }
         /// <summary>
         /// Initializes a new instance of the <see cref="Stroblhofwarte"/> class.
         /// Must be public for COM registration.
@@ -140,7 +148,7 @@ namespace ASCOM.Stroblhofwarte
             if (IsConnected)
                 System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
 
-            using (SetupDialogForm F = new SetupDialogForm(tl))
+            using (SetupDialogForm F = new SetupDialogForm(this))
             {
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
@@ -150,6 +158,29 @@ namespace ASCOM.Stroblhofwarte
             }
         }
 
+        public bool DoNotSwitchOffMotorPower
+        {
+            get
+            {
+                return _doNotSwitchPowerOff;
+            }
+            set
+            {
+                _doNotSwitchPowerOff = value;
+                WriteProfile();
+                if (!connectedState) return;
+                if(value)
+                {
+                    _serial.Transmit("MON:");
+                    _serial.ReceiveTerminated("#");
+                }
+                else
+                {
+                    _serial.Transmit("MOFF:");
+                    _serial.ReceiveTerminated("#");
+                }
+            }
+        }
         public ArrayList SupportedActions
         {
             get
@@ -260,6 +291,10 @@ namespace ASCOM.Stroblhofwarte
                             if (CheckForStroblCapDevice())
                             {
                                 connectedState = true;
+                                // set the motor power off state again 
+                                // to transmit this setting also to the arduino device:
+                                bool state = DoNotSwitchOffMotorPower;
+                                DoNotSwitchOffMotorPower = state;
                             }
                             else
                                 connectedState = false;
@@ -350,6 +385,7 @@ namespace ASCOM.Stroblhofwarte
 
         public void Halt()
         {
+            if (!connectedState) return;
             _serial.Transmit("ST:");
             string ret = _serial.ReceiveTerminated("#");
         }
@@ -358,6 +394,7 @@ namespace ASCOM.Stroblhofwarte
         {
             get
             {
+                if (!connectedState) return false;
                 tl.LogMessage("IsMoving Get", false.ToString()); // This rotator has instantaneous movement
                 _serial.Transmit("MV:");
                 string ret = _serial.ReceiveTerminated("#");
@@ -368,6 +405,8 @@ namespace ASCOM.Stroblhofwarte
 
         public void Move(float pos)
         {
+            if (!connectedState) return;
+            _targetPosition = Position + pos;
             lock (_lock)
             {
                 tl.LogMessage("Move", pos.ToString()); // Move by this amount
@@ -387,19 +426,39 @@ namespace ASCOM.Stroblhofwarte
 
         public void MoveAbsolute(float pos)
         {
+            if (!connectedState) return;
+            _targetPosition = pos;
+            float truePos = FromSyncPositionToMechanicalPosition(pos);
             lock (_lock)
             {
-                tl.LogMessage("MoveAbsolute", pos.ToString()); // Move to this position
-                string cmd = "TA" + pos.ToString(CultureInfo.InvariantCulture) + ":";
+                tl.LogMessage("MoveAbsolute", truePos.ToString()); // Move to this position
+                string cmd = "TA" + truePos.ToString(CultureInfo.InvariantCulture) + ":";
                 _serial.Transmit(cmd);
                 string ret = _serial.ReceiveTerminated("#");
             }
+        }
+
+        public float FromMechanicalPositionToSyncPosition(float mechPos)
+        {
+            float pos = mechPos + _syncDiff;
+            if (pos > 360) pos = pos - 360;
+            if (pos < 0) pos = 360 + pos;
+            return pos;
+        }
+
+        public float FromSyncPositionToMechanicalPosition(float syncPos)
+        {
+            float pos = syncPos - _syncDiff;
+            if (pos > 360) pos = pos - 360;
+            if (pos < 0) pos = 360 + pos;
+            return pos;
         }
 
         public float Position
         {
             get
             {
+                if (!connectedState) return 0.0f;
                 lock (_lock)
                 {
                     _serial.Transmit("GP:");
@@ -407,7 +466,7 @@ namespace ASCOM.Stroblhofwarte
                     ret = ret.Replace('#', ' ');
                     ret = ret.Trim();
                     float pos = (float)Convert.ToDouble(ret, CultureInfo.InvariantCulture);
-                    return pos;
+                    return FromMechanicalPositionToSyncPosition(pos);
                 }
             }
         }
@@ -436,7 +495,7 @@ namespace ASCOM.Stroblhofwarte
         {
             get
             {
-                return Position;
+                return _targetPosition;
             }
         }
 
@@ -446,21 +505,52 @@ namespace ASCOM.Stroblhofwarte
         {
             get
             {
-                return Position;
+                if (!connectedState) return 0.0f;
+                lock (_lock)
+                {
+                    _serial.Transmit("GP:");
+                    string ret = _serial.ReceiveTerminated("#");
+                    ret = ret.Replace('#', ' ');
+                    ret = ret.Trim();
+                    float pos = (float)Convert.ToDouble(ret, CultureInfo.InvariantCulture);
+                    return pos;
+                }
             }
         }
 
         public void MoveMechanical(float pos)
         {
-            MoveAbsolute(pos);
+            if (!connectedState) return;
+            lock (_lock)
+            {
+                tl.LogMessage("MoveAbsolute", pos.ToString()); // Move to this position
+                string cmd = "TA" + pos.ToString(CultureInfo.InvariantCulture) + ":";
+                _serial.Transmit(cmd);
+                string ret = _serial.ReceiveTerminated("#");
+            }
         }
 
-        public void Sync(float Position)
+        public void Sync(float syncPos)
         {
             tl.LogMessage("Sync", Position.ToString()); // Sync to this position
+            _serial.Transmit("GP:");
+            string ret = _serial.ReceiveTerminated("#");
+            ret = ret.Replace('#', ' ');
+            ret = ret.Trim();
+            float pos = (float)Convert.ToDouble(ret, CultureInfo.InvariantCulture);
 
-            // TODO: Implement correct sync behaviour. i.e. the rotator mechanical and rotator positions may not be the same
-            
+            _syncDiff = syncPos - pos;
+            WriteProfile();
+        }
+
+        public void ResetSync()
+        {
+            _syncDiff = 0.0f;
+        }
+
+        public float SyncValue()
+        {
+            return _syncDiff;
         }
 
         #endregion
@@ -577,6 +667,8 @@ namespace ASCOM.Stroblhofwarte
                 driverProfile.DeviceType = "Rotator";
                 tl.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
                 comPort = driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
+                _doNotSwitchPowerOff = Convert.ToBoolean(driverProfile.GetValue(driverID, _doNotSwitchPoerOffProfileName, string.Empty, "false"));
+                _syncDiff = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _syncDiffProfileName, string.Empty, "0.0"));
             }
         }
 
@@ -590,6 +682,8 @@ namespace ASCOM.Stroblhofwarte
                 driverProfile.DeviceType = "Rotator";
                 driverProfile.WriteValue(driverID, traceStateProfileName, tl.Enabled.ToString());
                 driverProfile.WriteValue(driverID, comPortProfileName, comPort.ToString());
+                driverProfile.WriteValue(driverID, _doNotSwitchPoerOffProfileName, _doNotSwitchPowerOff.ToString());
+                driverProfile.WriteValue(driverID, _syncDiffProfileName, _syncDiff.ToString(CultureInfo.InvariantCulture));
             }
         }
 
