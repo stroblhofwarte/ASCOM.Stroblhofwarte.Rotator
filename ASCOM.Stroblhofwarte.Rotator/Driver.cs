@@ -209,19 +209,21 @@ namespace ASCOM.Stroblhofwarte
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            throw new ASCOM.MethodNotImplementedException("CommandBlind");
+            this.CommandString(command, raw);
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
+            string ret = CommandString(command, raw);
+            return true;
         }
 
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            throw new ASCOM.MethodNotImplementedException("CommandString");
+            string ret = CommandString(command, raw);
+            return ret;
         }
 
         public void Dispose()
