@@ -1,29 +1,43 @@
 //tabs=4
 // --------------------------------------------------------------------------------
-// TODO fill in this information for your driver, then remove this line!
 //
-// ASCOM Rotator driver for Stroblhofwarte
+// ASCOM Rotator driver for Stroblhofwarte Rotator
 //
-// Description:	Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
-//				nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 
-//				erat, sed diam voluptua. At vero eos et accusam et justo duo 
-//				dolores et ea rebum. Stet clita kasd gubergren, no sea takimata 
-//				sanctus est Lorem ipsum dolor sit amet.
+// Description:	The Stroblhof Rotator is a simple and sturdy rotator device
+//              for astronomical observations. It could be build without access to
+//              a lathe or milling machine. The rotator device is made out of aluminium
+//              and steel. It is driven by a NEMA 14 stepper motor. The rotator could 
+//              rotate (appromimately) between between 0° and 330°. 
+//              The electronics are made out of a arduino uno and a shield with ST820 driver.
+//              Each stepper driver can be used, the ST820 driver supports 256 microsteps for
+//              smooth operation.
+//              The communication between this driver and the arduino is done with a simple
+//              serial protocol, 9600 baud. A command from this driver to the arduino ends with
+//              a colon (:), the answer of the arduino ends with a hash (#).
+//              
+//              Command         Response        Description
+//              -----------------------------------------------------------------------------
+//              ID:             ROTATOR#        Device identification
+//              TRxxx:          1#              Move right xxx degrees (float with decimal point)
+//              TLxxx:          1#              Move left xxx degrees
+//              TAxxx:          1#              Move absolute to xxx degrees
+//              GP:             xxxx#           Return the current position
+//              ST:             1#              Stop the current movement
+//              MV:             0# or 1#        #1: Rotator is moving, otherwise 0#
+//              MOFF:           1#              The motor is disabled after movement
+//              MON:            1#              The motor is always powerd
 //
-// Implements:	ASCOM Rotator interface version: <To be completed by driver developer>
-// Author:		(XXX) Your N. Here <your@email.here>
+// Implements:	ASCOM Rotator interface version: 3.0
+// Author:		Othmar Ehrhardt, <othmar.ehrhardt@t-online.de>, https://astro.stroblhof-oberrohrbach.de
 //
 // Edit Log:
 //
 // Date			Who	Vers	Description
 // -----------	---	-----	-------------------------------------------------------
-// dd-mmm-yyyy	XXX	6.0.0	Initial edit, created from ASCOM driver template
+// 19.05.2021               Prototype setup is working
 // --------------------------------------------------------------------------------
 //
 
-
-// This is used to define code in the template that is specific to one class implementation
-// unused code can be deleted and this definition removed.
 #define Rotator
 
 using ASCOM;
@@ -42,15 +56,13 @@ using System.Text;
 namespace ASCOM.Stroblhofwarte
 {
     //
-    // Your driver's DeviceID is ASCOM.Stroblhofwarte.Rotator
+    // DeviceID is ASCOM.Stroblhofwarte.Rotator
     //
     // The Guid attribute sets the CLSID for ASCOM.Stroblhofwarte.Rotator
     // The ClassInterface/None attribute prevents an empty interface called
     // _Stroblhofwarte from being created and used as the [default] interface
     //
-    // TODO Replace the not implemented exceptions with code to implement the function or
-    // throw the appropriate ASCOM exception.
-    //
+
 
     /// <summary>
     /// ASCOM Rotator Driver for Stroblhofwarte.
@@ -64,18 +76,17 @@ namespace ASCOM.Stroblhofwarte
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
         internal static string driverID = "ASCOM.Stroblhofwarte.Rotator";
-        // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
         private static string driverDescription = "ASCOM Rotator Driver for Stroblhofwarte.Rotator";
 
-        internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
+        internal static string comPortProfileName = "COM Port";
         internal static string comPortDefault = "COM1";
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
-        internal static string comPort; // Variables to hold the current device configuration
+        internal static string comPort; 
         private ASCOM.Utilities.Serial _serial;
 
         private bool _isReverse = false;
@@ -123,8 +134,7 @@ namespace ASCOM.Stroblhofwarte
             connectedState = false; // Initialise connected to false
             utilities = new Util(); //Initialise util object
             astroUtilities = new AstroUtils(); // Initialise astro-utilities object
-            //TODO: Implement your additional construction here
-
+           
             tl.LogMessage("Rotator", "Completed initialisation");
         }
 
@@ -199,30 +209,18 @@ namespace ASCOM.Stroblhofwarte
         public void CommandBlind(string command, bool raw)
         {
             CheckConnected("CommandBlind");
-            // Call CommandString and return as soon as it finishes
-            this.CommandString(command, raw);
-            // or
             throw new ASCOM.MethodNotImplementedException("CommandBlind");
-            // DO NOT have both these sections!  One or the other
         }
 
         public bool CommandBool(string command, bool raw)
         {
             CheckConnected("CommandBool");
-            string ret = CommandString(command, raw);
-            // TODO decode the return string and return true or false
-            // or
             throw new ASCOM.MethodNotImplementedException("CommandBool");
-            // DO NOT have both these sections!  One or the other
         }
 
         public string CommandString(string command, bool raw)
         {
             CheckConnected("CommandString");
-            // it's a good idea to put all the low level communication with the device here,
-            // then all communication calls this function
-            // you need something to ensure that only one command is in progress at a time
-
             throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
@@ -316,7 +314,6 @@ namespace ASCOM.Stroblhofwarte
 
         public string Description
         {
-            // TODO customise this device description
             get
             {
                 tl.LogMessage("Description Get", driverDescription);
@@ -329,8 +326,7 @@ namespace ASCOM.Stroblhofwarte
             get
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                // TODO customise this driver description
-                string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverInfo = "Stroblhowarte Rotator Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -370,9 +366,6 @@ namespace ASCOM.Stroblhofwarte
         #endregion
 
         #region IRotator Implementation
-
-        private float rotatorPosition = 0; // Synced or mechanical position angle of the rotator
-        private float mechanicalPosition = 0; // Mechanical position angle of the rotator
 
         public bool CanReverse
         {
@@ -640,7 +633,6 @@ namespace ASCOM.Stroblhofwarte
         {
             get
             {
-                // TODO check that the driver hardware connection exists and is connected to the hardware
                 return connectedState;
             }
         }
