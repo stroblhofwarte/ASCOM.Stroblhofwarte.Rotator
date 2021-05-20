@@ -12,7 +12,7 @@ The communication between this driver and the arduino is done with a simple
 serial protocol, 9600 baud. A command from this driver to the arduino ends with
 a colon (:), the answer of the arduino ends with a hash (#).
               
-'''
+ ```
 Command         Response        Description
 -----------------------------------------------------------------------------
 ID:             ROTATOR#        Device identification
@@ -24,4 +24,4 @@ ST:             1#              Stop the current movement
 MV:             0# or 1#        #1: Rotator is moving, otherwise 0#
 MOFF:           1#              The motor is disabled after movement
 MON:            1#              The motor is always powerd
-'''
+```
