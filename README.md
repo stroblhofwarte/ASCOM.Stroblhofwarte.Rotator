@@ -6,7 +6,7 @@ a lathe or milling machine. The rotator device is made out of aluminium
 and steel. It is driven by a NEMA 14 stepper motor. The rotator could 
 rotate (approximately) between between 0° and 330°. 
 The electronics are made out of a arduino uno and a shield with ST820 driver.
-Each stepper driver can be used, the ST820 driver supports 256 microsteps for
+Each stepper driver can be used, the DRV8825 driver supports 32 microsteps for
 smooth operation.
 The communication between this driver and the arduino is done with a simple
 serial protocol, 9600 baud. A command ends with
