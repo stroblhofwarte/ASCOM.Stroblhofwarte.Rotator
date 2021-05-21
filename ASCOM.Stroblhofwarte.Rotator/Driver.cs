@@ -457,6 +457,13 @@ namespace ASCOM.Stroblhofwarte
             get
             {
                 if (!connectedState) return 0.0f;
+                if(!IsMoving)
+                {
+                    // Return the target position if the motor is mot moving.
+                    // Otherwise some clients (e.g. N.I.N.A.) will never detect
+                    // that the position os reached!
+                    return _targetPosition;
+                }
                 lock (_lock)
                 {
                     _serial.Transmit("GP:");
