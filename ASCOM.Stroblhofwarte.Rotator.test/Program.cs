@@ -48,8 +48,8 @@ namespace ASCOM
             device.MoveMechanical(0);
 
 
-            while (true)
-                Thread.Sleep(100);
+            /*while (true)
+                Thread.Sleep(100);*/
 
             device.Connected = false;
             Console.WriteLine("Press Enter to finish");

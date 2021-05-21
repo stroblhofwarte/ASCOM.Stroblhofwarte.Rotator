@@ -3,17 +3,50 @@
 #define DIR  6
 #define EN   8
 
-#define RIGHT_DIRECTION LOW
-#define LEFT_DIRECTION HIGH
 
-#define STEP_DELAY_US 100
+// Enable only one stepper motor driver!
+//#define NODRV
+#define DRV8825 // DRV8825: Must be set to 32 microsteps
+//#define DRVST810 // ST820: Must be set to 256 microsteps
+///////////////////////////////////////
+
+#ifdef DRV8825
+  #define STEPPER_ENABLE LOW
+  #define STEPPER_DISABLE HIGH
+
+  #define RIGHT_DIRECTION HIGH
+  #define LEFT_DIRECTION LOW
+  #define STEP_DELAY_US 800
+  #define STEPS_PER_REVOLUTION 6400
+#endif
+
+#ifdef ST820
+  #define STEPPER_ENABLE HIGH
+  #define STEPPER_DISABLE LOW
+
+  #define RIGHT_DIRECTION LOW
+  #define LEFT_DIRECTION HIGH
+  #define STEP_DELAY_US 100
+  #define STEPS_PER_REVOLUTION 51200
+#endif
+
+#ifdef NODRV
+  #define STEPPER_ENABLE LOW
+  #define STEPPER_DISABLE HIGH
+
+  #define RIGHT_DIRECTION LOW
+  #define LEFT_DIRECTION HIGH
+
+  #define STEPS_PER_REVOLUTION 0
+#endif
+
+
+
 
 #define GEAR_RATIO 1.0
 
-#define STEPS_PER_REVOLUTION 51200
-
 #define FLOAT_ERR 9999.99
-#define MAX_ANGLE 300.0
+#define MAX_ANGLE 360.0
 
 #define DEVICE_IDENTIFICATION "ROTATOR"
 #define CMD_IDENTIFICATION "ID"
@@ -26,7 +59,7 @@
 #define CMD_MOTOR_POWER_OFF "MOFF"
 #define CMD_MOTOR_POWER_ON "MON"
 
-float g_steps_per_degree;
+double g_steps_per_degree;
 long g_pos_mech = 0;
 long g_pos_goal = 0;
 long g_max_steps = 0;
@@ -42,9 +75,9 @@ void setup() {
   pinMode(STEP, OUTPUT);
   pinMode(DIR, OUTPUT);
   pinMode(EN, OUTPUT);
-  digitalWrite(EN, LOW);
+  digitalWrite(EN, STEPPER_DISABLE);
 
-  g_steps_per_degree = STEPS_PER_REVOLUTION / 360;
+  g_steps_per_degree = STEPS_PER_REVOLUTION / 360.0;
   g_max_steps = FromDegreeToStep(MAX_ANGLE);
 }
 
@@ -172,7 +205,7 @@ void loop() {
   }
   if(g_pos_goal > g_pos_mech)
   {
-    digitalWrite(EN, HIGH);
+    digitalWrite(EN, STEPPER_ENABLE);
     digitalWrite(DIR, RIGHT_DIRECTION);
    
     delayMicroseconds(STEP_DELAY_US);
@@ -183,7 +216,7 @@ void loop() {
   }
   if(g_pos_goal < g_pos_mech)
   {
-    digitalWrite(EN, HIGH);
+    digitalWrite(EN, STEPPER_ENABLE);
     digitalWrite(DIR, LEFT_DIRECTION);
    
     delayMicroseconds(STEP_DELAY_US);
@@ -193,7 +226,7 @@ void loop() {
     g_pos_mech--;
   }
   if(g_pos_goal == g_pos_mech && _notMotorPowerOff == false)
-    digitalWrite(EN, LOW); 
+    digitalWrite(EN, STEPPER_DISABLE); 
 }
 
 void serialEvent() {

@@ -302,12 +302,15 @@ namespace ASCOM.Stroblhofwarte
                     }
                     catch (Exception ex)
                     {
+                        _serial.Connected = false;
+                        _serial.Dispose();
                         LogMessage("Connected Set", ex.ToString());
                     }
                 }
                 else
                 {
                     connectedState = false;
+                    _serial.Connected = false;
                     _serial.Dispose();
                     LogMessage("Connected Set", "Disconnecting from adress {0}", comPort);
                 }
