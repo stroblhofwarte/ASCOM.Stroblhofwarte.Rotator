@@ -276,6 +276,16 @@ namespace ASCOM.Stroblhofwarte
             }
         }
 
+        private void InitHardware()
+        {
+            if (!connectedState) return;
+            lock (_lock)
+            {
+                _serial.Transmit("IN:");
+                string ret = _serial.ReceiveTerminated("#");
+            }
+        }
+
         public bool Connected
         {
             get
@@ -310,6 +320,11 @@ namespace ASCOM.Stroblhofwarte
                                 // to transmit this setting also to the arduino device:
                                 bool state = DoNotSwitchOffMotorPower;
                                 DoNotSwitchOffMotorPower = state;
+                                string inf = GetInfoString();
+                                if(inf == "Not initialized yet.")
+                                {
+                                    InitHardware();
+                                }
                             }
                             else
                                 connectedState = false;

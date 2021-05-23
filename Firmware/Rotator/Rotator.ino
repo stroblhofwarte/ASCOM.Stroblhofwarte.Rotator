@@ -60,6 +60,7 @@
 #define CMD_MOTOR_POWER_ON "MON"
 #define CMD_INFO "IF"
 #define CMD_STEP_SIZE "SZ"
+#define CMD_INIT "IN"
 
 double g_steps_per_degree;
 long g_pos_mech = 0;
@@ -72,7 +73,7 @@ bool _notMotorPowerOff = false;
 
 String g_command = "";
 bool g_commandComplete = false;
-String g_info = "";
+String g_info = "Not initialized yet.";
 
 void setup() { 
   pinMode(STEP, OUTPUT);
@@ -83,7 +84,6 @@ void setup() {
 
   g_steps_per_degree = STEPS_PER_REVOLUTION / 360.0;
   g_max_steps = FromDegreeToStep(MAX_ANGLE);
-  initialize();
 
    Serial.begin(9600);
 }
@@ -214,6 +214,11 @@ void Dispatcher()
     double stepSize = 360.0/(double)STEPS_PER_REVOLUTION;
     Serial.print(stepSize);
     Serial.print("#");
+  }
+  else if(g_command.startsWith(CMD_INIT))
+  {
+    initialize();
+    Serial.print("1#");
   }
   else
     Serial.print("0#");
