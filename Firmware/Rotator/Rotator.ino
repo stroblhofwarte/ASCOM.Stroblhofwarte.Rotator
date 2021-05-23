@@ -2,7 +2,7 @@
 #define STEP 3
 #define DIR  6
 #define EN   8
-
+#define SW 10
 
 // Enable only one stepper motor driver!
 //#define NODRV
@@ -41,7 +41,7 @@
 #endif
 
 
-
+#define SW_ACTIVE LOW  // Define the response for the limit switch
 
 #define GEAR_RATIO 1.0
 
@@ -58,29 +58,42 @@
 #define CMD_IS_MOVING "MV"
 #define CMD_MOTOR_POWER_OFF "MOFF"
 #define CMD_MOTOR_POWER_ON "MON"
+#define CMD_INFO "IF"
+#define CMD_STEP_SIZE "SZ"
 
 double g_steps_per_degree;
 long g_pos_mech = 0;
 long g_pos_goal = 0;
 long g_max_steps = 0;
+bool g_is_init = false;
+bool g_perform_init = false;
 
 bool _notMotorPowerOff = false;
 
 String g_command = "";
 bool g_commandComplete = false;
+String g_info = "";
 
-void setup() {
-  Serial.begin(9600);
-  
+void setup() { 
   pinMode(STEP, OUTPUT);
   pinMode(DIR, OUTPUT);
   pinMode(EN, OUTPUT);
+  pinMode(SW, INPUT_PULLUP);
   digitalWrite(EN, STEPPER_DISABLE);
 
   g_steps_per_degree = STEPS_PER_REVOLUTION / 360.0;
   g_max_steps = FromDegreeToStep(MAX_ANGLE);
+  initialize();
+
+   Serial.begin(9600);
 }
 
+void initialize()
+{
+  g_pos_goal = STEPS_PER_REVOLUTION;
+  g_perform_init = true;
+  g_info = "Initialize...";
+}
 
 long FromDegreeToStep(float deg)
 {
@@ -191,6 +204,17 @@ void Dispatcher()
     _notMotorPowerOff = true;
     Serial.print("1#");
   }
+  else if (g_command.startsWith(CMD_INFO))
+  {
+    Serial.print(g_info);
+    Serial.print("#");
+  }
+  else if (g_command.startsWith(CMD_STEP_SIZE))
+  {
+    double stepSize = 360.0/(double)STEPS_PER_REVOLUTION;
+    Serial.print(stepSize);
+    Serial.print("#");
+  }
   else
     Serial.print("0#");
   
@@ -203,6 +227,9 @@ void loop() {
   {
     Dispatcher();
   }
+  if(g_perform_init == false && g_is_init == false)
+      return;
+
   if(g_pos_goal > g_pos_mech)
   {
     digitalWrite(EN, STEPPER_ENABLE);
@@ -224,6 +251,39 @@ void loop() {
     delayMicroseconds(STEP_DELAY_US);
     digitalWrite(STEP, LOW); 
     g_pos_mech--;
+  }
+  if(g_perform_init)
+  {
+    if(digitalRead(SW) == SW_ACTIVE)
+    {
+      // Init done, limit found:
+      g_pos_mech = 0;
+      g_pos_goal = 0;
+      g_perform_init = false;
+      g_is_init = true;
+      g_info = "Ready.";
+    }
+    else
+    {
+      if(g_pos_mech == g_pos_goal)
+      {
+        // Limit switch not found!
+        g_info = "ERR: Limit switch not found!";
+        g_perform_init = false;
+        g_is_init = false;
+        digitalWrite(EN, STEPPER_ENABLE);
+        digitalWrite(DIR, LEFT_DIRECTION);
+        for(int i = 0; i < STEPS_PER_REVOLUTION; i++)
+        {
+          delayMicroseconds(STEP_DELAY_US);
+          digitalWrite(STEP, HIGH); 
+          delayMicroseconds(STEP_DELAY_US);
+          digitalWrite(STEP, LOW); 
+        }
+        if(_notMotorPowerOff == false)
+          digitalWrite(EN, STEPPER_DISABLE); 
+      }
+    }
   }
   if(g_pos_goal == g_pos_mech && _notMotorPowerOff == false)
     digitalWrite(EN, STEPPER_DISABLE); 

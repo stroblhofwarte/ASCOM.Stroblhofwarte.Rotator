@@ -6,7 +6,7 @@
 
 #define Rotator
 // remove this to bypass the code that uses the chooser to select the driver
-#define UseChooser
+//#define UseChooser
 
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace ASCOM
             ASCOM.DriverAccess.Rotator device = new ASCOM.DriverAccess.Rotator(id);
 #else
             // this can be replaced by this code, it avoids the chooser and creates the driver class directly.
-            ASCOM.DriverAccess.Rotator device = new ASCOM.DriverAccess.Rotator("ASCOM.ASCOM.Stroblhofwarte.Rotator.Rotator");
+            ASCOM.DriverAccess.Rotator device = new ASCOM.DriverAccess.Rotator("ASCOM.Stroblhofwarte.Rotator");
 #endif
             // now run some tests, adding code to your driver so that the tests will pass.
             // these first tests are common to all drivers.
@@ -42,7 +42,7 @@ namespace ASCOM
             // TODO add more code to test the driver.
             device.Connected = true;
 
-            device.SetupDialog();
+            //device.SetupDialog();
             device.MoveMechanical(180);
             device.MoveMechanical(200);
             device.MoveMechanical(0);

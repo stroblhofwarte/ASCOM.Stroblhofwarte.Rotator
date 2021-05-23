@@ -50,6 +50,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -238,25 +239,40 @@ namespace ASCOM.Stroblhofwarte
             astroUtilities = null;
         }
 
-        private bool CheckForStroblCapDevice()
+        private bool CheckForStroblRotatorDevice()
         {
             lock (_lock)
             {
-                // Device does not connect the first time. It might be
-                // that one or more charcters are put on the serial bus
-                // on startup. This characters are readed also and the
-                // ID is not recocnised. Simple hack: Try it twice!
-                _serial.Transmit("ID:");
+                string idString = String.Empty;
+                int retry = 3;
+                while(idString != "ROTATOR#")
+                {
+                    try
+                    {
+                        _serial.Transmit("ID:");
+                        idString = _serial.ReceiveTerminated("#");
+                    }
+                    catch(Exception ex)
+                    {
+                        retry--;
+                        if (retry == 0) return false;
+                        continue;
+                    }
+                }
+                return true;
+            }
+        }
+
+        private string GetInfoString()
+        {
+            if (!connectedState) return "Not connected.";
+            lock (_lock)
+            {
+                _serial.Transmit("IF:");
                 string ret = _serial.ReceiveTerminated("#");
-
-                if (ret == "ROTATOR#")
-                    return true;
-                _serial.Transmit("ID:");
-                ret = _serial.ReceiveTerminated("#");
-
-                if (ret == "ROTATOR#")
-                    return true;
-                return false;
+                ret = ret.Replace('#', ' ');
+                ret = ret.Trim();
+                return ret;
             }
         }
 
@@ -272,7 +288,6 @@ namespace ASCOM.Stroblhofwarte
                 tl.LogMessage("Connected", "Set {0}", value);
                 if (value == IsConnected)
                     return;
-
                 if (value)
                 {
                     LogMessage("Connected Set", "Connecting to address {0}", comPort);
@@ -288,7 +303,7 @@ namespace ASCOM.Stroblhofwarte
                             _serial.Speed = SerialSpeed.ps9600;
                             _serial.DTREnable = false;
                             _serial.Connected = true;
-                            if (CheckForStroblCapDevice())
+                            if (CheckForStroblRotatorDevice())
                             {
                                 connectedState = true;
                                 // set the motor power off state again 
@@ -314,6 +329,7 @@ namespace ASCOM.Stroblhofwarte
                     _serial.Dispose();
                     LogMessage("Connected Set", "Disconnecting from adress {0}", comPort);
                 }
+ 
             }
         }
 
@@ -331,7 +347,7 @@ namespace ASCOM.Stroblhofwarte
             get
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                string driverInfo = "Stroblhowarte Rotator Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverInfo = "Stroblhowarte Rotator: " + GetInfoString();
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -457,13 +473,6 @@ namespace ASCOM.Stroblhofwarte
             get
             {
                 if (!connectedState) return 0.0f;
-                if(!IsMoving)
-                {
-                    // Return the target position if the motor is mot moving.
-                    // Otherwise some clients (e.g. N.I.N.A.) will never detect
-                    // that the position os reached!
-                    return _targetPosition;
-                }
                 lock (_lock)
                 {
                     _serial.Transmit("GP:");
@@ -492,7 +501,16 @@ namespace ASCOM.Stroblhofwarte
         {
             get
             {
-                return 0.1f;
+                if (!connectedState) return 0.0f;
+                lock (_lock)
+                {
+                    _serial.Transmit("SZ:");
+                    string ret = _serial.ReceiveTerminated("#");
+                    ret = ret.Replace('#', ' ');
+                    ret = ret.Trim();
+                    float size = (float)Convert.ToDouble(ret, CultureInfo.InvariantCulture);
+                    return size;
+                }
             }
         }
 
