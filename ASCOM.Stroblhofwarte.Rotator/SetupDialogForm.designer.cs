@@ -52,6 +52,15 @@ namespace ASCOM.Stroblhofwarte
             this.labelMechanicalPosition = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.labelTargetPosition = new System.Windows.Forms.Label();
+            this.buttonSetPark = new System.Windows.Forms.Button();
+            this.label7 = new System.Windows.Forms.Label();
+            this.buttonPark = new System.Windows.Forms.Button();
+            this.textBoxSpeed = new System.Windows.Forms.TextBox();
+            this.textBoxInitSpeed = new System.Windows.Forms.TextBox();
+            this.buttonSetSpeed = new System.Windows.Forms.Button();
+            this.buttonSetInitSpeed = new System.Windows.Forms.Button();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -60,7 +69,7 @@ namespace ASCOM.Stroblhofwarte
             this.cmdOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdOK.BackColor = System.Drawing.SystemColors.Control;
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.cmdOK.Location = new System.Drawing.Point(493, 249);
+            this.cmdOK.Location = new System.Drawing.Point(493, 412);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -73,7 +82,7 @@ namespace ASCOM.Stroblhofwarte
             this.cmdCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdCancel.BackColor = System.Drawing.SystemColors.Control;
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cmdCancel.Location = new System.Drawing.Point(493, 279);
+            this.cmdCancel.Location = new System.Drawing.Point(493, 442);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -119,7 +128,7 @@ namespace ASCOM.Stroblhofwarte
             // 
             this.chkTrace.AutoSize = true;
             this.chkTrace.ForeColor = System.Drawing.Color.Silver;
-            this.chkTrace.Location = new System.Drawing.Point(406, 283);
+            this.chkTrace.Location = new System.Drawing.Point(409, 447);
             this.chkTrace.Name = "chkTrace";
             this.chkTrace.Size = new System.Drawing.Size(69, 17);
             this.chkTrace.TabIndex = 6;
@@ -293,12 +302,127 @@ namespace ASCOM.Stroblhofwarte
             this.labelTargetPosition.TabIndex = 21;
             this.labelTargetPosition.Text = "0.0°";
             // 
+            // buttonSetPark
+            // 
+            this.buttonSetPark.BackColor = System.Drawing.Color.BlueViolet;
+            this.buttonSetPark.FlatAppearance.BorderColor = System.Drawing.Color.MediumOrchid;
+            this.buttonSetPark.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonSetPark.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonSetPark.ForeColor = System.Drawing.Color.Gold;
+            this.buttonSetPark.Location = new System.Drawing.Point(246, 290);
+            this.buttonSetPark.Name = "buttonSetPark";
+            this.buttonSetPark.Size = new System.Drawing.Size(75, 23);
+            this.buttonSetPark.TabIndex = 22;
+            this.buttonSetPark.Text = "Set";
+            this.buttonSetPark.UseVisualStyleBackColor = false;
+            this.buttonSetPark.Click += new System.EventHandler(this.buttonSetPark_Click);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.ForeColor = System.Drawing.Color.Silver;
+            this.label7.Location = new System.Drawing.Point(57, 295);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(176, 13);
+            this.label7.TabIndex = 23;
+            this.label7.Text = "Set park position to current position:";
+            // 
+            // buttonPark
+            // 
+            this.buttonPark.BackColor = System.Drawing.Color.DarkMagenta;
+            this.buttonPark.FlatAppearance.BorderColor = System.Drawing.Color.MediumOrchid;
+            this.buttonPark.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonPark.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonPark.ForeColor = System.Drawing.Color.Gold;
+            this.buttonPark.Location = new System.Drawing.Point(393, 24);
+            this.buttonPark.Name = "buttonPark";
+            this.buttonPark.Size = new System.Drawing.Size(75, 23);
+            this.buttonPark.TabIndex = 24;
+            this.buttonPark.Text = "Park";
+            this.buttonPark.UseVisualStyleBackColor = false;
+            this.buttonPark.Click += new System.EventHandler(this.buttonPark_Click);
+            // 
+            // textBoxSpeed
+            // 
+            this.textBoxSpeed.Location = new System.Drawing.Point(246, 340);
+            this.textBoxSpeed.Name = "textBoxSpeed";
+            this.textBoxSpeed.Size = new System.Drawing.Size(100, 20);
+            this.textBoxSpeed.TabIndex = 25;
+            this.textBoxSpeed.Text = "1.0";
+            // 
+            // textBoxInitSpeed
+            // 
+            this.textBoxInitSpeed.Location = new System.Drawing.Point(246, 377);
+            this.textBoxInitSpeed.Name = "textBoxInitSpeed";
+            this.textBoxInitSpeed.Size = new System.Drawing.Size(100, 20);
+            this.textBoxInitSpeed.TabIndex = 26;
+            this.textBoxInitSpeed.Text = "1.0";
+            // 
+            // buttonSetSpeed
+            // 
+            this.buttonSetSpeed.BackColor = System.Drawing.Color.BlueViolet;
+            this.buttonSetSpeed.FlatAppearance.BorderColor = System.Drawing.Color.MediumOrchid;
+            this.buttonSetSpeed.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonSetSpeed.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonSetSpeed.ForeColor = System.Drawing.Color.Gold;
+            this.buttonSetSpeed.Location = new System.Drawing.Point(352, 338);
+            this.buttonSetSpeed.Name = "buttonSetSpeed";
+            this.buttonSetSpeed.Size = new System.Drawing.Size(75, 23);
+            this.buttonSetSpeed.TabIndex = 27;
+            this.buttonSetSpeed.Text = "Set";
+            this.buttonSetSpeed.UseVisualStyleBackColor = false;
+            this.buttonSetSpeed.Click += new System.EventHandler(this.buttonSetSpeed_Click);
+            // 
+            // buttonSetInitSpeed
+            // 
+            this.buttonSetInitSpeed.BackColor = System.Drawing.Color.BlueViolet;
+            this.buttonSetInitSpeed.FlatAppearance.BorderColor = System.Drawing.Color.MediumOrchid;
+            this.buttonSetInitSpeed.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonSetInitSpeed.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonSetInitSpeed.ForeColor = System.Drawing.Color.Gold;
+            this.buttonSetInitSpeed.Location = new System.Drawing.Point(352, 375);
+            this.buttonSetInitSpeed.Name = "buttonSetInitSpeed";
+            this.buttonSetInitSpeed.Size = new System.Drawing.Size(75, 23);
+            this.buttonSetInitSpeed.TabIndex = 28;
+            this.buttonSetInitSpeed.Text = "Set";
+            this.buttonSetInitSpeed.UseVisualStyleBackColor = false;
+            this.buttonSetInitSpeed.Click += new System.EventHandler(this.buttonSetInitSpeed_Click);
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.ForeColor = System.Drawing.Color.Silver;
+            this.label8.Location = new System.Drawing.Point(57, 343);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(172, 13);
+            this.label8.TabIndex = 29;
+            this.label8.Text = "Speed factor for normal movement:";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.ForeColor = System.Drawing.Color.Silver;
+            this.label9.Location = new System.Drawing.Point(57, 380);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(154, 13);
+            this.label9.TabIndex = 30;
+            this.label9.Text = "Speed factor for init movement:";
+            // 
             // SetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Indigo;
-            this.ClientSize = new System.Drawing.Size(562, 312);
+            this.ClientSize = new System.Drawing.Size(562, 475);
+            this.Controls.Add(this.label9);
+            this.Controls.Add(this.label8);
+            this.Controls.Add(this.buttonSetInitSpeed);
+            this.Controls.Add(this.buttonSetSpeed);
+            this.Controls.Add(this.textBoxInitSpeed);
+            this.Controls.Add(this.textBoxSpeed);
+            this.Controls.Add(this.buttonPark);
+            this.Controls.Add(this.label7);
+            this.Controls.Add(this.buttonSetPark);
             this.Controls.Add(this.labelTargetPosition);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.labelMechanicalPosition);
@@ -357,5 +481,14 @@ namespace ASCOM.Stroblhofwarte
         private System.Windows.Forms.Label labelMechanicalPosition;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label labelTargetPosition;
+        private System.Windows.Forms.Button buttonSetPark;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Button buttonPark;
+        private System.Windows.Forms.TextBox textBoxSpeed;
+        private System.Windows.Forms.TextBox textBoxInitSpeed;
+        private System.Windows.Forms.Button buttonSetSpeed;
+        private System.Windows.Forms.Button buttonSetInitSpeed;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.Label label9;
     }
 }

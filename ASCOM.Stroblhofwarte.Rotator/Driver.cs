@@ -100,6 +100,15 @@ namespace ASCOM.Stroblhofwarte
 
         private float _targetPosition = 0.0f;
 
+        internal static string _parkPositionName = "ParkPos";
+        private float _parkPosition = 0.0f;
+
+        internal static string _initSpeedName = "InitSpeed";
+        private float _initSpeed = 1.0f;
+
+        internal static string _speedName = "Speed";
+        private float _speed = 1.0f;
+
         private object _lock = new object();
         /// <summary>
         /// Private variable to hold the connected state
@@ -320,6 +329,9 @@ namespace ASCOM.Stroblhofwarte
                                 // to transmit this setting also to the arduino device:
                                 bool state = DoNotSwitchOffMotorPower;
                                 DoNotSwitchOffMotorPower = state;
+                                SetPark(_parkPosition);
+                                InitSpeed = _initSpeed;
+                                Speed = _speed;
                                 string inf = GetInfoString();
                                 if(inf == "Not initialized yet.")
                                 {
@@ -412,6 +424,55 @@ namespace ASCOM.Stroblhofwarte
             }
         }
 
+        public void Park()
+        {
+            if (!connectedState) return;
+            _serial.Transmit("PA:");
+            string ret = _serial.ReceiveTerminated("#");
+        }
+
+        public void SetPark(float pp)
+        {
+            if (!connectedState) return;
+            _serial.Transmit("PP" + pp.ToString(CultureInfo.InvariantCulture) + ":");
+            string ret = _serial.ReceiveTerminated("#");
+            _parkPosition = pp;
+            WriteProfile();
+        }
+
+        public float InitSpeed
+        {
+            set
+            {
+                if (!connectedState) return;
+                if (value < 0.5) return;
+                _initSpeed = value;
+                _serial.Transmit("IS" + _initSpeed.ToString(CultureInfo.InvariantCulture) + ":");
+                string ret = _serial.ReceiveTerminated("#");
+                WriteProfile();
+            }
+            get
+            {
+                return _initSpeed;
+            }
+        }
+
+        public float Speed
+        {
+            set
+            {
+                if (!connectedState) return;
+                if (value < 0.5) return;
+                _speed = value;
+                _serial.Transmit("SP" + _speed.ToString(CultureInfo.InvariantCulture) + ":");
+                string ret = _serial.ReceiveTerminated("#");
+                WriteProfile();
+            }
+            get
+            {
+                return _speed;
+            }
+        }
         public void Halt()
         {
             if (!connectedState) return;
@@ -706,6 +767,10 @@ namespace ASCOM.Stroblhofwarte
                 comPort = driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
                 _doNotSwitchPowerOff = Convert.ToBoolean(driverProfile.GetValue(driverID, _doNotSwitchPoerOffProfileName, string.Empty, "false"));
                 _syncDiff = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _syncDiffProfileName, string.Empty, "0.0"));
+                _parkPosition = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _parkPositionName, string.Empty, "0.0"));
+                _initSpeed = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _initSpeedName, string.Empty, "1.0"));
+                _speed = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _speedName, string.Empty, "1.0"));
+
             }
         }
 
@@ -721,6 +786,9 @@ namespace ASCOM.Stroblhofwarte
                 driverProfile.WriteValue(driverID, comPortProfileName, comPort.ToString());
                 driverProfile.WriteValue(driverID, _doNotSwitchPoerOffProfileName, _doNotSwitchPowerOff.ToString());
                 driverProfile.WriteValue(driverID, _syncDiffProfileName, _syncDiff.ToString(CultureInfo.InvariantCulture));
+                driverProfile.WriteValue(driverID, _parkPositionName, _parkPosition.ToString(CultureInfo.InvariantCulture));
+                driverProfile.WriteValue(driverID, _initSpeedName, _initSpeed.ToString(CultureInfo.InvariantCulture));
+                driverProfile.WriteValue(driverID, _speedName, _speed.ToString(CultureInfo.InvariantCulture));
             }
         }
 

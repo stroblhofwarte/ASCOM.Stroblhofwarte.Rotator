@@ -61,6 +61,10 @@
 #define CMD_INFO "IF"
 #define CMD_STEP_SIZE "SZ"
 #define CMD_INIT "IN"
+#define CMD_INIT_SPEED "IS"
+#define CMD_SPEED "SP"
+#define CMD_SET_PARK "PP"
+#define CMD_PARK "PA"
 
 double g_steps_per_degree;
 long g_pos_mech = 0;
@@ -68,6 +72,10 @@ long g_pos_goal = 0;
 long g_max_steps = 0;
 bool g_is_init = false;
 bool g_perform_init = false;
+
+int g_speed;
+int g_init_speed;
+float g_parkpos;
 
 bool _notMotorPowerOff = false;
 
@@ -84,7 +92,8 @@ void setup() {
 
   g_steps_per_degree = STEPS_PER_REVOLUTION / 360.0;
   g_max_steps = FromDegreeToStep(MAX_ANGLE);
-
+  g_speed = STEP_DELAY_US;
+  g_init_speed = STEP_DELAY_US;
    Serial.begin(9600);
 }
 
@@ -220,6 +229,29 @@ void Dispatcher()
     initialize();
     Serial.print("1#");
   }
+  else if(g_command.startsWith(CMD_INIT_SPEED))
+  {
+    float val = Extract(CMD_INIT_SPEED, g_command);
+    g_init_speed = (int)((float)STEP_DELAY_US * val);
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(CMD_SPEED))
+  {
+    float val = Extract(CMD_SPEED, g_command);
+    g_speed = (int)((float)STEP_DELAY_US * val);
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(CMD_SET_PARK))
+  {
+    float val = Extract(CMD_SET_PARK, g_command); 
+    g_parkpos = val;
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(CMD_PARK))
+  {
+    Move(g_parkpos);
+    Serial.print("1#");
+  }
   else
     Serial.print("0#");
   
@@ -240,9 +272,11 @@ void loop() {
     digitalWrite(EN, STEPPER_ENABLE);
     digitalWrite(DIR, RIGHT_DIRECTION);
    
-    delayMicroseconds(STEP_DELAY_US);
+    if(g_perform_init) delayMicroseconds(g_init_speed);
+    else delayMicroseconds(g_speed);
     digitalWrite(STEP, HIGH); 
-    delayMicroseconds(STEP_DELAY_US);
+    if(g_perform_init) delayMicroseconds(g_init_speed);
+    else delayMicroseconds(g_speed);
     digitalWrite(STEP, LOW); 
     g_pos_mech++;
   }
@@ -251,9 +285,11 @@ void loop() {
     digitalWrite(EN, STEPPER_ENABLE);
     digitalWrite(DIR, LEFT_DIRECTION);
    
-    delayMicroseconds(STEP_DELAY_US);
+    if(g_perform_init) delayMicroseconds(g_init_speed);
+    else delayMicroseconds(g_speed);
     digitalWrite(STEP, HIGH); 
-    delayMicroseconds(STEP_DELAY_US);
+    if(g_perform_init) delayMicroseconds(g_init_speed);
+    else delayMicroseconds(g_speed);
     digitalWrite(STEP, LOW); 
     g_pos_mech--;
   }
@@ -280,9 +316,9 @@ void loop() {
         digitalWrite(DIR, LEFT_DIRECTION);
         for(int i = 0; i < STEPS_PER_REVOLUTION; i++)
         {
-          delayMicroseconds(STEP_DELAY_US);
+          delayMicroseconds(g_speed);
           digitalWrite(STEP, HIGH); 
-          delayMicroseconds(STEP_DELAY_US);
+          delayMicroseconds(g_speed);
           digitalWrite(STEP, LOW); 
         }
         if(_notMotorPowerOff == false)

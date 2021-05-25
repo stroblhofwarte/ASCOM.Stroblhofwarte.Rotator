@@ -28,6 +28,8 @@ namespace ASCOM.Stroblhofwarte
             InitUI();
 
             labelPosition.Text = _driver.Position.ToString(CultureInfo.InvariantCulture) + "°";
+            textBoxInitSpeed.Text = _driver.InitSpeed.ToString(CultureInfo.InvariantCulture);
+            textBoxSpeed.Text = _driver.Speed.ToString(CultureInfo.InvariantCulture);
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
@@ -115,6 +117,42 @@ namespace ASCOM.Stroblhofwarte
         private void buttonUnsync_Click(object sender, EventArgs e)
         {
             _driver.ResetSync();
+        }
+
+        private void buttonPark_Click(object sender, EventArgs e)
+        {
+            _driver.Park();
+        }
+
+        private void buttonSetPark_Click(object sender, EventArgs e)
+        {
+            _driver.SetPark(_driver.MechanicalPosition);
+        }
+
+        private void buttonSetSpeed_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                float speed = (float)Convert.ToDouble(textBoxSpeed.Text, CultureInfo.InvariantCulture);
+                _driver.Speed = speed;
+            }
+            catch (Exception ex)
+            {
+                textBoxSync.Text = "0.0";
+            }
+        }
+
+        private void buttonSetInitSpeed_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                float speed = (float)Convert.ToDouble(textBoxInitSpeed.Text, CultureInfo.InvariantCulture);
+                _driver.InitSpeed= speed;
+            }
+            catch (Exception ex)
+            {
+                textBoxSync.Text = "0.0";
+            }
         }
     }
 }
