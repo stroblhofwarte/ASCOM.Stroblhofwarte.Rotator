@@ -24,4 +24,11 @@ ST:             1#              Stop the current movement
 MV:             0# or 1#        #1: Rotator is moving, otherwise 0#
 MOFF:           1#              The motor is disabled after movement
 MON:            1#              The motor is always powerd
+IF:             <INFO>#         Hardware state info
+SZ:             xxx.xx#         Minimal step size in degree
+IN:             1#              Rotator initialize its position via limit switch
+IS:             1#              Set the motor speed factor f for initialization (base speed * f)
+SP:             1#              Set the motor speed factor f for normal movements (base speed * f)
+PPxxx.xx:       1#              Set the park position to xxx.xx°
+PA:             1#              Move the rotator to the park position
 ```
