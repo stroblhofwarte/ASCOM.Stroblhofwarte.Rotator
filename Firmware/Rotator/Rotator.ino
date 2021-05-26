@@ -118,7 +118,9 @@ void MoveRight(long steps)
 {
   if((g_pos_mech + steps) > g_max_steps)
   {
-    steps = g_max_steps - g_pos_mech;
+    long reverse = g_max_steps - steps;
+    MoveLeft(reverse);
+    return;
   }
   g_pos_goal = g_pos_mech + steps;
 }
@@ -127,7 +129,9 @@ void MoveLeft(long steps)
 {
   if((g_pos_mech - steps) < 0.0)
   {
-    steps = g_pos_mech;
+    long reverse = STEPS_PER_REVOLUTION - steps;
+    MoveRight(reverse);
+    return;
   }
   g_pos_goal = g_pos_mech -  steps;
 }
