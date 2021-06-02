@@ -17,7 +17,7 @@
   #define RIGHT_DIRECTION HIGH
   #define LEFT_DIRECTION LOW
   #define STEP_DELAY_US 800
-  #define STEPS_PER_REVOLUTION 6400
+  #define STEPS_PER_REVOLUTION 28800 // 6400
 #endif
 
 #ifdef ST820
@@ -99,7 +99,7 @@ void setup() {
 
 void initialize()
 {
-  g_pos_goal = STEPS_PER_REVOLUTION;
+  g_pos_goal = -STEPS_PER_REVOLUTION;
   g_perform_init = true;
   g_info = "Initialize...";
 }
@@ -317,7 +317,7 @@ void loop() {
         g_perform_init = false;
         g_is_init = false;
         digitalWrite(EN, STEPPER_ENABLE);
-        digitalWrite(DIR, LEFT_DIRECTION);
+        digitalWrite(DIR, RIGHT_DIRECTION);
         for(int i = 0; i < STEPS_PER_REVOLUTION; i++)
         {
           delayMicroseconds(g_speed);
