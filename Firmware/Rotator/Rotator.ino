@@ -94,11 +94,26 @@ void setup() {
   g_max_steps = FromDegreeToStep(MAX_ANGLE);
   g_speed = STEP_DELAY_US;
   g_init_speed = STEP_DELAY_US;
-   Serial.begin(9600);
+  Serial.begin(9600);
 }
 
 void initialize()
 {
+  if(digitalRead(SW) == SW_ACTIVE)
+  {
+    // Switch is active, first the rotator must be moved right (45°) to leave the switch:
+    digitalWrite(EN, STEPPER_ENABLE);
+    digitalWrite(DIR, RIGHT_DIRECTION);
+    for(int i = 0; i < STEPS_PER_REVOLUTION/8; i++)
+    {
+      delayMicroseconds(g_init_speed);
+      digitalWrite(STEP, HIGH); 
+      delayMicroseconds(g_init_speed);
+      digitalWrite(STEP, LOW); 
+      if(digitalRead(SW) != SW_ACTIVE)
+        break;
+    }
+  }
   g_pos_goal = -STEPS_PER_REVOLUTION;
   g_perform_init = true;
   g_info = "Initialize...";
@@ -320,9 +335,9 @@ void loop() {
         digitalWrite(DIR, RIGHT_DIRECTION);
         for(int i = 0; i < STEPS_PER_REVOLUTION; i++)
         {
-          delayMicroseconds(g_speed);
+          delayMicroseconds(g_init_speed);
           digitalWrite(STEP, HIGH); 
-          delayMicroseconds(g_speed);
+          delayMicroseconds(g_init_speed);
           digitalWrite(STEP, LOW); 
         }
         if(_notMotorPowerOff == false)
