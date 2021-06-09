@@ -1,4 +1,21 @@
 
+// This file is part of the Stroblhofwarte.Rotator project 
+// (https://github.com/stroblhofwarte/ASCOM.Stroblhofwarte.Rotator).
+// Copyright (c) 2021, Othmar Ehrhardt, https://astro.stroblhof-oberrohrbach.de
+//
+// This program is free software: you can redistribute it and/or modify  
+// it under the terms of the GNU General Public License as published by  
+// the Free Software Foundation, version 3.
+//
+// This program is distributed in the hope that it will be useful, but 
+// WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License 
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+//
+
 namespace ASCOM.Stroblhofwarte
 {
     partial class SetupDialogForm
@@ -180,7 +197,7 @@ namespace ASCOM.Stroblhofwarte
             this.labelPosition.Name = "labelPosition";
             this.labelPosition.Size = new System.Drawing.Size(26, 13);
             this.labelPosition.TabIndex = 10;
-            this.labelPosition.Text = "0.0°";
+            this.labelPosition.Text = "0.0Â°";
             // 
             // checkBoxPower
             // 
@@ -235,7 +252,7 @@ namespace ASCOM.Stroblhofwarte
             this.labelSyncValue.Name = "labelSyncValue";
             this.labelSyncValue.Size = new System.Drawing.Size(26, 13);
             this.labelSyncValue.TabIndex = 15;
-            this.labelSyncValue.Text = "0.0°";
+            this.labelSyncValue.Text = "0.0Â°";
             // 
             // label4
             // 
@@ -280,7 +297,7 @@ namespace ASCOM.Stroblhofwarte
             this.labelMechanicalPosition.Name = "labelMechanicalPosition";
             this.labelMechanicalPosition.Size = new System.Drawing.Size(26, 13);
             this.labelMechanicalPosition.TabIndex = 19;
-            this.labelMechanicalPosition.Text = "0.0°";
+            this.labelMechanicalPosition.Text = "0.0Â°";
             // 
             // label6
             // 
@@ -300,7 +317,7 @@ namespace ASCOM.Stroblhofwarte
             this.labelTargetPosition.Name = "labelTargetPosition";
             this.labelTargetPosition.Size = new System.Drawing.Size(26, 13);
             this.labelTargetPosition.TabIndex = 21;
-            this.labelTargetPosition.Text = "0.0°";
+            this.labelTargetPosition.Text = "0.0Â°";
             // 
             // buttonSetPark
             // 
