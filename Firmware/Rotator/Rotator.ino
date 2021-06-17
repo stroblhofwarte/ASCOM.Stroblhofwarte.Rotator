@@ -6,9 +6,20 @@
 
 // Enable only one stepper motor driver!
 //#define NODRV
-#define DRV8825 // DRV8825: Must be set to 32 microsteps
+#define TMC2130_STANDALONE // TMC2130 SilentStick with SPI jumper closed (Standalone) and all three jumpers open (1/16 µStepping interpolate to 256 steps, realy silent!)
+//#define DRV8825 // DRV8825: Must be set to 32 microsteps
 //#define DRVST810 // ST820: Must be set to 256 microsteps
 ///////////////////////////////////////
+#ifdef TMC2130_STANDALONE
+  #define STEPPER_ENABLE LOW
+  #define STEPPER_DISABLE HIGH
+
+  #define RIGHT_DIRECTION LOW
+  #define LEFT_DIRECTION HIGH
+  #define STEP_DELAY_US 1600
+  #define STEPS_PER_REVOLUTION 3200
+#endif
+
 
 #ifdef DRV8825
   #define STEPPER_ENABLE LOW
