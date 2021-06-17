@@ -1,3 +1,20 @@
+// This file is part of the Stroblhofwarte.Rotator project 
+// (https://github.com/stroblhofwarte/ASCOM.Stroblhofwarte.Rotator).
+// Copyright (c) 2021, Othmar Ehrhardt, https://astro.stroblhof-oberrohrbach.de
+//
+// This program is free software: you can redistribute it and/or modify  
+// it under the terms of the GNU General Public License as published by  
+// the Free Software Foundation, version 3.
+//
+// This program is distributed in the hope that it will be useful, but 
+// WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License 
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+//
+
 using ASCOM.Stroblhofwarte;
 using ASCOM.Utilities;
 using System;
@@ -27,7 +44,7 @@ namespace ASCOM.Stroblhofwarte
             // Initialise current values of user settings from the ASCOM Profile
             InitUI();
 
-            labelPosition.Text = _driver.Position.ToString(CultureInfo.InvariantCulture) + "°";
+            labelPosition.Text = _driver.Position.ToString(CultureInfo.InvariantCulture) + "Â°";
             textBoxInitSpeed.Text = _driver.InitSpeed.ToString(CultureInfo.InvariantCulture);
             textBoxSpeed.Text = _driver.Speed.ToString(CultureInfo.InvariantCulture);
         }
@@ -90,10 +107,10 @@ namespace ASCOM.Stroblhofwarte
 
         private void timerPosition_Tick(object sender, EventArgs e)
         {
-            labelPosition.Text = _driver.Position.ToString(CultureInfo.InvariantCulture) + "°";
-            labelSyncValue.Text = _driver.SyncValue().ToString(CultureInfo.InvariantCulture) + "°";
-            labelMechanicalPosition.Text = _driver.MechanicalPosition.ToString(CultureInfo.InvariantCulture) + "°";
-            labelTargetPosition.Text = _driver.TargetPosition.ToString(CultureInfo.InvariantCulture) + "°";
+            labelPosition.Text = _driver.Position.ToString(CultureInfo.InvariantCulture) + "Â°";
+            labelSyncValue.Text = _driver.SyncValue().ToString(CultureInfo.InvariantCulture) + "Â°";
+            labelMechanicalPosition.Text = _driver.MechanicalPosition.ToString(CultureInfo.InvariantCulture) + "Â°";
+            labelTargetPosition.Text = _driver.TargetPosition.ToString(CultureInfo.InvariantCulture) + "Â°";
         }
 
         private void checkBoxPower_CheckStateChanged(object sender, EventArgs e)
