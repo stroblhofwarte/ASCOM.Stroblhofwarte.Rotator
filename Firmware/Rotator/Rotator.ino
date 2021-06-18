@@ -1,24 +1,3 @@
-/**************************************************************
-
-Arduino Firmware
-
-This file is part of the Stroblhofwarte.Rotator project 
-(https://github.com/stroblhofwarte/ASCOM.Stroblhofwarte.Rotator).
-Copyright (c) 2021, Othmar Ehrhardt, https://astro.stroblhof-oberrohrbach.de
-
-This program is free software: you can redistribute it and/or modify  
-it under the terms of the GNU General Public License as published by  
-the Free Software Foundation, version 3.
-
-This program is distributed in the hope that it will be useful, but 
-WITHOUT ANY WARRANTY; without even the implied warranty of 
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-General Public License for more details.
-
-You should have received a copy of the GNU General Public License 
-along with this program. If not, see <http://www.gnu.org/licenses/>.
-
-**************************************************************/
 
 #define STEP 3
 #define DIR  6
@@ -31,14 +10,16 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 //#define DRV8825 // DRV8825: Must be set to 32 microsteps
 //#define DRVST810 // ST820: Must be set to 256 microsteps
 ///////////////////////////////////////
+#define GEAR_RATIO 4.5 // for Stroblhofwarte.Rotator device
+
 #ifdef TMC2130_STANDALONE
   #define STEPPER_ENABLE LOW
   #define STEPPER_DISABLE HIGH
 
-  #define RIGHT_DIRECTION LOW
-  #define LEFT_DIRECTION HIGH
+  #define RIGHT_DIRECTION HIGH
+  #define LEFT_DIRECTION LOW
   #define STEP_DELAY_US 1600
-  #define STEPS_PER_REVOLUTION 3200
+  #define STEPS_PER_REVOLUTION 3200 * GEAR_RATIO
 #endif
 
 
@@ -49,7 +30,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
   #define RIGHT_DIRECTION HIGH
   #define LEFT_DIRECTION LOW
   #define STEP_DELAY_US 800
-  #define STEPS_PER_REVOLUTION 28800 // 6400
+  #define STEPS_PER_REVOLUTION 6400 * GEAR_RATIO
 #endif
 
 #ifdef ST820
@@ -59,7 +40,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
   #define RIGHT_DIRECTION LOW
   #define LEFT_DIRECTION HIGH
   #define STEP_DELAY_US 100
-  #define STEPS_PER_REVOLUTION 51200
+  #define STEPS_PER_REVOLUTION 51200 * GEAR_RATIO
+  
 #endif
 
 #ifdef NODRV
@@ -74,8 +56,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
 #define SW_ACTIVE LOW  // Define the response for the limit switch
-
-#define GEAR_RATIO 1.0
 
 #define FLOAT_ERR 9999.99
 #define MAX_ANGLE 360.0
