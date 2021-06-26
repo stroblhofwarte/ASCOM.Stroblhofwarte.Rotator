@@ -8,7 +8,7 @@ a lathe or milling machine.
 
 The rotator device is made out of aluminium
 and steel. It is driven by a NEMA 14 stepper motor. The rotator could 
-rotate (approximately) between between 0° and 330°. 
+rotate (approximately) between between 0° and 359.9°. It will never rotate more than one revolution to prevent tangled cords. 
 The electronics are made out of a arduino uno and a shield with TMC2130 driver.
 Each Pololu compatible stepper driver can be used, the TMC2130 driver supports 16 microsteps and is the best choice
 for silent operation. 
