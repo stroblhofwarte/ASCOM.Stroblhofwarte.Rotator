@@ -4,7 +4,7 @@ The Stroblhof Rotator is a simple and sturdy rotator device
 for astronomical observations. It could be build without access to
 a lathe or milling machine. 
 
-![Rotator](https://github.com/stroblhofwarte/StroblCap/blob/main/EnvironmentPlot.png )
+![Rotator](https://github.com/stroblhofwarte/ASCOM.Stroblhofwarte.Rotator/blob/master/Rotator.jpg )
 
 The rotator device is made out of aluminium
 and steel. It is driven by a NEMA 14 stepper motor. The rotator could 
