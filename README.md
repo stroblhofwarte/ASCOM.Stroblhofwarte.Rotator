@@ -2,7 +2,11 @@
 
 The Stroblhof Rotator is a simple and sturdy rotator device
 for astronomical observations. It could be build without access to
-a lathe or milling machine. The rotator device is made out of aluminium
+a lathe or milling machine. 
+
+![Rotator](https://github.com/stroblhofwarte/StroblCap/blob/main/EnvironmentPlot.png )
+
+The rotator device is made out of aluminium
 and steel. It is driven by a NEMA 14 stepper motor. The rotator could 
 rotate (approximately) between between 0° and 330°. 
 The electronics are made out of a arduino uno and a shield with ST820 driver.
