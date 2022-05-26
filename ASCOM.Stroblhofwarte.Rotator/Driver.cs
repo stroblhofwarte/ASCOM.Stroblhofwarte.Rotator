@@ -125,6 +125,9 @@ namespace ASCOM.Stroblhofwarte
         internal static string _speedName = "Speed";
         private float _speed = 1.0f;
 
+        internal static string _maxMovementName = "MaxMovement";
+        private float _maxMovement = 350.0f;
+
         private object _lock = new object();
         /// <summary>
         /// Private variable to hold the connected state
@@ -348,6 +351,7 @@ namespace ASCOM.Stroblhofwarte
                                 SetPark(_parkPosition);
                                 InitSpeed = _initSpeed;
                                 Speed = _speed;
+                                MaxMovement = _maxMovement;
                                 string inf = GetInfoString();
                                 if(inf == "Not initialized yet.")
                                 {
@@ -489,6 +493,22 @@ namespace ASCOM.Stroblhofwarte
                 return _speed;
             }
         }
+
+        public float MaxMovement
+        {
+            set
+            {
+                if (!connectedState) return;
+                _maxMovement = value;
+                if (value > 359) _maxMovement = 359;
+                if (value < 0) _maxMovement = 0;
+                WriteProfile();
+            }
+            get
+            {
+                return _maxMovement;
+            }
+        }
         public void Halt()
         {
             if (!connectedState) return;
@@ -513,6 +533,8 @@ namespace ASCOM.Stroblhofwarte
         {
             if (!connectedState) return;
             _targetPosition = Position + pos;
+            // Check if the maximal rotation value is exceeded:
+            if (FromSyncPositionToMechanicalPosition(_targetPosition) > _maxMovement) return;
             lock (_lock)
             {
                 tl.LogMessage("Move", pos.ToString()); // Move by this amount
@@ -534,6 +556,8 @@ namespace ASCOM.Stroblhofwarte
         {
             if (!connectedState) return;
             _targetPosition = pos;
+            // Check if the maximal rotation value is exceeded:
+            if (FromSyncPositionToMechanicalPosition(_targetPosition) > _maxMovement) return;
             float truePos = FromSyncPositionToMechanicalPosition(pos);
             lock (_lock)
             {
@@ -636,6 +660,8 @@ namespace ASCOM.Stroblhofwarte
         public void MoveMechanical(float pos)
         {
             if (!connectedState) return;
+            // Check if the maximal rotation value is exceeded:
+            if (pos > _maxMovement) return;
             lock (_lock)
             {
                 tl.LogMessage("MoveAbsolute", pos.ToString()); // Move to this position
@@ -786,6 +812,7 @@ namespace ASCOM.Stroblhofwarte
                 _parkPosition = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _parkPositionName, string.Empty, "0.0"));
                 _initSpeed = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _initSpeedName, string.Empty, "1.0"));
                 _speed = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _speedName, string.Empty, "1.0"));
+                _maxMovement = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _maxMovementName, string.Empty, "350.0"));
 
             }
         }
@@ -805,6 +832,7 @@ namespace ASCOM.Stroblhofwarte
                 driverProfile.WriteValue(driverID, _parkPositionName, _parkPosition.ToString(CultureInfo.InvariantCulture));
                 driverProfile.WriteValue(driverID, _initSpeedName, _initSpeed.ToString(CultureInfo.InvariantCulture));
                 driverProfile.WriteValue(driverID, _speedName, _speed.ToString(CultureInfo.InvariantCulture));
+                driverProfile.WriteValue(driverID, _maxMovementName, _maxMovement.ToString(CultureInfo.InvariantCulture));
             }
         }
 

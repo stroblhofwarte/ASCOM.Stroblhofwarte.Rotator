@@ -78,6 +78,9 @@ namespace ASCOM.Stroblhofwarte
             this.buttonSetInitSpeed = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
+            this.label10 = new System.Windows.Forms.Label();
+            this.txtMaxMove = new System.Windows.Forms.TextBox();
+            this.buttonSetMaxMovement = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -86,7 +89,7 @@ namespace ASCOM.Stroblhofwarte
             this.cmdOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdOK.BackColor = System.Drawing.SystemColors.Control;
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.cmdOK.Location = new System.Drawing.Point(493, 412);
+            this.cmdOK.Location = new System.Drawing.Point(493, 448);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -99,7 +102,7 @@ namespace ASCOM.Stroblhofwarte
             this.cmdCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdCancel.BackColor = System.Drawing.SystemColors.Control;
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cmdCancel.Location = new System.Drawing.Point(493, 442);
+            this.cmdCancel.Location = new System.Drawing.Point(493, 478);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -143,9 +146,10 @@ namespace ASCOM.Stroblhofwarte
             // 
             // chkTrace
             // 
+            this.chkTrace.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.chkTrace.AutoSize = true;
             this.chkTrace.ForeColor = System.Drawing.Color.Silver;
-            this.chkTrace.Location = new System.Drawing.Point(409, 447);
+            this.chkTrace.Location = new System.Drawing.Point(409, 478);
             this.chkTrace.Name = "chkTrace";
             this.chkTrace.Size = new System.Drawing.Size(69, 17);
             this.chkTrace.TabIndex = 6;
@@ -248,7 +252,7 @@ namespace ASCOM.Stroblhofwarte
             // 
             this.labelSyncValue.AutoSize = true;
             this.labelSyncValue.ForeColor = System.Drawing.Color.Silver;
-            this.labelSyncValue.Location = new System.Drawing.Point(134, 259);
+            this.labelSyncValue.Location = new System.Drawing.Point(134, 249);
             this.labelSyncValue.Name = "labelSyncValue";
             this.labelSyncValue.Size = new System.Drawing.Size(26, 13);
             this.labelSyncValue.TabIndex = 15;
@@ -258,7 +262,7 @@ namespace ASCOM.Stroblhofwarte
             // 
             this.label4.AutoSize = true;
             this.label4.ForeColor = System.Drawing.Color.Silver;
-            this.label4.Location = new System.Drawing.Point(57, 259);
+            this.label4.Location = new System.Drawing.Point(57, 249);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(65, 13);
             this.label4.TabIndex = 16;
@@ -326,7 +330,7 @@ namespace ASCOM.Stroblhofwarte
             this.buttonSetPark.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonSetPark.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonSetPark.ForeColor = System.Drawing.Color.Gold;
-            this.buttonSetPark.Location = new System.Drawing.Point(246, 290);
+            this.buttonSetPark.Location = new System.Drawing.Point(246, 270);
             this.buttonSetPark.Name = "buttonSetPark";
             this.buttonSetPark.Size = new System.Drawing.Size(75, 23);
             this.buttonSetPark.TabIndex = 22;
@@ -338,7 +342,7 @@ namespace ASCOM.Stroblhofwarte
             // 
             this.label7.AutoSize = true;
             this.label7.ForeColor = System.Drawing.Color.Silver;
-            this.label7.Location = new System.Drawing.Point(57, 295);
+            this.label7.Location = new System.Drawing.Point(57, 275);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(176, 13);
             this.label7.TabIndex = 23;
@@ -361,7 +365,7 @@ namespace ASCOM.Stroblhofwarte
             // 
             // textBoxSpeed
             // 
-            this.textBoxSpeed.Location = new System.Drawing.Point(246, 340);
+            this.textBoxSpeed.Location = new System.Drawing.Point(246, 324);
             this.textBoxSpeed.Name = "textBoxSpeed";
             this.textBoxSpeed.Size = new System.Drawing.Size(100, 20);
             this.textBoxSpeed.TabIndex = 25;
@@ -369,7 +373,7 @@ namespace ASCOM.Stroblhofwarte
             // 
             // textBoxInitSpeed
             // 
-            this.textBoxInitSpeed.Location = new System.Drawing.Point(246, 377);
+            this.textBoxInitSpeed.Location = new System.Drawing.Point(246, 353);
             this.textBoxInitSpeed.Name = "textBoxInitSpeed";
             this.textBoxInitSpeed.Size = new System.Drawing.Size(100, 20);
             this.textBoxInitSpeed.TabIndex = 26;
@@ -382,7 +386,7 @@ namespace ASCOM.Stroblhofwarte
             this.buttonSetSpeed.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonSetSpeed.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonSetSpeed.ForeColor = System.Drawing.Color.Gold;
-            this.buttonSetSpeed.Location = new System.Drawing.Point(352, 338);
+            this.buttonSetSpeed.Location = new System.Drawing.Point(352, 322);
             this.buttonSetSpeed.Name = "buttonSetSpeed";
             this.buttonSetSpeed.Size = new System.Drawing.Size(75, 23);
             this.buttonSetSpeed.TabIndex = 27;
@@ -397,7 +401,7 @@ namespace ASCOM.Stroblhofwarte
             this.buttonSetInitSpeed.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonSetInitSpeed.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonSetInitSpeed.ForeColor = System.Drawing.Color.Gold;
-            this.buttonSetInitSpeed.Location = new System.Drawing.Point(352, 375);
+            this.buttonSetInitSpeed.Location = new System.Drawing.Point(352, 351);
             this.buttonSetInitSpeed.Name = "buttonSetInitSpeed";
             this.buttonSetInitSpeed.Size = new System.Drawing.Size(75, 23);
             this.buttonSetInitSpeed.TabIndex = 28;
@@ -409,7 +413,7 @@ namespace ASCOM.Stroblhofwarte
             // 
             this.label8.AutoSize = true;
             this.label8.ForeColor = System.Drawing.Color.Silver;
-            this.label8.Location = new System.Drawing.Point(57, 343);
+            this.label8.Location = new System.Drawing.Point(57, 327);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(172, 13);
             this.label8.TabIndex = 29;
@@ -419,18 +423,54 @@ namespace ASCOM.Stroblhofwarte
             // 
             this.label9.AutoSize = true;
             this.label9.ForeColor = System.Drawing.Color.Silver;
-            this.label9.Location = new System.Drawing.Point(57, 380);
+            this.label9.Location = new System.Drawing.Point(57, 356);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(154, 13);
             this.label9.TabIndex = 30;
             this.label9.Text = "Speed factor for init movement:";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.ForeColor = System.Drawing.Color.Silver;
+            this.label10.Location = new System.Drawing.Point(57, 404);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(124, 13);
+            this.label10.TabIndex = 32;
+            this.label10.Text = "Maximal movement [in °]:";
+            // 
+            // txtMaxMove
+            // 
+            this.txtMaxMove.Location = new System.Drawing.Point(246, 401);
+            this.txtMaxMove.Name = "txtMaxMove";
+            this.txtMaxMove.Size = new System.Drawing.Size(100, 20);
+            this.txtMaxMove.TabIndex = 31;
+            this.txtMaxMove.Text = "1.0";
+            // 
+            // buttonSetMaxMovement
+            // 
+            this.buttonSetMaxMovement.BackColor = System.Drawing.Color.BlueViolet;
+            this.buttonSetMaxMovement.FlatAppearance.BorderColor = System.Drawing.Color.MediumOrchid;
+            this.buttonSetMaxMovement.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonSetMaxMovement.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonSetMaxMovement.ForeColor = System.Drawing.Color.Gold;
+            this.buttonSetMaxMovement.Location = new System.Drawing.Point(352, 399);
+            this.buttonSetMaxMovement.Name = "buttonSetMaxMovement";
+            this.buttonSetMaxMovement.Size = new System.Drawing.Size(75, 23);
+            this.buttonSetMaxMovement.TabIndex = 33;
+            this.buttonSetMaxMovement.Text = "Set";
+            this.buttonSetMaxMovement.UseVisualStyleBackColor = false;
+            this.buttonSetMaxMovement.Click += new System.EventHandler(this.buttonSetMaxMovement_Click);
             // 
             // SetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Indigo;
-            this.ClientSize = new System.Drawing.Size(562, 475);
+            this.ClientSize = new System.Drawing.Size(562, 511);
+            this.Controls.Add(this.buttonSetMaxMovement);
+            this.Controls.Add(this.label10);
+            this.Controls.Add(this.txtMaxMove);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.buttonSetInitSpeed);
@@ -507,5 +547,8 @@ namespace ASCOM.Stroblhofwarte
         private System.Windows.Forms.Button buttonSetInitSpeed;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.TextBox txtMaxMove;
+        private System.Windows.Forms.Button buttonSetMaxMovement;
     }
 }

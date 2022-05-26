@@ -155,7 +155,7 @@ namespace ASCOM.Stroblhofwarte
             }
             catch (Exception ex)
             {
-                textBoxSync.Text = "0.0";
+                textBoxSpeed.Text = "0.0";
             }
         }
 
@@ -168,7 +168,20 @@ namespace ASCOM.Stroblhofwarte
             }
             catch (Exception ex)
             {
-                textBoxSync.Text = "0.0";
+                textBoxInitSpeed.Text = "0.0";
+            }
+        }
+
+        private void buttonSetMaxMovement_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                float maxMovement = (float)Convert.ToDouble(txtMaxMove.Text, CultureInfo.InvariantCulture);
+                _driver.MaxMovement = maxMovement;
+            }
+            catch (Exception ex)
+            {
+                txtMaxMove.Text = "0.0";
             }
         }
     }
