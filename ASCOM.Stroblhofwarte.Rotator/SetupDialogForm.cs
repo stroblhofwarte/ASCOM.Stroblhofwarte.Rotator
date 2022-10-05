@@ -47,6 +47,7 @@ namespace ASCOM.Stroblhofwarte
             labelPosition.Text = _driver.Position.ToString(CultureInfo.InvariantCulture) + "°";
             textBoxInitSpeed.Text = _driver.InitSpeed.ToString(CultureInfo.InvariantCulture);
             textBoxSpeed.Text = _driver.Speed.ToString(CultureInfo.InvariantCulture);
+            txtMaxMove.Text = _driver.MaxMovement.ToString(CultureInfo.InvariantCulture);
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
@@ -183,6 +184,72 @@ namespace ASCOM.Stroblhofwarte
             {
                 txtMaxMove.Text = "0.0";
             }
+        }
+
+        private bool _moveRight = false;
+        private void buttonMoveRight_MouseDown(object sender, MouseEventArgs e)
+        {
+            _moveRight = true;
+        }
+
+        private void buttonMoveRight_MouseUp(object sender, MouseEventArgs e)
+        {
+            _moveRight = false;
+            _driver.Halt();
+            _driver.MoveAbsolute(_driver.Position);
+        }
+
+        private float _oldPos = 0.0f;
+        private void timerMove_Tick(object sender, EventArgs e)
+        {
+            if (_driver.Position != _oldPos)
+            {
+                this.Invalidate();
+                _oldPos = _driver.Position;
+            }
+            if (_moveLeft)
+            {
+                float pos = _driver.Position;
+                if (pos > 10.0)
+                    pos = pos - 10.0f;
+                else
+                    pos = 0.0f;
+                _driver.MoveAbsolute(pos);
+            }
+            if (_moveRight)
+            {
+                float pos = _driver.Position;
+                if (pos > (_driver.MaxMovement - 10.0))
+                    pos = _driver.MaxMovement;
+                else
+                    pos = pos + 10.0f;
+                _driver.MoveAbsolute(pos);
+            }
+
+        }
+
+
+        private bool _moveLeft = false;
+        private void buttonMoveLeft_MouseDown(object sender, MouseEventArgs e)
+        {
+            _moveLeft = true;
+        }
+
+        private void buttonMoveLeft_MouseUp(object sender, MouseEventArgs e)
+        {
+            _moveLeft = false;
+            _driver.Halt();
+            _driver.MoveAbsolute(_driver.Position);
+        }
+
+        private void SetupDialogForm_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = this.CreateGraphics();
+            //the central point of the rotation
+            g.TranslateTransform(100, 100);
+            //rotation procedure
+            g.RotateTransform(_driver.Position);
+            g.DrawRectangle(Pens.Red, new Rectangle(-50, -30, 100, 60));
         }
     }
 }

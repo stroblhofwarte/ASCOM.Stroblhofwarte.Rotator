@@ -6,7 +6,7 @@
 
 #define Rotator
 // remove this to bypass the code that uses the chooser to select the driver
-//#define UseChooser
+#define UseChooser
 
 using System;
 using System.Collections.Generic;

@@ -111,9 +111,6 @@ namespace ASCOM.Stroblhofwarte
         internal static string _doNotSwitchPoerOffProfileName = "DoNotSwitchPowerOff";
         private bool _doNotSwitchPowerOff = false;
 
-        internal static string _syncDiffProfileName = "SyncDiff";
-        private float _syncDiff = 0.0f;
-
         private float _targetPosition = 0.0f;
 
         internal static string _parkPositionName = "ParkPos";
@@ -453,23 +450,24 @@ namespace ASCOM.Stroblhofwarte
 
         public void SetPark(float pp)
         {
+            _parkPosition = pp;
+            WriteProfile();
             if (!connectedState) return;
             _serial.Transmit("PP" + pp.ToString(CultureInfo.InvariantCulture) + ":");
             string ret = _serial.ReceiveTerminated("#");
-            _parkPosition = pp;
-            WriteProfile();
         }
 
         public float InitSpeed
         {
             set
             {
-                if (!connectedState) return;
                 if (value < 0.5) return;
                 _initSpeed = value;
+                WriteProfile();
+                if (!connectedState) return;
                 _serial.Transmit("IS" + _initSpeed.ToString(CultureInfo.InvariantCulture) + ":");
                 string ret = _serial.ReceiveTerminated("#");
-                WriteProfile();
+                
             }
             get
             {
@@ -481,12 +479,13 @@ namespace ASCOM.Stroblhofwarte
         {
             set
             {
-                if (!connectedState) return;
                 if (value < 0.5) return;
                 _speed = value;
+                WriteProfile();
+                if (!connectedState) return;
                 _serial.Transmit("SP" + _speed.ToString(CultureInfo.InvariantCulture) + ":");
                 string ret = _serial.ReceiveTerminated("#");
-                WriteProfile();
+                
             }
             get
             {
@@ -498,10 +497,9 @@ namespace ASCOM.Stroblhofwarte
         {
             set
             {
-                if (!connectedState) return;
                 _maxMovement = value;
-                if (value > 359) _maxMovement = 359;
-                if (value < 0) _maxMovement = 0;
+                if (value > 359.0f) _maxMovement = 359.0f;
+                if (value < 0.0f) _maxMovement = 0.0f;
                 WriteProfile();
             }
             get
@@ -570,18 +568,12 @@ namespace ASCOM.Stroblhofwarte
 
         public float FromMechanicalPositionToSyncPosition(float mechPos)
         {
-            float pos = mechPos + _syncDiff;
-            if (pos > 360) pos = pos - 360;
-            if (pos < 0) pos = 360 + pos;
-            return pos;
+            return mechPos;
         }
 
         public float FromSyncPositionToMechanicalPosition(float syncPos)
         {
-            float pos = syncPos - _syncDiff;
-            if (pos > 360) pos = pos - 360;
-            if (pos < 0) pos = 360 + pos;
-            return pos;
+            return syncPos;
         }
 
         public float Position
@@ -674,24 +666,19 @@ namespace ASCOM.Stroblhofwarte
         public void Sync(float syncPos)
         {
             tl.LogMessage("Sync", Position.ToString()); // Sync to this position
-            _serial.Transmit("GP:");
+            string cmd = "SY" + syncPos.ToString(CultureInfo.InvariantCulture) + ":";
+            _serial.Transmit(cmd);
             string ret = _serial.ReceiveTerminated("#");
-            ret = ret.Replace('#', ' ');
-            ret = ret.Trim();
-            float pos = (float)Convert.ToDouble(ret, CultureInfo.InvariantCulture);
-
-            _syncDiff = syncPos - pos;
-            WriteProfile();
         }
 
         public void ResetSync()
         {
-            _syncDiff = 0.0f;
+            
         }
 
         public float SyncValue()
         {
-            return _syncDiff;
+            return 0.0f;
         }
 
         #endregion
@@ -808,11 +795,10 @@ namespace ASCOM.Stroblhofwarte
                 tl.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
                 comPort = driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
                 _doNotSwitchPowerOff = Convert.ToBoolean(driverProfile.GetValue(driverID, _doNotSwitchPoerOffProfileName, string.Empty, "false"));
-                _syncDiff = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _syncDiffProfileName, string.Empty, "0.0"));
-                _parkPosition = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _parkPositionName, string.Empty, "0.0"));
-                _initSpeed = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _initSpeedName, string.Empty, "1.0"));
-                _speed = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _speedName, string.Empty, "1.0"));
-                _maxMovement = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _maxMovementName, string.Empty, "350.0"));
+                _parkPosition = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _parkPositionName, string.Empty, "0.0"), CultureInfo.InvariantCulture);
+                _initSpeed = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _initSpeedName, string.Empty, "1.0"), CultureInfo.InvariantCulture);
+                _speed = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _speedName, string.Empty, "1.0"), CultureInfo.InvariantCulture);
+                _maxMovement = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _maxMovementName, string.Empty, "350.0"),CultureInfo.InvariantCulture);
 
             }
         }
@@ -828,7 +814,6 @@ namespace ASCOM.Stroblhofwarte
                 driverProfile.WriteValue(driverID, traceStateProfileName, tl.Enabled.ToString());
                 driverProfile.WriteValue(driverID, comPortProfileName, comPort.ToString());
                 driverProfile.WriteValue(driverID, _doNotSwitchPoerOffProfileName, _doNotSwitchPowerOff.ToString());
-                driverProfile.WriteValue(driverID, _syncDiffProfileName, _syncDiff.ToString(CultureInfo.InvariantCulture));
                 driverProfile.WriteValue(driverID, _parkPositionName, _parkPosition.ToString(CultureInfo.InvariantCulture));
                 driverProfile.WriteValue(driverID, _initSpeedName, _initSpeed.ToString(CultureInfo.InvariantCulture));
                 driverProfile.WriteValue(driverID, _speedName, _speed.ToString(CultureInfo.InvariantCulture));

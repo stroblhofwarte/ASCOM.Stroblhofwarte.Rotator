@@ -81,6 +81,9 @@ namespace ASCOM.Stroblhofwarte
             this.label10 = new System.Windows.Forms.Label();
             this.txtMaxMove = new System.Windows.Forms.TextBox();
             this.buttonSetMaxMovement = new System.Windows.Forms.Button();
+            this.buttonMoveRight = new System.Windows.Forms.Button();
+            this.timerMove = new System.Windows.Forms.Timer(this.components);
+            this.buttonMoveLeft = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -118,7 +121,7 @@ namespace ASCOM.Stroblhofwarte
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(375, 48);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Stroblhofwarte Rotator";
+            this.label1.Text = "<DEVELOPMENT2>";
             // 
             // picASCOM
             // 
@@ -462,12 +465,41 @@ namespace ASCOM.Stroblhofwarte
             this.buttonSetMaxMovement.UseVisualStyleBackColor = false;
             this.buttonSetMaxMovement.Click += new System.EventHandler(this.buttonSetMaxMovement_Click);
             // 
+            // buttonMoveRight
+            // 
+            this.buttonMoveRight.Location = new System.Drawing.Point(181, 449);
+            this.buttonMoveRight.Name = "buttonMoveRight";
+            this.buttonMoveRight.Size = new System.Drawing.Size(75, 23);
+            this.buttonMoveRight.TabIndex = 34;
+            this.buttonMoveRight.Text = "button1";
+            this.buttonMoveRight.UseVisualStyleBackColor = true;
+            this.buttonMoveRight.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonMoveRight_MouseDown);
+            this.buttonMoveRight.MouseUp += new System.Windows.Forms.MouseEventHandler(this.buttonMoveRight_MouseUp);
+            // 
+            // timerMove
+            // 
+            this.timerMove.Enabled = true;
+            this.timerMove.Tick += new System.EventHandler(this.timerMove_Tick);
+            // 
+            // buttonMoveLeft
+            // 
+            this.buttonMoveLeft.Location = new System.Drawing.Point(91, 448);
+            this.buttonMoveLeft.Name = "buttonMoveLeft";
+            this.buttonMoveLeft.Size = new System.Drawing.Size(75, 23);
+            this.buttonMoveLeft.TabIndex = 35;
+            this.buttonMoveLeft.Text = "button1";
+            this.buttonMoveLeft.UseVisualStyleBackColor = true;
+            this.buttonMoveLeft.MouseDown += new System.Windows.Forms.MouseEventHandler(this.buttonMoveLeft_MouseDown);
+            this.buttonMoveLeft.MouseUp += new System.Windows.Forms.MouseEventHandler(this.buttonMoveLeft_MouseUp);
+            // 
             // SetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Indigo;
             this.ClientSize = new System.Drawing.Size(562, 511);
+            this.Controls.Add(this.buttonMoveLeft);
+            this.Controls.Add(this.buttonMoveRight);
             this.Controls.Add(this.buttonSetMaxMovement);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.txtMaxMove);
@@ -508,6 +540,7 @@ namespace ASCOM.Stroblhofwarte
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Stroblhofwarte Setup";
+            this.Paint += new System.Windows.Forms.PaintEventHandler(this.SetupDialogForm_Paint);
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -550,5 +583,8 @@ namespace ASCOM.Stroblhofwarte
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.TextBox txtMaxMove;
         private System.Windows.Forms.Button buttonSetMaxMovement;
+        private System.Windows.Forms.Button buttonMoveRight;
+        private System.Windows.Forms.Timer timerMove;
+        private System.Windows.Forms.Button buttonMoveLeft;
     }
 }

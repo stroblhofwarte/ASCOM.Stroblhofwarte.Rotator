@@ -10,14 +10,16 @@
 //#define DRV8825 // DRV8825: Must be set to 32 microsteps
 //#define DRVST810 // ST820: Must be set to 256 microsteps
 ///////////////////////////////////////
-#define GEAR_RATIO 4.5 // for Stroblhofwarte.Rotator device
+#define GEAR_RATIO 4.8 // for Stroblhofwarte.Rotator device
+
+// Main wheel: 96 teeth, Motorwheel: 20 teeth
 
 #ifdef TMC2130_STANDALONE
   #define STEPPER_ENABLE LOW
   #define STEPPER_DISABLE HIGH
 
-  #define RIGHT_DIRECTION HIGH
-  #define LEFT_DIRECTION LOW
+  #define RIGHT_DIRECTION LOW
+  #define LEFT_DIRECTION HIGH
   #define STEP_DELAY_US 1600
   #define STEPS_PER_REVOLUTION 3200 * GEAR_RATIO
 #endif
@@ -77,6 +79,7 @@
 #define CMD_SPEED "SP"
 #define CMD_SET_PARK "PP"
 #define CMD_PARK "PA"
+#define CMD_SYNC "SY"
 
 double g_steps_per_degree;
 long g_pos_mech = 0;
@@ -111,24 +114,11 @@ void setup() {
 
 void initialize()
 {
-  if(digitalRead(SW) == SW_ACTIVE)
-  {
-    // Switch is active, first the rotator must be moved right (45°) to leave the switch:
-    digitalWrite(EN, STEPPER_ENABLE);
-    digitalWrite(DIR, RIGHT_DIRECTION);
-    for(int i = 0; i < STEPS_PER_REVOLUTION/8; i++)
-    {
-      delayMicroseconds(g_init_speed);
-      digitalWrite(STEP, HIGH); 
-      delayMicroseconds(g_init_speed);
-      digitalWrite(STEP, LOW); 
-      if(digitalRead(SW) != SW_ACTIVE)
-        break;
-    }
-  }
-  g_pos_goal = -STEPS_PER_REVOLUTION;
-  g_perform_init = true;
-  g_info = "Initialize...";
+  g_pos_mech = 0;
+  g_pos_goal = 0;
+  g_perform_init = false;
+  g_is_init = true;
+  g_info = "Ready.";
 }
 
 long FromDegreeToStep(float deg)
@@ -214,6 +204,12 @@ void Dispatcher()
   {
     float val = Extract(CMD_ABSOLUTE, g_command);
     Move(val);
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(CMD_SYNC))
+  {
+    float val = Extract(CMD_SYNC, g_command);
+    g_pos_mech = g_pos_goal = FromDegreeToStep(val);
     Serial.print("1#");
   }
   else if(g_command.startsWith(CMD_POSITION))
