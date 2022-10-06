@@ -1,5 +1,9 @@
 # ASCOM.Stroblhofwarte.Rotator
 
+**** PLEASE use tag v1.0.0 for the hardware version described below *****
+
+**** The master branch contains a development version for a hardware version without zero position switch ****
+
 The Stroblhof Rotator is a simple and sturdy rotator device
 for astronomical observations. It could be build without access to
 a lathe or milling machine. 
