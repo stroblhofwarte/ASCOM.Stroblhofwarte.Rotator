@@ -25,6 +25,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
+using static System.Windows.Forms.TabControl;
 
 namespace ASCOM.Stroblhofwarte
 {
@@ -109,9 +110,6 @@ namespace ASCOM.Stroblhofwarte
         private void timerPosition_Tick(object sender, EventArgs e)
         {
             labelPosition.Text = _driver.Position.ToString(CultureInfo.InvariantCulture) + "°";
-            labelSyncValue.Text = _driver.SyncValue().ToString(CultureInfo.InvariantCulture) + "°";
-            labelMechanicalPosition.Text = _driver.MechanicalPosition.ToString(CultureInfo.InvariantCulture) + "°";
-            labelTargetPosition.Text = _driver.TargetPosition.ToString(CultureInfo.InvariantCulture) + "°";
         }
 
         private void checkBoxPower_CheckStateChanged(object sender, EventArgs e)
@@ -246,10 +244,21 @@ namespace ASCOM.Stroblhofwarte
         {
             Graphics g = this.CreateGraphics();
             //the central point of the rotation
-            g.TranslateTransform(100, 100);
+            g.DrawLine(Pens.Silver, 200, 210, 200, 210-10);
+            g.DrawString("N", SystemFonts.DefaultFont, Brushes.Silver, 200 - 5, 186);
+            g.DrawLine(Pens.Silver, 200, 210, 210, 210);
+            g.DrawString("E", SystemFonts.DefaultFont, Brushes.Silver, 210 + 3, 202);
+            g.TranslateTransform(200, 200);
             //rotation procedure
             g.RotateTransform(_driver.Position);
-            g.DrawRectangle(Pens.Red, new Rectangle(-50, -30, 100, 60));
+            g.DrawEllipse(Pens.Silver, -100, -100, 200, 200);
+            g.DrawRectangle(Pens.Silver, new Rectangle(-50, -30, 100, 60));
+            
+        }
+
+        public void SetSetupMode()
+        {
+            
         }
     }
 }

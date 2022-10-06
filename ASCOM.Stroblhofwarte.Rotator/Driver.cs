@@ -69,6 +69,7 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ASCOM.Stroblhofwarte
 {
@@ -146,6 +147,7 @@ namespace ASCOM.Stroblhofwarte
         /// </summary>
         internal TraceLogger tl;
         public TraceLogger Logger { get { return tl; } }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Stroblhofwarte"/> class.
         /// Must be public for COM registration.
@@ -181,11 +183,10 @@ namespace ASCOM.Stroblhofwarte
         {
             // consider only showing the setup dialog if not connected
             // or call a different dialog if connected
-            if (IsConnected)
-                System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
-
+            
             using (SetupDialogForm F = new SetupDialogForm(this))
             {
+                if(!connectedState) F.SetSetupMode();
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
