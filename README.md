@@ -40,3 +40,22 @@ SP:             1#              Set the motor speed factor f for normal movement
 PPxxx.xx:       1#              Set the park position to xxx.xx°
 PA:             1#              Move the rotator to the park position
 ```
+
+**** 13.02.2023: Focuser device added ****
+A focuser interface added. Hardware: The focuser use the Pololu for the X-Axis. The ASCOM device is ASCOM.Stroblhofwarte.Focus.
+````
+Command         Response        Description
+-------------------------------------------------------------------------------
+FOCTRxxxx:      1#              Turn the focuser stepper xxxx steps right
+FOCTLxxxx:      1#              Turn the focuser stepper xxxx steps left
+FOCST:          1#              Stop a current running movement
+FOCMV:          1# or 0#        1# when the focuser is moving, otherwise 0#
+FOCPO:          xxxx#           Returns the current position of the focuser 
+FOCMOFF:        1#              Switch motor off after movement
+FOCMON:         1#              Keep motor current on after movement
+FOCOVERRxxxxx:  1#              Set the amount of steps for right overshoot
+                                This call will set the left overshoot to 0.
+FOCOVERLxxxxx:  1#              Set the amount of steps for left overshoot
+                                This call will set the right overshoot to 0.
+````
+The focuser device is a relative focuser.
