@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ASCOM Initiative")]
-[assembly: AssemblyProduct("ASCOM.Stroblhofwarte.Rotator")]
+[assembly: AssemblyProduct("ASCOM.Stroblhofwarte.Focuser")]
 [assembly: AssemblyCopyright("Copyright © ASCOM Initiative 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

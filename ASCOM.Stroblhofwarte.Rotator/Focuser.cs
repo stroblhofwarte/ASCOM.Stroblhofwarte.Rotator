@@ -32,8 +32,8 @@ namespace ASCOM.Stroblhofwarte
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
-        internal static string comPort; // Variables to hold the current device configuration
-
+        internal static string comPort = "COM1";  // Variables to hold the current device configuration
+        private object _lock = new object();
 
         internal static string _FineStepsName = "FineSteps";
         private int _fineSteps = 100;
@@ -51,6 +51,24 @@ namespace ASCOM.Stroblhofwarte
 
         internal static string _FastStepsName = "FastSteps";
         private int _fastSteps = 1000;
+
+        public int OvershootSetting
+        {
+            set { _overshootSetting = value; }
+            get { return _overshootSetting; }
+        }
+
+        internal static string OvershootSettingsName = "OvershootSettings";
+        private int _overshootSetting = 0; // 0: no, 1: right, 2: left
+
+        public int OvershootValue
+        {
+            set { _overshootValue = value; }
+            get { return _overshootValue; }
+        }
+
+        internal static string OvershooValueName = "OvershootValue";
+        private int _overshootValue = 0; 
 
 
         /// <summary>
@@ -90,6 +108,7 @@ namespace ASCOM.Stroblhofwarte
             //TODO: Implement your additional construction here
 
             tl.LogMessage("Focuser", "Completed initialisation");
+            HwAccess.Instance().Setup(tl);
         }
 
 
@@ -189,18 +208,58 @@ namespace ASCOM.Stroblhofwarte
                 tl.LogMessage("Connected", "Set {0}", value);
                 if (value == IsConnected)
                     return;
-
+                if (value && HwAccess.Instance().Connected)
+                {
+                    // Hardware is connected from other device, update 
+                    // some rotator specific variables:
+                    connectedState = true;
+                    HwAccess.Instance().FOC_MotorPowerOff();
+                    HwAccess.Instance().FocuserUsage = true;
+                    return;
+                }
                 if (value)
                 {
-                    connectedState = true;
-                    LogMessage("Connected Set", "Connecting to port {0}", comPort);
-                    // TODO connect to the device
+                    LogMessage("Connected Set", "Connecting to address {0}", comPort);
+                    try
+                    {
+                        LogMessage("Connected Set", "Connecting to port {0}", comPort);
+                        lock (_lock)
+                        {
+                            HwAccess.Instance().Connect(comPort);
+
+                            connectedState = HwAccess.Instance().Connected;
+                            // set the motor power off state again 
+                            // to transmit this setting also to the arduino device:
+                            HwAccess.Instance().FOC_MotorPowerOff();
+                            HwAccess.Instance().FocuserUsage = true;
+                            if(OvershootSetting == 1)
+                            {
+                                HwAccess.Instance().FOC_SetRightOvershoot(OvershootValue);
+                            }
+                            if (OvershootSetting == 2)
+                            {
+                                HwAccess.Instance().FOC_SetLeftOvershoot(OvershootValue);
+                            }
+                            if (!connectedState)
+                            {
+                                HwAccess.Instance().FocuserUsage = false;
+                                connectedState = false;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        connectedState = false;
+                        HwAccess.Instance().FocuserUsage = false;
+                        LogMessage("Connected Set", ex.ToString());
+                    }
                 }
                 else
                 {
                     connectedState = false;
-                    LogMessage("Connected Set", "Disconnecting from port {0}", comPort);
-                    // TODO disconnect from the device
+                    HwAccess.Instance().FocuserUsage = false;
+                    HwAccess.Instance().Close();
+                    LogMessage("Connected Set", "Disconnecting for Focuser from adress {0}", comPort);
                 }
             }
         }
@@ -252,7 +311,7 @@ namespace ASCOM.Stroblhofwarte
         {
             get
             {
-                string name = "Short driver name - please customise";
+                string name = "ASCOM.Stroblhofwarte.Focuser";
                 tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -262,30 +321,27 @@ namespace ASCOM.Stroblhofwarte
 
         #region IFocuser Implementation
 
-        private int focuserPosition = 0; // Class level variable to hold the current focuser position
-        private const int focuserSteps = 10000;
+        private const int focuserSteps = 300000;
 
         public bool Absolute
         {
             get
             {
                 tl.LogMessage("Absolute Get", true.ToString());
-                return true; // This is an absolute focuser
+                return true; 
             }
         }
 
         public void Halt()
         {
-            tl.LogMessage("Halt", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("Halt");
+            HwAccess.Instance().FOC_Halt();
         }
 
         public bool IsMoving
         {
             get
             {
-                tl.LogMessage("IsMoving Get", false.ToString());
-                return false; // This focuser always moves instantaneously so no need for IsMoving ever to be True
+                return HwAccess.Instance().FOC_IsMoving();
             }
         }
 
@@ -317,21 +373,26 @@ namespace ASCOM.Stroblhofwarte
             get
             {
                 tl.LogMessage("MaxStep Get", focuserSteps.ToString());
-                return focuserSteps; // Maximum extent of the focuser, so position range is 0 to 10,000
+                return focuserSteps; 
             }
         }
 
-        public void Move(int Position)
+        public void Move(int position)
         {
-            tl.LogMessage("Move", Position.ToString());
-            focuserPosition = Position; // Set the focuser position
+            long newPos = position;
+            long pos = HwAccess.Instance().FOC_Position();
+            long movement = newPos - pos;
+            if (movement > 0)
+                HwAccess.Instance().FOC_MoveRight(movement);
+            if (movement < 0)
+                HwAccess.Instance().FOC_MoveLeft(-movement);
         }
 
         public int Position
         {
             get
             {
-                return focuserPosition; // Return the focuser position
+                return (int)HwAccess.Instance().FOC_Position();
             }
         }
 
@@ -339,8 +400,7 @@ namespace ASCOM.Stroblhofwarte
         {
             get
             {
-                tl.LogMessage("StepSize Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("StepSize", false);
+                return 1.0;
             }
         }
 
@@ -492,6 +552,9 @@ namespace ASCOM.Stroblhofwarte
                 comPort = driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
                 _fineSteps = Convert.ToInt32(driverProfile.GetValue(driverID, _FineStepsName, string.Empty, "100"));
                 _fastSteps = Convert.ToInt32(driverProfile.GetValue(driverID, _FastStepsName, string.Empty, "1000"));
+                _overshootSetting = Convert.ToInt32(driverProfile.GetValue(driverID, OvershootSettingsName, string.Empty, "0"));
+                _overshootValue = Convert.ToInt32(driverProfile.GetValue(driverID, OvershooValueName, string.Empty, "0"));
+
             }
         }
 
@@ -507,6 +570,8 @@ namespace ASCOM.Stroblhofwarte
                 driverProfile.WriteValue(driverID, comPortProfileName, comPort.ToString());
                 driverProfile.WriteValue(driverID, _FineStepsName, _fineSteps.ToString());
                 driverProfile.WriteValue(driverID, _FastStepsName, _fastSteps.ToString());
+                driverProfile.WriteValue(driverID, OvershootSettingsName, _overshootSetting.ToString());
+                driverProfile.WriteValue(driverID, OvershooValueName, _overshootValue.ToString());
             }
         }
 

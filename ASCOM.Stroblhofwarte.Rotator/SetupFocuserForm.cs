@@ -33,6 +33,7 @@ namespace ASCOM.Stroblhofwarte
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
             tl.Enabled = chkTrace.Checked;
+            Focuser.comPort = (string)comboBoxComPort.SelectedItem;
         }
 
         private void cmdCancel_Click(object sender, EventArgs e) // Cancel button event handler
@@ -62,6 +63,27 @@ namespace ASCOM.Stroblhofwarte
             chkTrace.Checked = tl.Enabled;
             textBoxFineSteps.Text = _driver.FineSteps.ToString();
             textBoxFastSteps.Text = _driver.FastSteps.ToString();
+            textBoxOvershootValue.Text = _driver.OvershootValue.ToString();
+            if (_driver.OvershootSetting == 0)
+            {
+                radioButtonNoOvershoot.Checked = true;
+            }
+            if (_driver.OvershootSetting == 1)
+            {
+                radioButtonOvershootRight.Checked = true;
+            }
+            if (_driver.OvershootSetting == 2)
+            {
+                radioButtonOvershootLeft.Checked = true;
+            }
+            // set the list of com ports to those that are currently available
+            comboBoxComPort.Items.Clear();
+            comboBoxComPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());      // use System.IO because it's static
+            // select the current port if possible
+            if (comboBoxComPort.Items.Contains(Focuser.comPort))
+            {
+                comboBoxComPort.SelectedItem = Focuser.comPort;
+            }
         }
 
         private void buttonSetFineSteps_Click(object sender, EventArgs e)
@@ -93,27 +115,77 @@ namespace ASCOM.Stroblhofwarte
 
         private void buttonMoveAbsolute_Click(object sender, EventArgs e)
         {
-            
+            try
+            {
+                long newPos = Convert.ToInt32(textBoxMoveAbsolute.Text);
+                long pos = HwAccess.Instance().FOC_Position();
+                long movement = newPos - pos;
+                if (movement > 0)
+                    HwAccess.Instance().FOC_MoveRight(movement);
+                if (movement < 0)
+                    HwAccess.Instance().FOC_MoveLeft(-movement);
+            }
+            catch (Exception ex)
+            {
+                // no movement at all!
+            }
         }
 
         private void buttonFineLeft_Click(object sender, EventArgs e)
         {
-
+            HwAccess.Instance().FOC_MoveLeft(_driver.FineSteps);
         }
 
         private void buttonFineRight_Click(object sender, EventArgs e)
         {
-
+            HwAccess.Instance().FOC_MoveRight(_driver.FineSteps);
         }
 
         private void buttonFastLeft_Click(object sender, EventArgs e)
         {
-
+            HwAccess.Instance().FOC_MoveLeft(_driver.FastSteps);
         }
 
         private void buttonFastRight_Click(object sender, EventArgs e)
         {
+            HwAccess.Instance().FOC_MoveRight(_driver.FastSteps);
+        }
 
+        private void buttonOvershoot_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _driver.OvershootValue = Convert.ToInt32(textBoxOvershootValue.Text);
+            } catch(Exception ex)
+            {
+                textBoxOvershootValue.Text = _driver.OvershootValue.ToString();
+            }
+            if (radioButtonNoOvershoot.Checked)
+                _driver.OvershootSetting = 0;
+            if (radioButtonOvershootRight.Checked)
+                _driver.OvershootSetting = 1;
+            if (radioButtonOvershootLeft.Checked)
+                _driver.OvershootSetting = 2;
+            _driver.WriteProfile();
+            if(_driver.OvershootSetting == 0)
+            {
+                HwAccess.Instance().FOC_SetLeftOvershoot(0);
+            }
+            if (_driver.OvershootSetting == 1)
+            {
+                HwAccess.Instance().FOC_SetRightOvershoot(_driver.OvershootValue);
+            }
+            if (_driver.OvershootSetting == 2)
+            {
+                HwAccess.Instance().FOC_SetLeftOvershoot(_driver.OvershootValue);
+            }
+
+        }
+
+        private void timerPosition_Tick(object sender, EventArgs e)
+        {
+            long pos = HwAccess.Instance().FOC_Position();
+            labelPosition.Text = pos.ToString();
         }
     }
 }

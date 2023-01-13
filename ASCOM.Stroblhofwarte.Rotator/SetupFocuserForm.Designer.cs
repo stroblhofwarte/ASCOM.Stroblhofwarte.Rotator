@@ -29,12 +29,12 @@ namespace ASCOM.Stroblhofwarte
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.cmdOK = new System.Windows.Forms.Button();
             this.cmdCancel = new System.Windows.Forms.Button();
             this.picASCOM = new System.Windows.Forms.PictureBox();
             this.label2 = new System.Windows.Forms.Label();
             this.chkTrace = new System.Windows.Forms.CheckBox();
-            this.label3 = new System.Windows.Forms.Label();
             this.textBoxFineSteps = new System.Windows.Forms.TextBox();
             this.textBoxFastSteps = new System.Windows.Forms.TextBox();
             this.buttonSetFineSteps = new System.Windows.Forms.Button();
@@ -49,6 +49,14 @@ namespace ASCOM.Stroblhofwarte
             this.buttonMoveAbsolute = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.labelPosition = new System.Windows.Forms.Label();
+            this.textBoxOvershootValue = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.radioButtonNoOvershoot = new System.Windows.Forms.RadioButton();
+            this.radioButtonOvershootRight = new System.Windows.Forms.RadioButton();
+            this.radioButtonOvershootLeft = new System.Windows.Forms.RadioButton();
+            this.buttonOvershoot = new System.Windows.Forms.Button();
+            this.timerPosition = new System.Windows.Forms.Timer(this.components);
+            this.comboBoxComPort = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -61,7 +69,7 @@ namespace ASCOM.Stroblhofwarte
             this.cmdOK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmdOK.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold);
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.cmdOK.Location = new System.Drawing.Point(567, 327);
+            this.cmdOK.Location = new System.Drawing.Point(567, 388);
             this.cmdOK.Margin = new System.Windows.Forms.Padding(4);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(89, 30);
@@ -79,7 +87,7 @@ namespace ASCOM.Stroblhofwarte
             this.cmdCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmdCancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold);
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.cmdCancel.Location = new System.Drawing.Point(470, 326);
+            this.cmdCancel.Location = new System.Drawing.Point(470, 387);
             this.cmdCancel.Margin = new System.Windows.Forms.Padding(4);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(89, 31);
@@ -109,38 +117,27 @@ namespace ASCOM.Stroblhofwarte
             this.label2.Location = new System.Drawing.Point(22, 50);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(91, 17);
+            this.label2.Size = new System.Drawing.Size(71, 13);
             this.label2.TabIndex = 5;
             this.label2.Text = "Comm Port:";
             // 
             // chkTrace
             // 
             this.chkTrace.AutoSize = true;
-            this.chkTrace.Location = new System.Drawing.Point(367, 333);
+            this.chkTrace.Location = new System.Drawing.Point(367, 394);
             this.chkTrace.Margin = new System.Windows.Forms.Padding(4);
             this.chkTrace.Name = "chkTrace";
-            this.chkTrace.Size = new System.Drawing.Size(95, 21);
+            this.chkTrace.Size = new System.Drawing.Size(77, 17);
             this.chkTrace.TabIndex = 6;
             this.chkTrace.Text = "Trace on";
             this.chkTrace.UseVisualStyleBackColor = true;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.label3.Location = new System.Drawing.Point(121, 50);
-            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(321, 17);
-            this.label3.TabIndex = 7;
-            this.label3.Text = " Is set from ASCOM.Stroblhofwarte.Rotator!";
             // 
             // textBoxFineSteps
             // 
             this.textBoxFineSteps.Location = new System.Drawing.Point(422, 138);
             this.textBoxFineSteps.Margin = new System.Windows.Forms.Padding(4);
             this.textBoxFineSteps.Name = "textBoxFineSteps";
-            this.textBoxFineSteps.Size = new System.Drawing.Size(132, 22);
+            this.textBoxFineSteps.Size = new System.Drawing.Size(132, 19);
             this.textBoxFineSteps.TabIndex = 31;
             this.textBoxFineSteps.Text = "1.0";
             // 
@@ -149,7 +146,7 @@ namespace ASCOM.Stroblhofwarte
             this.textBoxFastSteps.Location = new System.Drawing.Point(423, 197);
             this.textBoxFastSteps.Margin = new System.Windows.Forms.Padding(4);
             this.textBoxFastSteps.Name = "textBoxFastSteps";
-            this.textBoxFastSteps.Size = new System.Drawing.Size(132, 22);
+            this.textBoxFastSteps.Size = new System.Drawing.Size(132, 19);
             this.textBoxFastSteps.TabIndex = 32;
             this.textBoxFastSteps.Text = "1.0";
             // 
@@ -192,7 +189,7 @@ namespace ASCOM.Stroblhofwarte
             this.label8.Location = new System.Drawing.Point(419, 115);
             this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(197, 17);
+            this.label8.Size = new System.Drawing.Size(154, 13);
             this.label8.TabIndex = 35;
             this.label8.Text = "Steps for fine movements:";
             // 
@@ -203,7 +200,7 @@ namespace ASCOM.Stroblhofwarte
             this.label9.Location = new System.Drawing.Point(420, 173);
             this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(197, 17);
+            this.label9.Size = new System.Drawing.Size(154, 13);
             this.label9.TabIndex = 36;
             this.label9.Text = "Steps for fast movements:";
             // 
@@ -276,7 +273,7 @@ namespace ASCOM.Stroblhofwarte
             this.textBoxMoveAbsolute.Location = new System.Drawing.Point(25, 135);
             this.textBoxMoveAbsolute.Margin = new System.Windows.Forms.Padding(4);
             this.textBoxMoveAbsolute.Name = "textBoxMoveAbsolute";
-            this.textBoxMoveAbsolute.Size = new System.Drawing.Size(132, 22);
+            this.textBoxMoveAbsolute.Size = new System.Drawing.Size(132, 19);
             this.textBoxMoveAbsolute.TabIndex = 41;
             this.textBoxMoveAbsolute.Text = "1.0";
             // 
@@ -303,7 +300,7 @@ namespace ASCOM.Stroblhofwarte
             this.label1.Location = new System.Drawing.Point(22, 95);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(71, 17);
+            this.label1.Size = new System.Drawing.Size(56, 13);
             this.label1.TabIndex = 43;
             this.label1.Text = "Position:";
             // 
@@ -315,16 +312,106 @@ namespace ASCOM.Stroblhofwarte
             this.labelPosition.Location = new System.Drawing.Point(101, 95);
             this.labelPosition.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelPosition.Name = "labelPosition";
-            this.labelPosition.Size = new System.Drawing.Size(69, 20);
+            this.labelPosition.Size = new System.Drawing.Size(58, 17);
             this.labelPosition.TabIndex = 44;
             this.labelPosition.Text = "<POS>";
             // 
+            // textBoxOvershootValue
+            // 
+            this.textBoxOvershootValue.Location = new System.Drawing.Point(422, 250);
+            this.textBoxOvershootValue.Margin = new System.Windows.Forms.Padding(4);
+            this.textBoxOvershootValue.Name = "textBoxOvershootValue";
+            this.textBoxOvershootValue.Size = new System.Drawing.Size(132, 19);
+            this.textBoxOvershootValue.TabIndex = 45;
+            this.textBoxOvershootValue.Text = "1.0";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.ForeColor = System.Drawing.Color.Silver;
+            this.label4.Location = new System.Drawing.Point(419, 229);
+            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(103, 13);
+            this.label4.TabIndex = 46;
+            this.label4.Text = "Overshoot steps:";
+            // 
+            // radioButtonNoOvershoot
+            // 
+            this.radioButtonNoOvershoot.AutoSize = true;
+            this.radioButtonNoOvershoot.Location = new System.Drawing.Point(422, 279);
+            this.radioButtonNoOvershoot.Name = "radioButtonNoOvershoot";
+            this.radioButtonNoOvershoot.Size = new System.Drawing.Size(101, 17);
+            this.radioButtonNoOvershoot.TabIndex = 47;
+            this.radioButtonNoOvershoot.TabStop = true;
+            this.radioButtonNoOvershoot.Text = "No overshoot";
+            this.radioButtonNoOvershoot.UseVisualStyleBackColor = true;
+            // 
+            // radioButtonOvershootRight
+            // 
+            this.radioButtonOvershootRight.AutoSize = true;
+            this.radioButtonOvershootRight.Location = new System.Drawing.Point(422, 306);
+            this.radioButtonOvershootRight.Name = "radioButtonOvershootRight";
+            this.radioButtonOvershootRight.Size = new System.Drawing.Size(112, 17);
+            this.radioButtonOvershootRight.TabIndex = 48;
+            this.radioButtonOvershootRight.TabStop = true;
+            this.radioButtonOvershootRight.Text = "Overshoot right";
+            this.radioButtonOvershootRight.UseVisualStyleBackColor = true;
+            // 
+            // radioButtonOvershootLeft
+            // 
+            this.radioButtonOvershootLeft.AutoSize = true;
+            this.radioButtonOvershootLeft.Location = new System.Drawing.Point(422, 333);
+            this.radioButtonOvershootLeft.Name = "radioButtonOvershootLeft";
+            this.radioButtonOvershootLeft.Size = new System.Drawing.Size(105, 17);
+            this.radioButtonOvershootLeft.TabIndex = 49;
+            this.radioButtonOvershootLeft.TabStop = true;
+            this.radioButtonOvershootLeft.Text = "Overshoot left";
+            this.radioButtonOvershootLeft.UseVisualStyleBackColor = true;
+            // 
+            // buttonOvershoot
+            // 
+            this.buttonOvershoot.BackColor = System.Drawing.Color.Gray;
+            this.buttonOvershoot.FlatAppearance.BorderColor = System.Drawing.Color.Gray;
+            this.buttonOvershoot.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonOvershoot.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonOvershoot.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonOvershoot.Location = new System.Drawing.Point(558, 322);
+            this.buttonOvershoot.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonOvershoot.Name = "buttonOvershoot";
+            this.buttonOvershoot.Size = new System.Drawing.Size(100, 28);
+            this.buttonOvershoot.TabIndex = 50;
+            this.buttonOvershoot.Text = "Set";
+            this.buttonOvershoot.UseVisualStyleBackColor = false;
+            this.buttonOvershoot.Click += new System.EventHandler(this.buttonOvershoot_Click);
+            // 
+            // timerPosition
+            // 
+            this.timerPosition.Enabled = true;
+            this.timerPosition.Interval = 600;
+            this.timerPosition.Tick += new System.EventHandler(this.timerPosition_Tick);
+            // 
+            // comboBoxComPort
+            // 
+            this.comboBoxComPort.FormattingEnabled = true;
+            this.comboBoxComPort.Location = new System.Drawing.Point(100, 50);
+            this.comboBoxComPort.Name = "comboBoxComPort";
+            this.comboBoxComPort.Size = new System.Drawing.Size(90, 21);
+            this.comboBoxComPort.TabIndex = 52;
+            // 
             // SetupFocuserForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(34)))), ((int)(((byte)(34)))));
-            this.ClientSize = new System.Drawing.Size(692, 370);
+            this.ClientSize = new System.Drawing.Size(692, 431);
+            this.Controls.Add(this.comboBoxComPort);
+            this.Controls.Add(this.buttonOvershoot);
+            this.Controls.Add(this.radioButtonOvershootLeft);
+            this.Controls.Add(this.radioButtonOvershootRight);
+            this.Controls.Add(this.radioButtonNoOvershoot);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.textBoxOvershootValue);
             this.Controls.Add(this.labelPosition);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.buttonMoveAbsolute);
@@ -339,7 +426,6 @@ namespace ASCOM.Stroblhofwarte
             this.Controls.Add(this.buttonSetFastSteps);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.label9);
-            this.Controls.Add(this.label3);
             this.Controls.Add(this.chkTrace);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.picASCOM);
@@ -368,7 +454,6 @@ namespace ASCOM.Stroblhofwarte
         private System.Windows.Forms.PictureBox picASCOM;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox chkTrace;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox textBoxFineSteps;
         private System.Windows.Forms.TextBox textBoxFastSteps;
         private System.Windows.Forms.Button buttonSetFineSteps;
@@ -383,6 +468,14 @@ namespace ASCOM.Stroblhofwarte
         private System.Windows.Forms.Button buttonMoveAbsolute;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label labelPosition;
+        private System.Windows.Forms.TextBox textBoxOvershootValue;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.RadioButton radioButtonNoOvershoot;
+        private System.Windows.Forms.RadioButton radioButtonOvershootRight;
+        private System.Windows.Forms.RadioButton radioButtonOvershootLeft;
+        private System.Windows.Forms.Button buttonOvershoot;
+        private System.Windows.Forms.Timer timerPosition;
+        private System.Windows.Forms.ComboBox comboBoxComPort;
     }
 
 }

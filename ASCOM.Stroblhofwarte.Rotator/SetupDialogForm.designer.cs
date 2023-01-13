@@ -408,7 +408,7 @@ namespace ASCOM.Stroblhofwarte
             this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox1.Cursor = System.Windows.Forms.Cursors.Hand;
             this.pictureBox1.Image = global::ASCOM.Stroblhofwarte.Properties.Resources.ASCOM;
-            this.pictureBox1.Location = new System.Drawing.Point(741, 5);
+            this.pictureBox1.Location = new System.Drawing.Point(894, 6);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(48, 56);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -430,7 +430,7 @@ namespace ASCOM.Stroblhofwarte
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(34)))), ((int)(((byte)(34)))));
-            this.ClientSize = new System.Drawing.Size(794, 451);
+            this.ClientSize = new System.Drawing.Size(801, 453);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.buttonSetMaxMovement);
             this.Controls.Add(this.label4);

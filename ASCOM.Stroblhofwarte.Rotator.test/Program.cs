@@ -4,7 +4,7 @@
 // This is used to define code in the template that is specific to one class implementation
 // unused code can be deleted and this definition removed.
 
-#define Rotator
+#define Focuser
 // remove this to bypass the code that uses the chooser to select the driver
 #define UseChooser
 
@@ -23,14 +23,14 @@ namespace ASCOM
             // Uncomment the code that's required
 #if UseChooser
             // choose the device
-            string id = ASCOM.DriverAccess.Focuser.Choose("ASCOM.Stroblhofwarte.Rotator.Focuser");
+            string id = ASCOM.DriverAccess.Focuser.Choose("ASCOM.Stroblhofwarte.Focuser");
             if (string.IsNullOrEmpty(id))
                 return;
             // create this device
-            ASCOM.DriverAccess.Rotator device = new ASCOM.DriverAccess.Rotator(id);
+            ASCOM.DriverAccess.Focuser device = new ASCOM.DriverAccess.Focuser(id);
 #else
             // this can be replaced by this code, it avoids the chooser and creates the driver class directly.
-            ASCOM.DriverAccess.Rotator device = new ASCOM.DriverAccess.Rotator("ASCOM.Stroblhofwarte.Rotator");
+            ASCOM.DriverAccess.Focuser device = new ASCOM.DriverAccess.Focuser("ASCOM.Stroblhofwarte.Focuser");
 #endif
             // now run some tests, adding code to your driver so that the tests will pass.
             // these first tests are common to all drivers.
@@ -43,13 +43,9 @@ namespace ASCOM
             device.Connected = true;
 
             //device.SetupDialog();
-            device.MoveMechanical(180);
-            device.MoveMechanical(200);
-            device.MoveMechanical(0);
-
-
-            /*while (true)
-                Thread.Sleep(100);*/
+     
+            while (true)
+                Thread.Sleep(100);
 
             device.Connected = false;
             Console.WriteLine("Press Enter to finish");

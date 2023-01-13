@@ -54,6 +54,7 @@ namespace ASCOM.Stroblhofwarte
             {
                 _serial.Connected = false;
                 _serial.Dispose();
+                Connected = false;
             }
         }
 
@@ -156,6 +157,7 @@ namespace ASCOM.Stroblhofwarte
         {
             if (SetupRequired) return;
             if (!Connected) return;
+            if (!RotatorUsage) return;
             _serial.Transmit("PA:");
             string ret = _serial.ReceiveTerminated("#");
         }
@@ -164,6 +166,7 @@ namespace ASCOM.Stroblhofwarte
         {
             if (SetupRequired) return;
             if (!Connected) return;
+            if (!RotatorUsage) return;
             _serial.Transmit("PP" + pp.ToString(CultureInfo.InvariantCulture) + ":");
             string ret = _serial.ReceiveTerminated("#");
         }
@@ -173,6 +176,7 @@ namespace ASCOM.Stroblhofwarte
             if (val < 0.5) return;
             if (SetupRequired) return;
             if (!Connected) return;
+            if (!RotatorUsage) return;
             _RO_initSpeed = val;
             _serial.Transmit("IS" + _RO_initSpeed.ToString(CultureInfo.InvariantCulture) + ":");
             string ret = _serial.ReceiveTerminated("#");
@@ -188,6 +192,7 @@ namespace ASCOM.Stroblhofwarte
             if (val < 0.5) return;
             if (SetupRequired) return;
             if (!Connected) return;
+            if (!RotatorUsage) return;
             _RO_speed = val;
                
             _serial.Transmit("SP" + _RO_speed.ToString(CultureInfo.InvariantCulture) + ":");
@@ -203,6 +208,7 @@ namespace ASCOM.Stroblhofwarte
         {
             if (SetupRequired) return;
             if (!Connected) return;
+            if (!RotatorUsage) return;
             _serial.Transmit("ST:");
             string ret = _serial.ReceiveTerminated("#");
         }
@@ -211,6 +217,7 @@ namespace ASCOM.Stroblhofwarte
         {
             if (SetupRequired) return false;
             if (!Connected) return false;
+            if (!RotatorUsage) return false;
             LogMessage("IsMoving Get", false.ToString()); // This rotator has instantaneous movement
             _serial.Transmit("MV:");
             string ret = _serial.ReceiveTerminated("#");
@@ -222,7 +229,7 @@ namespace ASCOM.Stroblhofwarte
         {
             if (SetupRequired) return;
             if (!Connected) return;
-           
+            if (!RotatorUsage) return;
             lock (_lock)
             {
                 LogMessage("Move", pos.ToString()); // Move by this amount
@@ -244,7 +251,7 @@ namespace ASCOM.Stroblhofwarte
         {
             if (SetupRequired) return false;
             if (!Connected) return false;
-
+            if (!RotatorUsage) return false;
             lock (_lock)
             {
                 LogMessage("MoveAbsolute", pos.ToString()); // Move to this position
@@ -260,7 +267,7 @@ namespace ASCOM.Stroblhofwarte
         {
             if (SetupRequired) return false;
             if (!Connected) return false;
-
+            if (!RotatorUsage) return false;
             _serial.Transmit("MON:");
             _serial.ReceiveTerminated("#");
             return true;
@@ -270,7 +277,7 @@ namespace ASCOM.Stroblhofwarte
         {
             if (SetupRequired) return false;
             if (!Connected) return false;
-
+            if (!RotatorUsage) return false;
             _serial.Transmit("MOFF:");
             _serial.ReceiveTerminated("#");
             return true;
@@ -280,7 +287,7 @@ namespace ASCOM.Stroblhofwarte
         {
             if (SetupRequired) return 0.0f;
             if (!Connected) return 0.0f;
-           
+            if (!RotatorUsage) return 0.0f;
             lock (_lock)
             {
                 _serial.Transmit("GP:");
@@ -296,6 +303,7 @@ namespace ASCOM.Stroblhofwarte
         {
             if (SetupRequired) return 0.0f;
             if (!Connected) return 0.0f;
+            if (!RotatorUsage) return 0.0f;
             lock (_lock)
             {
                 _serial.Transmit("SZ:");
@@ -309,11 +317,123 @@ namespace ASCOM.Stroblhofwarte
 
         public void RO_Sync(float syncPos)
         {
+            if (SetupRequired) return;
+            if (!Connected) return;
+            if (!RotatorUsage) return;
             LogMessage("Sync", RO_Position().ToString()); // Sync to this position
             string cmd = "SY" + syncPos.ToString(CultureInfo.InvariantCulture) + ":";
             _serial.Transmit(cmd);
             string ret = _serial.ReceiveTerminated("#");
         }
+        #endregion
+
+        #region Focus device access
+
+        public bool FOC_MoveLeft(long steps)
+        {
+            if (SetupRequired) return false;
+            if (!Connected) return false;
+            if (!FocuserUsage) return false;
+            LogMessage("FOC_MoveLeft Get", steps.ToString());
+            _serial.Transmit("FOCTL" + steps.ToString(CultureInfo.InvariantCulture) + ":");
+            string ret = _serial.ReceiveTerminated("#");
+            if (ret == "1#") return true;
+            return false;
+        }
+
+        public bool FOC_MoveRight(long steps)
+        {
+            if (SetupRequired) return false;
+            if (!Connected) return false;
+            if (!FocuserUsage) return false;
+            LogMessage("FOC_MoveRight Get", steps.ToString());
+            _serial.Transmit("FOCTR" + steps.ToString(CultureInfo.InvariantCulture) + ":");
+            string ret = _serial.ReceiveTerminated("#");
+            if (ret == "1#") return true;
+            return false;
+        }
+
+        public void FOC_Halt()
+        {
+            if (SetupRequired) return;
+            if (!Connected) return;
+            if (!FocuserUsage) return;
+            _serial.Transmit("FOCST:");
+            string ret = _serial.ReceiveTerminated("#");
+        }
+
+        public bool FOC_IsMoving()
+        {
+            if (SetupRequired) return false;
+            if (!Connected) return false;
+            if (!FocuserUsage) return false;
+            LogMessage("FOC_IsMoving Get", true.ToString()); // This rotator has instantaneous movement
+            _serial.Transmit("FOCMV:");
+            string ret = _serial.ReceiveTerminated("#");
+            if (ret == "1#") return true;
+            return false;
+        }
+
+        public long FOC_Position()
+        {
+            if (SetupRequired) return 0;
+            if (!Connected) return 0;
+            if (!FocuserUsage) return 0;
+            lock (_lock)
+            {
+                _serial.Transmit("FOCPO:");
+                string ret = _serial.ReceiveTerminated("#");
+                ret = ret.Replace('#', ' ');
+                ret = ret.Trim();
+                long pos = (long)Convert.ToInt32(ret, CultureInfo.InvariantCulture);
+                return pos;
+            }
+        }
+
+        public bool FOC_MotorPowerOn()
+        {
+            if (SetupRequired) return false;
+            if (!Connected) return false;
+            if (!FocuserUsage) return false;
+            _serial.Transmit("FOCMON:");
+            _serial.ReceiveTerminated("#");
+            return true;
+        }
+
+        public bool FOC_MotorPowerOff()
+        {
+            if (SetupRequired) return false;
+            if (!Connected) return false;
+            if (!FocuserUsage) return false;
+            _serial.Transmit("FOCMOFF:");
+            _serial.ReceiveTerminated("#");
+            return true;
+        }
+
+        public bool FOC_SetRightOvershoot(long val)
+        {
+            if (SetupRequired) return false;
+            if (!Connected) return false;
+            if (!FocuserUsage) return false;
+            LogMessage("FOC_SetRightOvershoot Get", val.ToString());
+            _serial.Transmit("FOCOVERR" + val.ToString(CultureInfo.InvariantCulture) + ":");
+            string ret = _serial.ReceiveTerminated("#");
+            if (ret == "1#") return true;
+            return false;
+        }
+
+        public bool FOC_SetLeftOvershoot(long val)
+        {
+            if (SetupRequired) return false;
+            if (!Connected) return false;
+            if (!FocuserUsage) return false;
+            LogMessage("FOC_SetLeftOvershoot Get", val.ToString());
+            _serial.Transmit("FOCOVERL" + val.ToString(CultureInfo.InvariantCulture) + ":");
+            string ret = _serial.ReceiveTerminated("#");
+            if (ret == "1#") return true;
+            return false;
+        }
+
         #endregion
 
         private void LogMessage(string identifier, string message, params object[] args)

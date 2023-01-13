@@ -1,4 +1,4 @@
-
+// ------------------------------------------------ Rotator
 #define STEP 3
 #define DIR  6
 #define EN   8
@@ -94,9 +94,96 @@ float g_parkpos;
 
 bool _notMotorPowerOff = false;
 
+// ---------------------------------------------------- Focuser
+
+#define FOC_STEP 2
+#define FOC_DIR  5
+#define FOC_EN   8
+
+#define FOC_GEAR_RATIO 1.0
+
+long FOC_OVERSHOOT_RIGHT= 0;
+long FOC_OVERSHOOT_LEFT= 0;
+
+// Enable only one stepper motor driver!
+//#define NODRV
+#define FOC_DRV8825 // TMC2130 SilentStick with SPI jumper closed (Standalone) and all three jumpers open (1/16 µStepping interpolate to 256 steps, realy silent!)
+//#define DRV8825 // DRV8825: Must be set to 32 microsteps
+//#define DRVST810 // ST820: Must be set to 256 microsteps
+///////////////////////////////////////
+
+#ifdef FOC_TMC2130_STANDALONE
+  #define FOC_STEPPER_ENABLE LOW
+  #define FOC_STEPPER_DISABLE HIGH
+
+  #define FOC_RIGHT_DIRECTION HIGH
+  #define FOC_LEFT_DIRECTION LOW
+  #define FOC_STEP_DELAY_US 1600
+  #define FOC_STEPS_PER_REVOLUTION 3200 * FOC_GEAR_RATIO
+#endif
+
+
+#ifdef FOC_DRV8825
+  #define FOC_STEPPER_ENABLE LOW
+  #define FOC_STEPPER_DISABLE HIGH
+
+  #define FOC_RIGHT_DIRECTION HIGH
+  #define FOC_LEFT_DIRECTION LOW
+  #define FOC_STEP_DELAY_US 100
+  #define FOC_STEPS_PER_REVOLUTION 6400 * FOC_GEAR_RATIO
+#endif
+
+#ifdef FOC_ST820
+  #define FOC_STEPPER_ENABLE HIGH
+  #define FOC_STEPPER_DISABLE LOW
+
+  #define FOC_RIGHT_DIRECTION LOW
+  #define FOC_LEFT_DIRECTION HIGH
+  #define FOC_STEP_DELAY_US 100
+  #define FOC_STEPS_PER_REVOLUTION 51200 * FOC_GEAR_RATIO
+  
+#endif
+
+#ifdef FOC_NODRV
+  #define FOC_STEPPER_ENABLE LOW
+  #define FOC_STEPPER_DISABLE HIGH
+
+  #define FOC_RIGHT_DIRECTION LOW
+  #define FOC_LEFT_DIRECTION HIGH
+
+  #define FOC_STEPS_PER_REVOLUTION 0
+#endif
+
+#define FOC_CMD_TURN_RIGHT "FOCTR"
+#define FOC_CMD_TURN_LEFT "FOCTL"
+#define FOC_CMD_STOP "FOCST"
+#define FOC_CMD_IS_MOVING "FOCMV"
+#define FOC_CMD_POS "FOCPO"
+#define FOC_CMD_MOTOR_POWER_OFF "FOCMOFF"
+#define FOC_CMD_MOTOR_POWER_ON "FOCMON"
+#define FOC_CMD_OVERSHOOT_RIGHT "FOCOVERR"
+#define FOC_CMD_OVERSHOOT_LEFT "FOCOVERL"
+
+int g_foc_speed;
+long g_foc_pos_mech = 150000;
+long g_foc_pos_goal = 0;
+
+bool _foc_notMotorPowerOff = false;
+
+#define FOC_OBVERSHOOT_DONE 0
+#define FOC_OVERSHOOT_DIR_RIGHT 1
+#define FOC_OVERSHOOT_DIR_LEFT 2
+int g_foc_overshoot_handling = FOC_OBVERSHOOT_DONE;
+long g_foc_powerOffTimeout = 0;
+#define FOC_POWERTIMEOUT 1000
+
+// --------------------------------
+
 String g_command = "";
 bool g_commandComplete = false;
 String g_info = "Not initialized yet.";
+bool g_focuserOperation = false;
+bool g_rotatorOperation = false;
 
 void setup() { 
   pinMode(STEP, OUTPUT);
@@ -109,6 +196,13 @@ void setup() {
   g_max_steps = FromDegreeToStep(MAX_ANGLE);
   g_speed = STEP_DELAY_US;
   g_init_speed = STEP_DELAY_US;
+
+  pinMode(FOC_STEP, OUTPUT);
+  pinMode(FOC_DIR, OUTPUT);
+  pinMode(FOC_EN, OUTPUT);
+  digitalWrite(FOC_EN, FOC_STEPPER_DISABLE);
+  g_foc_speed = FOC_STEP_DELAY_US;
+  
   Serial.begin(9600);
 }
 
@@ -120,6 +214,97 @@ void initialize()
   g_is_init = true;
   g_info = "Ready.";
 }
+
+// Region: Focuser
+
+void FocMoveRight(long steps)
+{
+  g_foc_pos_goal = g_foc_pos_mech + steps;
+}
+
+void FocMoveLeft(long steps)
+{
+  g_foc_pos_goal = g_foc_pos_mech -  steps;
+}
+
+long FocExtract(String cmdid, String cmdstring)
+{
+  cmdstring.remove(0, cmdid.length());
+  cmdstring.replace(':', ' ');
+  cmdstring.trim();
+  char tarray[32];
+  cmdstring.toCharArray(tarray, sizeof(tarray));
+  long steps = atol(tarray);
+  return steps;
+}
+
+bool FocDispatcher()
+{
+  if(g_command.startsWith(FOC_CMD_TURN_RIGHT))
+  {
+    long val = Extract(FOC_CMD_TURN_RIGHT, g_command);
+    long steps = val + FOC_OVERSHOOT_RIGHT;
+    g_foc_overshoot_handling = FOC_OVERSHOOT_DIR_RIGHT;
+    FocMoveRight(steps);
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_TURN_LEFT))
+  {
+    long val = Extract(FOC_CMD_TURN_RIGHT, g_command);
+    long steps = val + FOC_OVERSHOOT_LEFT;
+    g_foc_overshoot_handling = FOC_OVERSHOOT_DIR_LEFT;
+    FocMoveLeft(steps);
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_STOP))
+  {
+    g_foc_pos_goal = g_foc_pos_mech;
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_IS_MOVING))
+  {
+    if(g_foc_pos_goal == g_foc_pos_mech) 
+      Serial.print("0#");
+    else
+      Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_MOTOR_POWER_OFF))
+  {
+    _foc_notMotorPowerOff = false;
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_MOTOR_POWER_ON))
+  {
+    _foc_notMotorPowerOff = true;
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_POS))
+  {
+    Serial.print(g_foc_pos_mech);
+    Serial.print("#");
+  }
+  else if(g_command.startsWith(FOC_CMD_OVERSHOOT_RIGHT))
+  {
+    long val = Extract(FOC_CMD_OVERSHOOT_RIGHT, g_command);
+    long steps = val;
+    FOC_OVERSHOOT_RIGHT = steps;
+    FOC_OVERSHOOT_LEFT = 0;
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_OVERSHOOT_LEFT))
+  {
+    long val = Extract(FOC_CMD_OVERSHOOT_LEFT, g_command);
+    long steps = val;
+    FOC_OVERSHOOT_LEFT = steps;
+    FOC_OVERSHOOT_RIGHT  = 0;
+    Serial.print("1#");
+  }
+  else
+    return false;
+  return true;
+}
+
+// Region: Rotator
 
 long FromDegreeToStep(float deg)
 {
@@ -280,7 +465,10 @@ void Dispatcher()
     Serial.print("1#");
   }
   else
-    Serial.print("0#");
+  {
+    if(!FocDispatcher())
+      Serial.print("0#");
+  }
   
   g_command = "";
   g_commandComplete = false;
@@ -294,8 +482,10 @@ void loop() {
   if(g_perform_init == false && g_is_init == false)
       return;
 
-  if(g_pos_goal > g_pos_mech)
+  // ***********************************************   Rotator:
+  if(g_pos_goal > g_pos_mech && g_focuserOperation == false)
   {
+    g_rotatorOperation = true;
     digitalWrite(EN, STEPPER_ENABLE);
     digitalWrite(DIR, RIGHT_DIRECTION);
    
@@ -307,8 +497,9 @@ void loop() {
     digitalWrite(STEP, LOW); 
     g_pos_mech++;
   }
-  if(g_pos_goal < g_pos_mech)
+  if(g_pos_goal < g_pos_mech && g_focuserOperation == false)
   {
+    g_rotatorOperation = true;
     digitalWrite(EN, STEPPER_ENABLE);
     digitalWrite(DIR, LEFT_DIRECTION);
    
@@ -355,6 +546,55 @@ void loop() {
   }
   if(g_pos_goal == g_pos_mech && _notMotorPowerOff == false)
     digitalWrite(EN, STEPPER_DISABLE); 
+  if(g_pos_goal == g_pos_mech)
+    g_rotatorOperation = false;
+  // ***********************************************   Focuser:
+  if(millis() - g_foc_powerOffTimeout > 1000 && g_foc_pos_goal == g_foc_pos_mech)
+  {
+    g_focuserOperation = false;
+    if(g_foc_pos_goal == g_foc_pos_mech && _foc_notMotorPowerOff == false)
+      digitalWrite(FOC_EN, FOC_STEPPER_DISABLE); 
+  }
+  if(g_foc_pos_goal > g_foc_pos_mech && g_rotatorOperation == false)
+  {
+    g_focuserOperation = true;
+    digitalWrite(FOC_EN, FOC_STEPPER_ENABLE);
+    digitalWrite(FOC_DIR, FOC_RIGHT_DIRECTION);
+   
+    delayMicroseconds(g_foc_speed);
+    digitalWrite(FOC_STEP, HIGH); 
+    delayMicroseconds(g_foc_speed);
+    digitalWrite(FOC_STEP, LOW); 
+    g_foc_pos_mech++;
+    g_foc_powerOffTimeout = millis();
+  }
+  if(g_foc_pos_goal < g_foc_pos_mech && g_rotatorOperation == false)
+  {
+    g_focuserOperation = true;
+    digitalWrite(FOC_EN, FOC_STEPPER_ENABLE);
+    digitalWrite(FOC_DIR, FOC_LEFT_DIRECTION);
+   
+    delayMicroseconds(g_foc_speed);
+    digitalWrite(FOC_STEP, HIGH); 
+    delayMicroseconds(g_foc_speed);
+    digitalWrite(FOC_STEP, LOW); 
+    g_foc_pos_mech--;
+    g_foc_powerOffTimeout = millis();
+  }
+  if(g_foc_pos_goal == g_foc_pos_mech && g_foc_overshoot_handling != FOC_OBVERSHOOT_DONE)
+  {
+    // Overshoot handling
+    if(g_foc_overshoot_handling == FOC_OVERSHOOT_DIR_RIGHT)
+    {
+      g_foc_overshoot_handling = FOC_OBVERSHOOT_DONE;
+      FocMoveLeft(FOC_OVERSHOOT_RIGHT);
+    }
+    if(g_foc_overshoot_handling == FOC_OVERSHOOT_DIR_LEFT)
+    {
+      g_foc_overshoot_handling = FOC_OBVERSHOOT_DONE;
+      FocMoveRight(FOC_OVERSHOOT_LEFT);
+    }
+  }
 }
 
 void serialEvent() {
