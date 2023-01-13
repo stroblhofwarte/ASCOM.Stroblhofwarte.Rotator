@@ -165,7 +165,7 @@ long FOC_OVERSHOOT_LEFT= 0;
 #define FOC_CMD_OVERSHOOT_LEFT "FOCOVERL"
 
 int g_foc_speed;
-long g_foc_pos_mech = 150000;
+long g_foc_pos_mech = 0;
 long g_foc_pos_goal = 0;
 
 bool _foc_notMotorPowerOff = false;

@@ -328,7 +328,7 @@ namespace ASCOM.Stroblhofwarte
             get
             {
                 tl.LogMessage("Absolute Get", true.ToString());
-                return true; 
+                return false; 
             }
         }
 
@@ -379,6 +379,11 @@ namespace ASCOM.Stroblhofwarte
 
         public void Move(int position)
         {
+            if (position > 0)
+                HwAccess.Instance().FOC_MoveRight(position);
+            if (position < 0)
+                HwAccess.Instance().FOC_MoveLeft(-position);
+            return;
             long newPos = position;
             long pos = HwAccess.Instance().FOC_Position();
             long movement = newPos - pos;
@@ -392,6 +397,8 @@ namespace ASCOM.Stroblhofwarte
         {
             get
             {
+                tl.LogMessage("Position", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("Position", false);
                 return (int)HwAccess.Instance().FOC_Position();
             }
         }
