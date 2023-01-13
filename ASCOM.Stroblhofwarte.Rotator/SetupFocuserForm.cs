@@ -23,7 +23,7 @@ namespace ASCOM.Stroblhofwarte
             // Save the provided trace logger for use within the setup dialogue
             _driver = driver;
             tl = _driver.Logger;
-
+            _driver.ReadProfile();
             // Initialise current values of user settings from the ASCOM Profile
             InitUI();
         }
@@ -32,7 +32,6 @@ namespace ASCOM.Stroblhofwarte
         {
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
-            Focuser.comPort = (string)comboBoxComPort.SelectedItem;
             tl.Enabled = chkTrace.Checked;
         }
 
@@ -61,14 +60,60 @@ namespace ASCOM.Stroblhofwarte
         private void InitUI()
         {
             chkTrace.Checked = tl.Enabled;
-            // set the list of com ports to those that are currently available
-            comboBoxComPort.Items.Clear();
-            comboBoxComPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());      // use System.IO because it's static
-            // select the current port if possible
-            if (comboBoxComPort.Items.Contains(Focuser.comPort))
+            textBoxFineSteps.Text = _driver.FineSteps.ToString();
+            textBoxFastSteps.Text = _driver.FastSteps.ToString();
+        }
+
+        private void buttonSetFineSteps_Click(object sender, EventArgs e)
+        {
+            try
             {
-                comboBoxComPort.SelectedItem = Focuser.comPort;
+                _driver.FineSteps = Convert.ToInt32(textBoxFineSteps.Text);
+                _driver.WriteProfile();
+            } catch(Exception ex)
+            {
+                // Keep old value
+                textBoxFineSteps.Text = _driver.FineSteps.ToString();
             }
+        }
+
+        private void buttonSetFastSteps_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _driver.FastSteps = Convert.ToInt32(textBoxFastSteps.Text);
+                _driver.WriteProfile();
+            }
+            catch (Exception ex)
+            {
+                // Keep old value
+                textBoxFastSteps.Text = _driver.FastSteps.ToString();
+            }
+        }
+
+        private void buttonMoveAbsolute_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void buttonFineLeft_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonFineRight_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonFastLeft_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonFastRight_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

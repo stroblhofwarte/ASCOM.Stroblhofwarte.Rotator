@@ -25,7 +25,7 @@ namespace ASCOM.Stroblhofwarte
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM Focuser Driver for Stroblhof.Rotator.";
+        private static string driverDescription = "ASCOM Focuser Driver for Stroblhofwarte.Rotator.";
 
         internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
         internal static string comPortDefault = "COM1";
@@ -33,6 +33,25 @@ namespace ASCOM.Stroblhofwarte
         internal static string traceStateDefault = "false";
 
         internal static string comPort; // Variables to hold the current device configuration
+
+
+        internal static string _FineStepsName = "FineSteps";
+        private int _fineSteps = 100;
+        public int FineSteps
+        {
+            set { _fineSteps = value; }
+            get { return _fineSteps; }
+        }
+
+        public int FastSteps
+        {
+            set { _fastSteps = value; }
+            get { return _fastSteps; }
+        }
+
+        internal static string _FastStepsName = "FastSteps";
+        private int _fastSteps = 1000;
+
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -55,12 +74,12 @@ namespace ASCOM.Stroblhofwarte
         internal TraceLogger tl;
         public TraceLogger Logger { get { return tl; } }
         /// <summary>
-        /// Initializes a new instance of the <see cref="Stroblhof.Rotator.Focuser"/> class.
+        /// Initializes a new instance of the <see cref="Stroblhofwarte.Focuser"/> class.
         /// Must be public for COM registration.
         /// </summary>
         public Focuser()
         {
-            tl = new TraceLogger("", "Stroblhof.Rotator.Focuser");
+            tl = new TraceLogger("", "Stroblhofwarte.Focuser");
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             tl.LogMessage("Focuser", "Starting initialisation");
@@ -471,6 +490,8 @@ namespace ASCOM.Stroblhofwarte
                 driverProfile.DeviceType = "Focuser";
                 tl.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
                 comPort = driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
+                _fineSteps = Convert.ToInt32(driverProfile.GetValue(driverID, _FineStepsName, string.Empty, "100"));
+                _fastSteps = Convert.ToInt32(driverProfile.GetValue(driverID, _FastStepsName, string.Empty, "1000"));
             }
         }
 
@@ -484,6 +505,8 @@ namespace ASCOM.Stroblhofwarte
                 driverProfile.DeviceType = "Focuser";
                 driverProfile.WriteValue(driverID, traceStateProfileName, tl.Enabled.ToString());
                 driverProfile.WriteValue(driverID, comPortProfileName, comPort.ToString());
+                driverProfile.WriteValue(driverID, _FineStepsName, _fineSteps.ToString());
+                driverProfile.WriteValue(driverID, _FastStepsName, _fastSteps.ToString());
             }
         }
 
