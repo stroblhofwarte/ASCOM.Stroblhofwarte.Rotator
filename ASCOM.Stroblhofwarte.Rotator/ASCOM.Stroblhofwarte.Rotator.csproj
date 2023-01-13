@@ -117,6 +117,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Focuser.cs" />
     <Compile Include="Rotator.cs" />
     <Compile Include="HwAccess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -135,6 +136,12 @@
     </Compile>
     <Compile Include="SetupDialogForm.designer.cs">
       <DependentUpon>SetupDialogForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SetupFocuserForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SetupFocuserForm.Designer.cs">
+      <DependentUpon>SetupFocuserForm.cs</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
