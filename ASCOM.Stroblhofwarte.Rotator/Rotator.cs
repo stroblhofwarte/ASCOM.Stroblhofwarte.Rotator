@@ -103,9 +103,7 @@ namespace ASCOM.Stroblhofwarte
         internal static string comPortDefault = "COM1";
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
-
-        internal static string comPort; 
-        private ASCOM.Utilities.Serial _serial;
+        internal static string comPort = "COM1";
 
         private bool _isReverse = false;
 
@@ -164,6 +162,7 @@ namespace ASCOM.Stroblhofwarte
             astroUtilities = new AstroUtils(); // Initialise astro-utilities object
            
             tl.LogMessage("Rotator", "Completed initialisation");
+            HwAccess.Instance().Setup(tl);
         }
 
 
@@ -205,16 +204,14 @@ namespace ASCOM.Stroblhofwarte
             {
                 _doNotSwitchPowerOff = value;
                 WriteProfile();
-                if (!connectedState) return;
+                
                 if(value)
                 {
-                    _serial.Transmit("MON:");
-                    _serial.ReceiveTerminated("#");
+                    HwAccess.Instance().RO_MotorPowerOn();
                 }
                 else
                 {
-                    _serial.Transmit("MOFF:");
-                    _serial.ReceiveTerminated("#");
+                    HwAccess.Instance().RO_MotorPowerOff();
                 }
             }
         }
@@ -265,53 +262,6 @@ namespace ASCOM.Stroblhofwarte
             astroUtilities = null;
         }
 
-        private bool CheckForStroblRotatorDevice()
-        {
-            lock (_lock)
-            {
-                string idString = String.Empty;
-                int retry = 3;
-                while(idString != "ROTATOR#")
-                {
-                    try
-                    {
-                        _serial.Transmit("ID:");
-                        idString = _serial.ReceiveTerminated("#");
-                    }
-                    catch(Exception ex)
-                    {
-                        retry--;
-                        if (retry == 0) return false;
-                        continue;
-                    }
-                }
-                return true;
-            }
-        }
-
-        private string GetInfoString()
-        {
-            if (!connectedState) return "Not connected.";
-            lock (_lock)
-            {
-                _serial.Transmit("IF:");
-                string ret = _serial.ReceiveTerminated("#");
-                ret = ret.Replace('#', ' ');
-                ret = ret.Trim();
-                return ret;
-            }
-        }
-
-        private void InitHardware()
-        {
-            if (!connectedState) return;
-            lock (_lock)
-            {
-                _serial.Transmit("IN:");
-                string ret = _serial.ReceiveTerminated("#");
-            }
-        }
-
         public bool Connected
         {
             get
@@ -324,6 +274,20 @@ namespace ASCOM.Stroblhofwarte
                 tl.LogMessage("Connected", "Set {0}", value);
                 if (value == IsConnected)
                     return;
+                if(value && HwAccess.Instance().Connected)
+                {
+                    // Hardware is connected from other device, update 
+                    // some rotator specific variables:
+                    connectedState = true;
+                    bool state = DoNotSwitchOffMotorPower;
+                    DoNotSwitchOffMotorPower = state;
+                    HwAccess.Instance().RO_SetPark(_parkPosition);
+                    HwAccess.Instance().RO_SetInitSpeed(_initSpeed);
+                    HwAccess.Instance().RO_SetSpeed(_speed);
+                    MaxMovement = _maxMovement;
+                    HwAccess.Instance().RotatorUsage = true;
+                    return;
+                }
                 if (value)
                 {
                     LogMessage("Connected Set", "Connecting to address {0}", comPort);
@@ -332,29 +296,20 @@ namespace ASCOM.Stroblhofwarte
                         LogMessage("Connected Set", "Connecting to port {0}", comPort);
                         lock (_lock)
                         {
-                            _serial = new ASCOM.Utilities.Serial();
-                            _serial.PortName = comPort;
-                            _serial.StopBits = SerialStopBits.One;
-                            _serial.Parity = SerialParity.None;
-                            _serial.Speed = SerialSpeed.ps9600;
-                            _serial.DTREnable = false;
-                            _serial.Connected = true;
-                            if (CheckForStroblRotatorDevice())
+                            HwAccess.Instance().Connect(comPort);
+
+                            connectedState = HwAccess.Instance().Connected;
+                            // set the motor power off state again 
+                            // to transmit this setting also to the arduino device:
+                            bool state = DoNotSwitchOffMotorPower;
+                            DoNotSwitchOffMotorPower = state;
+                            HwAccess.Instance().RO_SetPark(_parkPosition);
+                            HwAccess.Instance().RO_SetInitSpeed(_initSpeed);
+                            HwAccess.Instance().RO_SetSpeed(_speed);
+                            MaxMovement = _maxMovement;
+                            if(connectedState)
                             {
-                                connectedState = true;
-                                // set the motor power off state again 
-                                // to transmit this setting also to the arduino device:
-                                bool state = DoNotSwitchOffMotorPower;
-                                DoNotSwitchOffMotorPower = state;
-                                SetPark(_parkPosition);
-                                InitSpeed = _initSpeed;
-                                Speed = _speed;
-                                MaxMovement = _maxMovement;
-                                string inf = GetInfoString();
-                                if(inf == "Not initialized yet.")
-                                {
-                                    InitHardware();
-                                }
+                                HwAccess.Instance().InitHardware();
                             }
                             else
                                 connectedState = false;
@@ -362,17 +317,16 @@ namespace ASCOM.Stroblhofwarte
                     }
                     catch (Exception ex)
                     {
-                        _serial.Connected = false;
-                        _serial.Dispose();
+                        connectedState = false;
                         LogMessage("Connected Set", ex.ToString());
                     }
                 }
                 else
                 {
                     connectedState = false;
-                    _serial.Connected = false;
-                    _serial.Dispose();
-                    LogMessage("Connected Set", "Disconnecting from adress {0}", comPort);
+                    HwAccess.Instance().RotatorUsage = false;
+                    HwAccess.Instance().Close();
+                    LogMessage("Connected Set", "Disconnecting for Rotator from adress {0}", comPort);
                 }
  
             }
@@ -392,7 +346,7 @@ namespace ASCOM.Stroblhofwarte
             get
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                string driverInfo = "Stroblhowarte Rotator: " + GetInfoString();
+                string driverInfo = "Stroblhowarte Rotator: " + HwAccess.Instance().GetInfoString();
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -444,20 +398,23 @@ namespace ASCOM.Stroblhofwarte
 
         public void Park()
         {
-            if (!connectedState) return;
-            _serial.Transmit("PA:");
-            string ret = _serial.ReceiveTerminated("#");
+            HwAccess.Instance().RO_Park();
         }
 
         public void SetPark(float pp)
         {
             _parkPosition = pp;
             WriteProfile();
-            if (!connectedState) return;
-            _serial.Transmit("PP" + pp.ToString(CultureInfo.InvariantCulture) + ":");
-            string ret = _serial.ReceiveTerminated("#");
+            HwAccess.Instance().RO_SetPark(pp);
         }
 
+        public float Position
+        {
+            get
+            {
+                return FromMechanicalPositionToSyncPosition(HwAccess.Instance().RO_Position());
+            }
+        }
         public float InitSpeed
         {
             set
@@ -465,10 +422,7 @@ namespace ASCOM.Stroblhofwarte
                 if (value < 0.5) return;
                 _initSpeed = value;
                 WriteProfile();
-                if (!connectedState) return;
-                _serial.Transmit("IS" + _initSpeed.ToString(CultureInfo.InvariantCulture) + ":");
-                string ret = _serial.ReceiveTerminated("#");
-                
+                HwAccess.Instance().RO_SetInitSpeed(value);
             }
             get
             {
@@ -483,10 +437,7 @@ namespace ASCOM.Stroblhofwarte
                 if (value < 0.5) return;
                 _speed = value;
                 WriteProfile();
-                if (!connectedState) return;
-                _serial.Transmit("SP" + _speed.ToString(CultureInfo.InvariantCulture) + ":");
-                string ret = _serial.ReceiveTerminated("#");
-                
+                HwAccess.Instance().RO_SetSpeed(value);
             }
             get
             {
@@ -510,45 +461,24 @@ namespace ASCOM.Stroblhofwarte
         }
         public void Halt()
         {
-            if (!connectedState) return;
-            _serial.Transmit("ST:");
-            string ret = _serial.ReceiveTerminated("#");
+            HwAccess.Instance().RO_Halt();
         }
 
         public bool IsMoving
         {
             get
             {
-                if (!connectedState) return false;
-                tl.LogMessage("IsMoving Get", false.ToString()); // This rotator has instantaneous movement
-                _serial.Transmit("MV:");
-                string ret = _serial.ReceiveTerminated("#");
-                if (ret == "1#") return true;
-                return false;
+                return HwAccess.Instance().RO_IsMoving();
             }
         }
 
         public void Move(float pos)
         {
             if (!connectedState) return;
-            _targetPosition = Position + pos;
+            _targetPosition = HwAccess.Instance().RO_Position() + pos;
             // Check if the maximal rotation value is exceeded:
             if (FromSyncPositionToMechanicalPosition(_targetPosition) > _maxMovement) return;
-            lock (_lock)
-            {
-                tl.LogMessage("Move", pos.ToString()); // Move by this amount
-                if (pos > 0)
-                {
-                    _serial.Transmit("TR" + pos.ToString(CultureInfo.InvariantCulture) + ":");
-                    _isReverse = false;
-                }
-                if (pos < 0)
-                {
-                    _serial.Transmit("TL" + (-pos).ToString(CultureInfo.InvariantCulture) + ":");
-                    _isReverse = true;
-                }
-                string ret = _serial.ReceiveTerminated("#");
-            }
+             HwAccess.Instance().RO_Move(pos);
         }
 
         public void MoveAbsolute(float pos)
@@ -558,13 +488,7 @@ namespace ASCOM.Stroblhofwarte
             // Check if the maximal rotation value is exceeded:
             if (FromSyncPositionToMechanicalPosition(_targetPosition) > _maxMovement) return;
             float truePos = FromSyncPositionToMechanicalPosition(pos);
-            lock (_lock)
-            {
-                tl.LogMessage("MoveAbsolute", truePos.ToString()); // Move to this position
-                string cmd = "TA" + truePos.ToString(CultureInfo.InvariantCulture) + ":";
-                _serial.Transmit(cmd);
-                string ret = _serial.ReceiveTerminated("#");
-            }
+            HwAccess.Instance().RO_MoveAbsolute(truePos);
         }
 
         public float FromMechanicalPositionToSyncPosition(float mechPos)
@@ -575,23 +499,6 @@ namespace ASCOM.Stroblhofwarte
         public float FromSyncPositionToMechanicalPosition(float syncPos)
         {
             return syncPos;
-        }
-
-        public float Position
-        {
-            get
-            {
-                if (!connectedState) return 0.0f;
-                lock (_lock)
-                {
-                    _serial.Transmit("GP:");
-                    string ret = _serial.ReceiveTerminated("#");
-                    ret = ret.Replace('#', ' ');
-                    ret = ret.Trim();
-                    float pos = (float)Convert.ToDouble(ret, CultureInfo.InvariantCulture);
-                    return FromMechanicalPositionToSyncPosition(pos);
-                }
-            }
         }
 
         public bool Reverse
@@ -610,16 +517,7 @@ namespace ASCOM.Stroblhofwarte
         {
             get
             {
-                if (!connectedState) return 0.0f;
-                lock (_lock)
-                {
-                    _serial.Transmit("SZ:");
-                    string ret = _serial.ReceiveTerminated("#");
-                    ret = ret.Replace('#', ' ');
-                    ret = ret.Trim();
-                    float size = (float)Convert.ToDouble(ret, CultureInfo.InvariantCulture);
-                    return size;
-                }
+                return HwAccess.Instance().RO_StepSize();
             }
         }
 
@@ -637,39 +535,20 @@ namespace ASCOM.Stroblhofwarte
         {
             get
             {
-                if (!connectedState) return 0.0f;
-                lock (_lock)
-                {
-                    _serial.Transmit("GP:");
-                    string ret = _serial.ReceiveTerminated("#");
-                    ret = ret.Replace('#', ' ');
-                    ret = ret.Trim();
-                    float pos = (float)Convert.ToDouble(ret, CultureInfo.InvariantCulture);
-                    return pos;
-                }
+                return HwAccess.Instance().RO_Position();
             }
         }
 
         public void MoveMechanical(float pos)
         {
-            if (!connectedState) return;
             // Check if the maximal rotation value is exceeded:
             if (pos > _maxMovement) return;
-            lock (_lock)
-            {
-                tl.LogMessage("MoveAbsolute", pos.ToString()); // Move to this position
-                string cmd = "TA" + pos.ToString(CultureInfo.InvariantCulture) + ":";
-                _serial.Transmit(cmd);
-                string ret = _serial.ReceiveTerminated("#");
-            }
+            HwAccess.Instance().RO_MoveAbsolute(pos);
         }
 
         public void Sync(float syncPos)
         {
-            tl.LogMessage("Sync", Position.ToString()); // Sync to this position
-            string cmd = "SY" + syncPos.ToString(CultureInfo.InvariantCulture) + ":";
-            _serial.Transmit(cmd);
-            string ret = _serial.ReceiveTerminated("#");
+            HwAccess.Instance().RO_Sync(syncPos);
         }
 
         public void ResetSync()

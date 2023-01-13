@@ -36,7 +36,8 @@ namespace ASCOM.Stroblhofwarte
         private object _lock = new object();
         private TraceLogger _tl = null;
         public bool SetupRequired { get; private set; }
-
+        public bool RotatorUsage { get; set; }
+        public bool FocuserUsage { get; set; }
 
         #region Ctor
 
@@ -47,16 +48,25 @@ namespace ASCOM.Stroblhofwarte
 
         #endregion
 
-        public void Setup(TraceLogger tl, string port)
+        public void Close()
+        {
+            if(!RotatorUsage && !FocuserUsage)
+            {
+                _serial.Connected = false;
+                _serial.Dispose();
+            }
+        }
+
+        public void Setup(TraceLogger tl)
         {
             _tl = tl;
-            comPort = port;
             SetupRequired = false;
         }
 
-        public bool Connect()
+        public bool Connect(string port)
         {
             if (SetupRequired) return false;
+            comPort = port;
             try
             {
                 LogMessage("Connected Set", "Connecting to port {0}", comPort);
@@ -116,7 +126,7 @@ namespace ASCOM.Stroblhofwarte
             }
         }
 
-        private string GetInfoString()
+        public string GetInfoString()
         {
             if (SetupRequired) return "Not connected.";
             if (!Connected) return "Not connected.";
@@ -130,7 +140,7 @@ namespace ASCOM.Stroblhofwarte
             }
         }
 
-        private void InitHardware()
+        public void InitHardware()
         {
             if (SetupRequired) return;
             if (!Connected) return;
@@ -266,6 +276,44 @@ namespace ASCOM.Stroblhofwarte
             return true;
         }
 
+        public float RO_Position()
+        {
+            if (SetupRequired) return 0.0f;
+            if (!Connected) return 0.0f;
+           
+            lock (_lock)
+            {
+                _serial.Transmit("GP:");
+                string ret = _serial.ReceiveTerminated("#");
+                ret = ret.Replace('#', ' ');
+                ret = ret.Trim();
+                float pos = (float)Convert.ToDouble(ret, CultureInfo.InvariantCulture);
+                return pos;
+            }
+        }
+
+        public float RO_StepSize()
+        {
+            if (SetupRequired) return 0.0f;
+            if (!Connected) return 0.0f;
+            lock (_lock)
+            {
+                _serial.Transmit("SZ:");
+                string ret = _serial.ReceiveTerminated("#");
+                ret = ret.Replace('#', ' ');
+                ret = ret.Trim();
+                float size = (float)Convert.ToDouble(ret, CultureInfo.InvariantCulture);
+                return size;
+            }
+        }
+
+        public void RO_Sync(float syncPos)
+        {
+            LogMessage("Sync", RO_Position().ToString()); // Sync to this position
+            string cmd = "SY" + syncPos.ToString(CultureInfo.InvariantCulture) + ":";
+            _serial.Transmit(cmd);
+            string ret = _serial.ReceiveTerminated("#");
+        }
         #endregion
 
         private void LogMessage(string identifier, string message, params object[] args)
