@@ -20,7 +20,7 @@ namespace ASCOM.Stroblhofwarte
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        internal static string driverID = "ASCOM.Stroblhof.Rotator.Focuser";
+        internal static string driverID = "ASCOM.Stroblhofwarte.Focuser";
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
@@ -53,14 +53,14 @@ namespace ASCOM.Stroblhofwarte
         /// Variable to hold the trace logger object (creates a diagnostic log file with information that you specify)
         /// </summary>
         internal TraceLogger tl;
-
+        public TraceLogger Logger { get { return tl; } }
         /// <summary>
-        /// Initializes a new instance of the <see cref="Stroblhof.Rotator"/> class.
+        /// Initializes a new instance of the <see cref="Stroblhof.Rotator.Focuser"/> class.
         /// Must be public for COM registration.
         /// </summary>
         public Focuser()
         {
-            tl = new TraceLogger("", "Stroblhof.Rotator");
+            tl = new TraceLogger("", "Stroblhof.Rotator.Focuser");
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
             tl.LogMessage("Focuser", "Starting initialisation");
@@ -90,10 +90,7 @@ namespace ASCOM.Stroblhofwarte
         {
             // consider only showing the setup dialog if not connected
             // or call a different dialog if connected
-            if (IsConnected)
-                System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
-
-            using (SetupFocuserForm F = new SetupFocuserForm(tl))
+            using (SetupFocuserForm F = new SetupFocuserForm(this))
             {
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)

@@ -5,21 +5,24 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ASCOM.Stroblhofwarte
 {
+    [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupFocuserForm : Form
     {
         TraceLogger tl; // Holder for a reference to the driver's trace logger
-
-        public SetupFocuserForm(TraceLogger tlDriver)
+        Focuser _driver;
+        public SetupFocuserForm(Focuser driver)
         {
             InitializeComponent();
             // Save the provided trace logger for use within the setup dialogue
-            tl = tlDriver;
+            _driver = driver;
+            tl = _driver.Logger;
 
             // Initialise current values of user settings from the ASCOM Profile
             InitUI();

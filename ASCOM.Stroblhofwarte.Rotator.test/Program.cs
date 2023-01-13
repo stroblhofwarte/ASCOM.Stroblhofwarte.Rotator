@@ -23,7 +23,7 @@ namespace ASCOM
             // Uncomment the code that's required
 #if UseChooser
             // choose the device
-            string id = ASCOM.DriverAccess.Rotator.Choose("ASCOM.Stroblhofwarte.Rotator");
+            string id = ASCOM.DriverAccess.Focuser.Choose("ASCOM.Stroblhofwarte.Rotator.Focuser");
             if (string.IsNullOrEmpty(id))
                 return;
             // create this device
