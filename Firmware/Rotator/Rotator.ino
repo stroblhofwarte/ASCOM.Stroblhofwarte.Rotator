@@ -98,7 +98,7 @@ bool _notMotorPowerOff = false;
 
 #define FOC_STEP 2
 #define FOC_DIR  5
-#define FOC_EN   8
+#define FOC_EN   12
 
 #define FOC_GEAR_RATIO 1.0
 

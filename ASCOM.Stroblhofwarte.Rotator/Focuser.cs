@@ -279,8 +279,7 @@ namespace ASCOM.Stroblhofwarte
             get
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                // TODO customise this driver description
-                string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverInfo = "Stroblhofwarte Focuser: " + HwAccess.Instance().GetInfoString();
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -384,13 +383,6 @@ namespace ASCOM.Stroblhofwarte
             if (position < 0)
                 HwAccess.Instance().FOC_MoveLeft(-position);
             return;
-            long newPos = position;
-            long pos = HwAccess.Instance().FOC_Position();
-            long movement = newPos - pos;
-            if (movement > 0)
-                HwAccess.Instance().FOC_MoveRight(movement);
-            if (movement < 0)
-                HwAccess.Instance().FOC_MoveLeft(-movement);
         }
 
         public int Position
@@ -399,7 +391,6 @@ namespace ASCOM.Stroblhofwarte
             {
                 tl.LogMessage("Position", "Not implemented");
                 throw new ASCOM.PropertyNotImplementedException("Position", false);
-                return (int)HwAccess.Instance().FOC_Position();
             }
         }
 
