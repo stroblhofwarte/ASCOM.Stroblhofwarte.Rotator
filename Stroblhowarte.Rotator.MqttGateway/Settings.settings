@@ -1,0 +1,30 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Stroblhowarte.Rotator.MqttGateway" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ComPort" Type="System.String" Scope="User">
+      <Value Profile="(Default)">COM1</Value>
+    </Setting>
+    <Setting Name="RotatorMaxMovement" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">359</Value>
+    </Setting>
+    <Setting Name="RotatorSpeed" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="MotorOff" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Autoconnect" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="MQTTHost" Type="System.String" Scope="User">
+      <Value Profile="(Default)">192.168.0.1</Value>
+    </Setting>
+    <Setting Name="MQTTPort" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1883</Value>
+    </Setting>
+    <Setting Name="UseMQtt" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

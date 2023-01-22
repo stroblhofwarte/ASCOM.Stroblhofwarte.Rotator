@@ -1,0 +1,267 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO.Ports;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Stroblhowarte.Rotator.MqttGateway
+{
+    public class ArduinoDevice
+    {
+        private SerialPort _serial = null;
+        private string _comPort;
+        private bool _serialIsConnected = false;
+
+        private double _rotatorInitSpeed = 0.0;
+        private double _rotatorSpeed = 0.0;
+
+        private object _lock = new object();
+
+        public bool RotatorIsReverse { private set; get;}
+        public float RotatorMaxMovement { set; get; }
+        public bool RotatorMotorOff { get; set; }
+
+        #region Ctor
+
+        public ArduinoDevice(string comPort)
+        {
+            _comPort = comPort;
+            RotatorMaxMovement = 359.0f;
+        }
+
+        #endregion
+
+        public bool Open()
+        {
+            if (_serial == null)
+                _serial = new SerialPort(_comPort, 9600, Parity.None, 8, StopBits.One);
+            _serial.Open();
+            if (!_serial.IsOpen)
+            {
+                _serial.Dispose();
+                _serial = null;
+                _serialIsConnected = false;
+                return false;
+            }
+            _serialIsConnected = true;
+            // Check for rotator device
+            string id = SendAndReceive("ID:", '#');
+            if(id != "ROTATOR#")
+            {
+                _serial.Close();
+                _serial.Dispose();
+                _serial = null;
+                _serialIsConnected = false;
+                return false;
+            }
+            SendAndReceive("IN:", '#');
+            return true;
+        }
+
+        public void Close()
+        {
+            if(_serial != null)
+            {
+                if (_serial.IsOpen)
+                {
+                    _serial.Close();
+                }
+                _serial.Dispose();
+                _serial = null;
+            }
+        }
+
+        private string SendAndReceive(string command, char endSign)
+        {
+            if (!_serialIsConnected) return string.Empty;
+            _serial.Write(command);
+            string str = string.Empty;
+            char c = '\0';
+            while (c != endSign)
+            {
+                if (_serial.BytesToRead > 0)
+                {
+                    c = (char)_serial.ReadChar();
+                    str += c;
+                }
+            }
+            return str;
+        }
+
+        #region Rotatordevice
+
+        public string RotatorGetInfoString()
+        {
+            if (!_serialIsConnected) return "Not connected.";
+            lock (_lock)
+            {
+                string str = SendAndReceive("IF:", '#');
+                str = str.Replace('#', ' ');
+                str = str.Trim();
+                return str;
+            }
+        }
+
+        public void RotatorInitHardware()
+        {
+            if (!_serialIsConnected) return;
+            lock (_lock)
+            {
+                SendAndReceive("IN:", '#');
+            }
+        }
+
+        public void RotatorPark()
+        {
+            if (!_serialIsConnected) return;
+            lock(_lock)
+                SendAndReceive("PA:", '#');
+        }
+
+        public void RotatorSetPark(float pp)
+        {
+            if (!_serialIsConnected) return;
+            lock (_lock)
+                SendAndReceive("PP" + pp.ToString(CultureInfo.InvariantCulture) + ":", '#');
+        }
+
+        public void RotatorSetInitSpeed(float val)
+        {
+            if (val < 0.5) return;
+            if (!_serialIsConnected) return;
+            _rotatorInitSpeed = (double)val;
+            lock (_lock)
+                SendAndReceive("IS" + val.ToString(CultureInfo.InvariantCulture) + ":", '#');
+        }
+
+        public float RotatorGetInitSpeed()
+        {
+            return (float)_rotatorInitSpeed;
+        }
+
+        public void RotatorSetSpeed(float val)
+        {
+            if (val < 0.5) return;
+            if (!_serialIsConnected) return;
+            _rotatorSpeed = val;
+            lock (_lock)
+                SendAndReceive("SP" + val.ToString(CultureInfo.InvariantCulture) + ":", '#');
+        }
+
+        public float RotatorGetSpeed()
+        {
+            return (float)_rotatorSpeed;
+        }
+
+        public void RotatorHalt()
+        {
+            if (!_serialIsConnected) return;
+            lock (_lock)
+                SendAndReceive("ST:", '#');
+        }
+
+        public bool RotatorIsMoving()
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("MV:", '#');
+                if (ret == "1#") return true;
+                return false;
+            }
+        }
+
+        public void RotatorMove(float pos)
+        {
+            if (!_serialIsConnected) return;
+            lock (_lock)
+            {
+                if (pos > 0)
+                {
+                    SendAndReceive("TR" + pos.ToString(CultureInfo.InvariantCulture) + ":", '#');
+                    RotatorIsReverse = false;
+                }
+                if (pos < 0)
+                {
+                    SendAndReceive("TL" + (-pos).ToString(CultureInfo.InvariantCulture) + ":", '#');
+                    RotatorIsReverse = true;
+                }
+            }
+        }
+
+        public bool RotatorMoveAbsolute(float pos)
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                string cmd = "TA" + pos.ToString(CultureInfo.InvariantCulture) + ":";
+                SendAndReceive(cmd ,'#');
+            }
+            return true;
+        }
+
+
+        public bool RotatorMotorPowerOn()
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+                SendAndReceive("MON:",'#');
+            RotatorMotorOff = false;
+            return true;
+        }
+
+        public bool RotatorMotorPowerOff()
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+                SendAndReceive("MOFF:", '#');
+            RotatorMotorOff = true;
+            return true;
+        }
+
+        public float RotatorPosition()
+        {
+            if (!_serialIsConnected) return 0.0f;
+            lock (_lock)
+            {
+RepeatPositionRead:
+                string ret =  SendAndReceive("GP:",'#');
+                ret = ret.Replace('#', ' ');
+                ret = ret.Trim();
+                if(ret == "")
+                {
+                    goto RepeatPositionRead;
+                }    
+                float pos = (float)Convert.ToDouble(ret, CultureInfo.InvariantCulture);
+                return pos;
+            }
+        }
+
+        public float RotatorStepSize()
+        {
+            if (!_serialIsConnected) return 0.0f;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("SZ:", '#');
+                ret = ret.Replace('#', ' ');
+                ret = ret.Trim();
+                float size = (float)Convert.ToDouble(ret, CultureInfo.InvariantCulture);
+                return size;
+            }
+        }
+
+        public void RotatorSync(float syncPos)
+        {
+            if (!_serialIsConnected) return;
+            lock (_lock)
+            {
+                string cmd = "SY" + syncPos.ToString(CultureInfo.InvariantCulture) + ":";
+                SendAndReceive(cmd, '#');
+            }
+        }
+        #endregion
+
+    }
+}

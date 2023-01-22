@@ -308,12 +308,14 @@ namespace ASCOM.Stroblhofwarte
                             HwAccess.Instance().RO_SetSpeed(_speed);
                             MaxMovement = _maxMovement;
                             HwAccess.Instance().RotatorUsage = true;
+                        
                             if (connectedState)
                             {
                                 HwAccess.Instance().InitHardware();
                             }
                             else
                             {
+                           
                                 connectedState = false;
                                 HwAccess.Instance().RotatorUsage = false;
                             }
@@ -321,6 +323,7 @@ namespace ASCOM.Stroblhofwarte
                     }
                     catch (Exception ex)
                     {
+                      
                         connectedState = false;
                         HwAccess.Instance().RotatorUsage = false;
                         LogMessage("Connected Set", ex.ToString());
@@ -328,6 +331,7 @@ namespace ASCOM.Stroblhofwarte
                 }
                 else
                 {
+                 
                     connectedState = false;
                     HwAccess.Instance().RotatorUsage = false;
                     HwAccess.Instance().Close();
