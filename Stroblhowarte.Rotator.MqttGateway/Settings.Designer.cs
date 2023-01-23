@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Stroblhowarte.Rotator.MqttGateway {
+namespace Stroblhofwarte.Rotator.MqttGateway {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -116,6 +116,30 @@ namespace Stroblhowarte.Rotator.MqttGateway {
             }
             set {
                 this["UseMQtt"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int RightOvershoot {
+            get {
+                return ((int)(this["RightOvershoot"]));
+            }
+            set {
+                this["RightOvershoot"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int LeftOvershoot {
+            get {
+                return ((int)(this["LeftOvershoot"]));
+            }
+            set {
+                this["LeftOvershoot"] = value;
             }
         }
     }

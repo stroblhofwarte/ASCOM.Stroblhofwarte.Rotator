@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Stroblhowarte.Rotator.MqttGateway
+namespace Stroblhofwarte.Rotator.MqttGateway
 {
     public class ArduinoDevice
     {
@@ -261,6 +261,110 @@ RepeatPositionRead:
                 SendAndReceive(cmd, '#');
             }
         }
+        #endregion
+
+        #region Focuserdevice
+
+        public bool FocuserMoveLeft(long steps)
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("FOCTL" + steps.ToString(CultureInfo.InvariantCulture) + ":", '#');
+
+                if (ret == "1#") return true;
+                return false;
+            }
+        }
+
+        public bool FocuserMoveRight(long steps)
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("FOCTR" + steps.ToString(CultureInfo.InvariantCulture) + ":", '#');
+
+                if (ret == "1#") return true;
+                return false;
+            }
+        }
+
+        public void FocuserHalt()
+        {
+            if (!_serialIsConnected) return;
+            lock (_lock)
+            {
+                SendAndReceive("FOCST:", '#');
+            }
+        }
+
+        public bool FocuserIsMoving()
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("FOCMV:", '#');
+                if (ret == "1#") return true;
+                return false;
+            }
+        }
+
+        public long FocuserPosition()
+        {
+            if (!_serialIsConnected) return 0;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("FOCPO:", '#');
+                ret = ret.Replace('#', ' ');
+                ret = ret.Trim();
+                long pos = (long)Convert.ToInt32(ret, CultureInfo.InvariantCulture);
+                return pos;
+            }
+        }
+
+        public bool FocuserMotorPowerOn()
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                SendAndReceive("FOCMON:", '#');
+            }
+            return true;
+        }
+
+        public bool FocuserMotorPowerOff()
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                SendAndReceive("FOCMOFF:", '#');
+            }
+            return true;
+        }
+
+        public bool FocuserSetRightOvershoot(long val)
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("FOCOVERR" + val.ToString(CultureInfo.InvariantCulture) + ":", '#');
+                if (ret == "1#") return true;
+                return false;
+            }
+        }
+
+        public bool FocuserSetLeftOvershoot(long val)
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("FOCOVERL" + val.ToString(CultureInfo.InvariantCulture) + ":", '#');
+                if (ret == "1#") return true;
+                return false;
+            }
+        }
+      
+
         #endregion
 
     }

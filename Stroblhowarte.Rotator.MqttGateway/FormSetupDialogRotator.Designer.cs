@@ -1,4 +1,4 @@
-﻿namespace Stroblhowarte.Rotator.MqttGateway
+﻿namespace Stroblhofwarte.Rotator.MqttGateway
 {
     partial class FormSetupDialogRotator
     {
@@ -40,16 +40,23 @@
             // 
             // buttonOk
             // 
+            this.buttonOk.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonOk.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonOk.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.buttonOk.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.buttonOk.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonOk.Location = new System.Drawing.Point(405, 281);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 0;
             this.buttonOk.Text = "Ok";
-            this.buttonOk.UseVisualStyleBackColor = true;
+            this.buttonOk.UseVisualStyleBackColor = false;
             this.buttonOk.Click += new System.EventHandler(this.buttonOk_Click);
             // 
             // textBoxSpeedFactor
             // 
+            this.textBoxSpeedFactor.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.textBoxSpeedFactor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBoxSpeedFactor.Location = new System.Drawing.Point(95, 66);
             this.textBoxSpeedFactor.Name = "textBoxSpeedFactor";
             this.textBoxSpeedFactor.Size = new System.Drawing.Size(203, 23);
@@ -66,22 +73,32 @@
             // 
             // buttonSetSpeedFactor
             // 
+            this.buttonSetSpeedFactor.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonSetSpeedFactor.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonSetSpeedFactor.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.buttonSetSpeedFactor.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.buttonSetSpeedFactor.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonSetSpeedFactor.Location = new System.Drawing.Point(300, 65);
             this.buttonSetSpeedFactor.Name = "buttonSetSpeedFactor";
             this.buttonSetSpeedFactor.Size = new System.Drawing.Size(75, 23);
             this.buttonSetSpeedFactor.TabIndex = 4;
             this.buttonSetSpeedFactor.Text = "Set";
-            this.buttonSetSpeedFactor.UseVisualStyleBackColor = true;
+            this.buttonSetSpeedFactor.UseVisualStyleBackColor = false;
             this.buttonSetSpeedFactor.Click += new System.EventHandler(this.buttonSetSpeedFactor_Click);
             // 
             // buttonSetMaximalMovement
             // 
+            this.buttonSetMaximalMovement.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonSetMaximalMovement.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonSetMaximalMovement.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.buttonSetMaximalMovement.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.buttonSetMaximalMovement.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonSetMaximalMovement.Location = new System.Drawing.Point(300, 132);
             this.buttonSetMaximalMovement.Name = "buttonSetMaximalMovement";
             this.buttonSetMaximalMovement.Size = new System.Drawing.Size(75, 23);
             this.buttonSetMaximalMovement.TabIndex = 7;
             this.buttonSetMaximalMovement.Text = "Set";
-            this.buttonSetMaximalMovement.UseVisualStyleBackColor = true;
+            this.buttonSetMaximalMovement.UseVisualStyleBackColor = false;
             this.buttonSetMaximalMovement.Click += new System.EventHandler(this.buttonSetMaximalMovement_Click);
             // 
             // label2
@@ -95,6 +112,8 @@
             // 
             // textBoxRotatorMaximalMovement
             // 
+            this.textBoxRotatorMaximalMovement.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.textBoxRotatorMaximalMovement.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBoxRotatorMaximalMovement.Location = new System.Drawing.Point(95, 132);
             this.textBoxRotatorMaximalMovement.Name = "textBoxRotatorMaximalMovement";
             this.textBoxRotatorMaximalMovement.Size = new System.Drawing.Size(203, 23);
@@ -103,6 +122,8 @@
             // checkBoxSwitchMotorOff
             // 
             this.checkBoxSwitchMotorOff.AutoSize = true;
+            this.checkBoxSwitchMotorOff.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.checkBoxSwitchMotorOff.FlatAppearance.CheckedBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
             this.checkBoxSwitchMotorOff.Location = new System.Drawing.Point(95, 178);
             this.checkBoxSwitchMotorOff.Name = "checkBoxSwitchMotorOff";
             this.checkBoxSwitchMotorOff.Size = new System.Drawing.Size(203, 19);
@@ -115,6 +136,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.Gray;
             this.ClientSize = new System.Drawing.Size(494, 320);
             this.Controls.Add(this.checkBoxSwitchMotorOff);
             this.Controls.Add(this.buttonSetMaximalMovement);
@@ -124,6 +146,7 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.textBoxSpeedFactor);
             this.Controls.Add(this.buttonOk);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "FormSetupDialogRotator";
             this.Text = "Setup Rotator Device";
             this.ResumeLayout(false);

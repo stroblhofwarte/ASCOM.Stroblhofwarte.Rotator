@@ -1,4 +1,4 @@
-﻿namespace Stroblhowarte.Rotator.MqttGateway
+﻿namespace Stroblhofwarte.Rotator.MqttGateway
 {
     partial class FormSetupDevice
     {
@@ -45,6 +45,7 @@
             // 
             // comboBoxComPort
             // 
+            this.comboBoxComPort.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
             this.comboBoxComPort.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxComPort.FormattingEnabled = true;
             this.comboBoxComPort.Location = new System.Drawing.Point(36, 69);
@@ -64,6 +65,8 @@
             // 
             // textBoxMqttBroker
             // 
+            this.textBoxMqttBroker.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.textBoxMqttBroker.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBoxMqttBroker.Location = new System.Drawing.Point(36, 176);
             this.textBoxMqttBroker.Name = "textBoxMqttBroker";
             this.textBoxMqttBroker.Size = new System.Drawing.Size(181, 23);
@@ -89,6 +92,8 @@
             // 
             // textBoxMQTTPort
             // 
+            this.textBoxMQTTPort.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.textBoxMQTTPort.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBoxMQTTPort.Location = new System.Drawing.Point(224, 176);
             this.textBoxMQTTPort.Name = "textBoxMQTTPort";
             this.textBoxMQTTPort.Size = new System.Drawing.Size(104, 23);
@@ -96,12 +101,17 @@
             // 
             // buttonMqttTest
             // 
+            this.buttonMqttTest.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonMqttTest.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonMqttTest.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.buttonMqttTest.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.buttonMqttTest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonMqttTest.Location = new System.Drawing.Point(334, 176);
             this.buttonMqttTest.Name = "buttonMqttTest";
             this.buttonMqttTest.Size = new System.Drawing.Size(75, 23);
             this.buttonMqttTest.TabIndex = 6;
             this.buttonMqttTest.Text = "test";
-            this.buttonMqttTest.UseVisualStyleBackColor = true;
+            this.buttonMqttTest.UseVisualStyleBackColor = false;
             this.buttonMqttTest.Click += new System.EventHandler(this.buttonMqttTest_Click);
             // 
             // labelMqttTestInfo
@@ -115,12 +125,17 @@
             // 
             // buttonSerialTest
             // 
+            this.buttonSerialTest.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonSerialTest.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonSerialTest.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.buttonSerialTest.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.buttonSerialTest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonSerialTest.Location = new System.Drawing.Point(163, 68);
             this.buttonSerialTest.Name = "buttonSerialTest";
             this.buttonSerialTest.Size = new System.Drawing.Size(75, 23);
             this.buttonSerialTest.TabIndex = 8;
             this.buttonSerialTest.Text = "test";
-            this.buttonSerialTest.UseVisualStyleBackColor = true;
+            this.buttonSerialTest.UseVisualStyleBackColor = false;
             this.buttonSerialTest.Click += new System.EventHandler(this.buttonSerialTest_Click);
             // 
             // labelSerialTestInfo
@@ -134,12 +149,17 @@
             // 
             // buttonOk
             // 
+            this.buttonOk.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonOk.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonOk.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.buttonOk.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.buttonOk.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonOk.Location = new System.Drawing.Point(424, 249);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 10;
             this.buttonOk.Text = "Ok";
-            this.buttonOk.UseVisualStyleBackColor = true;
+            this.buttonOk.UseVisualStyleBackColor = false;
             this.buttonOk.Click += new System.EventHandler(this.buttonOk_Click);
             // 
             // checkBoxAutoconnect
@@ -168,6 +188,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.Gray;
             this.ClientSize = new System.Drawing.Size(521, 295);
             this.Controls.Add(this.checkBoxMqtt);
             this.Controls.Add(this.checkBoxAutoconnect);
@@ -182,6 +203,7 @@
             this.Controls.Add(this.textBoxMqttBroker);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.comboBoxComPort);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "FormSetupDevice";
             this.Text = "Setup Device";
             this.ResumeLayout(false);

@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Stroblhowarte.Rotator.MqttGateway
+namespace Stroblhofwarte.Rotator.MqttGateway
 {
     public partial class FormSetupDialogRotator : Form
     {

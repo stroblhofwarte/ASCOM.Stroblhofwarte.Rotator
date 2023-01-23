@@ -1,7 +1,9 @@
 using System.Globalization;
 using System.IO.Ports;
+using System.Text;
+using uPLibrary.Networking.M2Mqtt.Messages;
 
-namespace Stroblhowarte.Rotator.MqttGateway
+namespace Stroblhofwarte.Rotator.MqttGateway
 {
     public partial class FormControl : Form
     {
@@ -12,14 +14,38 @@ namespace Stroblhowarte.Rotator.MqttGateway
         private bool _rotatorMoveLeft = false;
         private bool _rotatorMoveRight = false;
 
+        private int _focuserOldPos;
+        private int _focuserFastSteps = 1000;
+        private int _focuserSlowSteps = 100;
+
+
         private uPLibrary.Networking.M2Mqtt.MqttClient _mqtt = null;
         private bool _mqttConnected = false;
+        private bool _rotatorIsMoving = false;
+        private bool _stepsizeSend = false;
+        private bool _expandView = false;
 
+        #region MQTT Topics
+
+        private readonly static string MQTT_ROTATOR_PREFIX = "Stroblhofwarte/Rotator/";
+        private readonly string MQTT_ROTATOR_POSITION = MQTT_ROTATOR_PREFIX + "Position";
+        private readonly string MQTT_ROTATOR_MOVE_TO = MQTT_ROTATOR_PREFIX + "Move";
+        private readonly string MQTT_ROTATOR_HALT = MQTT_ROTATOR_PREFIX + "Halt";
+        private readonly string MQTT_ROTATOR_SYNC = MQTT_ROTATOR_PREFIX + "Sync";
+        private readonly string MQTT_ROTATOR_MAX_MOVEMENT = MQTT_ROTATOR_PREFIX + "MaxMovement";
+        private readonly string MQTT_ROTATOR_STATE = MQTT_ROTATOR_PREFIX + "State";
+        private readonly string MQTT_ROTATOR_STEPSIZE = MQTT_ROTATOR_PREFIX + "Stepsize";
+
+
+        #endregion
         public FormControl()
         {
             LoadSettings();
             InitializeComponent();
-            if(Settings.Default.Autoconnect)
+            SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
+            buttonRotatorSetup.Enabled = false;
+            buttonFocuserSetup.Enabled = false;
+            if (Settings.Default.Autoconnect)
             {
                 buttonConnect_Click(null, null);
             }
@@ -30,6 +56,7 @@ namespace Stroblhowarte.Rotator.MqttGateway
                     buttonMqtt.Enabled = false;
                 }
             }
+            ExpandView(_expandView);
         }
 
         private void LoadSettings()
@@ -44,6 +71,20 @@ namespace Stroblhowarte.Rotator.MqttGateway
             Settings.Default.Save();
         }
 
+        private void ExpandView(bool val)
+        {
+            if(val)
+            {
+                Size oldSize = this.Size;
+                this.Size = new Size(700, oldSize.Height);
+            }
+            else
+            {
+                Size oldSize = this.Size;
+                this.Size = new Size(400, oldSize.Height);
+            }
+        }
+
         private void buttonConnect_Click(object sender, EventArgs e)
         {
             if (_arduinoDevice != null)
@@ -51,6 +92,8 @@ namespace Stroblhowarte.Rotator.MqttGateway
                 _arduinoDevice.Close();
                 _arduinoDevice = null;
                 buttonConnect.Text = "Connect";
+                buttonRotatorSetup.Enabled = false;
+                buttonFocuserSetup.Enabled = false;
                 return;
             }
             else
@@ -70,10 +113,19 @@ namespace Stroblhowarte.Rotator.MqttGateway
                         _arduinoDevice.RotatorMotorPowerOn();
                     }
                     textBoxPosition.Text = _arduinoDevice.RotatorPosition().ToString();
+                    _arduinoDevice.FocuserSetLeftOvershoot(Settings.Default.LeftOvershoot);
+                    _arduinoDevice.FocuserSetRightOvershoot(Settings.Default.RightOvershoot);
+                    _arduinoDevice.FocuserMotorPowerOff();
+
+                    buttonRotatorSetup.Enabled = true;
+                    buttonFocuserSetup.Enabled = true;
+                    pictureBoxRotator.Invalidate();
                 }
                 else
                 {
                     _arduinoDevice.Close();
+                    buttonRotatorSetup.Enabled = false;
+                    buttonFocuserSetup.Enabled = false;
                     buttonConnect.Text = "Connect";
                     
                 }
@@ -87,6 +139,14 @@ namespace Stroblhowarte.Rotator.MqttGateway
             {
                 _mqtt = new uPLibrary.Networking.M2Mqtt.MqttClient(Settings.Default.MQTTHost, Settings.Default.MQTTPort, false, null, null, uPLibrary.Networking.M2Mqtt.MqttSslProtocols.None);
                 _mqtt.Connect("Stroblhofwarte.Rotator");
+                _mqtt.Subscribe(new string[] { MQTT_ROTATOR_MOVE_TO }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+                _mqtt.Subscribe(new string[] { MQTT_ROTATOR_HALT }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+                _mqtt.Subscribe(new string[] { MQTT_ROTATOR_SYNC }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+                _mqtt.MqttMsgPublishReceived += _mqtt_MqttMsgPublishReceived;
+
+                _mqtt.Publish(MQTT_ROTATOR_MAX_MOVEMENT, Encoding.UTF8.GetBytes(_arduinoDevice.RotatorMaxMovement.ToString()), MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, true);
+                _mqtt.Publish(MQTT_ROTATOR_STATE, Encoding.UTF8.GetBytes("0"), MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, false);
+
                 _mqttConnected = true;
                 return true;
             } catch (Exception ex)
@@ -97,31 +157,75 @@ namespace Stroblhowarte.Rotator.MqttGateway
             }
         }
 
-        private void FormControl_Paint(object sender, PaintEventArgs e)
+        private void _mqtt_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
         {
             if (_arduinoDevice == null) return;
-            Graphics g = this.CreateGraphics();
-            //the central point of the rotation
-            g.DrawLine(Pens.Silver, 200, 210, 200, 210 - 10);
-            g.DrawString("N", SystemFonts.DefaultFont, Brushes.Silver, 200 - 5, 186);
-            g.DrawLine(Pens.Silver, 200, 210, 210, 210);
-            g.DrawString("E", SystemFonts.DefaultFont, Brushes.Silver, 210 + 3, 202);
-            g.TranslateTransform(200, 200);
-            //rotation procedure
-            g.RotateTransform(_arduinoDevice.RotatorPosition());
-            g.DrawEllipse(Pens.Silver, -100, -100, 200, 200);
-            g.DrawRectangle(Pens.Silver, new Rectangle(-50, -30, 100, 60));
-
+            string msg = Encoding.ASCII.GetString(e.Message);
+            if (e.Topic == MQTT_ROTATOR_MOVE_TO)
+            {
+                try
+                {
+                    float pos = (float)Convert.ToDouble(msg, CultureInfo.InvariantCulture);
+                    _arduinoDevice.RotatorMoveAbsolute(pos);
+                }
+                catch (Exception ex)
+                {
+                    // Position value invalid! Do nothing!
+                }
+            }
+            if (e.Topic == MQTT_ROTATOR_HALT)
+            {
+                if (msg == "1")
+                {
+                    _mqtt.Publish(MQTT_ROTATOR_HALT, Encoding.UTF8.GetBytes("0"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+                    _arduinoDevice.RotatorHalt();
+                }
+            }
+            if (e.Topic == MQTT_ROTATOR_SYNC)
+            {
+                try
+                {
+                    float pos = (float)Convert.ToDouble(msg, CultureInfo.InvariantCulture);
+                    _arduinoDevice.RotatorSync(pos);
+                }
+                catch (Exception ex)
+                {
+                    // Position value invalid! Do nothing!
+                }
+            }
         }
-
         private void timerRotatorPosition_Tick(object sender, EventArgs e)
         {
             if (_arduinoDevice == null) return;
+            bool rotatorIsMoving = _arduinoDevice.RotatorIsMoving();
+            if(!rotatorIsMoving) buttonGoto.Text = "go";
+            if (!_stepsizeSend && _mqttConnected)
+            {
+                float stepsize = _arduinoDevice.RotatorStepSize();
+                _mqtt.Publish(MQTT_ROTATOR_STEPSIZE, Encoding.UTF8.GetBytes(stepsize.ToString()), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+                _stepsizeSend = true;
+            }
+            if (rotatorIsMoving != _rotatorIsMoving)
+            {
+                _rotatorIsMoving = rotatorIsMoving;
+                if (rotatorIsMoving)
+                {
+                    if (_mqttConnected)
+                        _mqtt.Publish(MQTT_ROTATOR_STATE, Encoding.UTF8.GetBytes("1"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+                }
+                else 
+                {
+                    if (_mqttConnected)
+                        _mqtt.Publish(MQTT_ROTATOR_STATE, Encoding.UTF8.GetBytes("0"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+                }
+            }
             if (_arduinoDevice.RotatorPosition() != _rotatorOldPos)
             {
-                this.Invalidate();
+                pictureBoxRotator.Invalidate();
                 _rotatorOldPos = _arduinoDevice.RotatorPosition();
                 labelPos.Text = _rotatorOldPos.ToString() + "°";
+                if(_mqttConnected)
+                    _mqtt.Publish(MQTT_ROTATOR_POSITION, Encoding.UTF8.GetBytes(_rotatorOldPos.ToString(CultureInfo.InvariantCulture)), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
             }
             if (_rotatorMoveLeft)
             {
@@ -142,6 +246,11 @@ namespace Stroblhowarte.Rotator.MqttGateway
                 _arduinoDevice.RotatorMoveAbsolute(pos);
             }
 
+            if (_focuserOldPos != _arduinoDevice.FocuserPosition())
+            {
+                _focuserOldPos = (int)_arduinoDevice.FocuserPosition();
+                labelFocuserPosition.Text = _focuserOldPos.ToString();
+            }
         }
 
         private void buttonRotatorMoveRight_MouseDown(object sender, MouseEventArgs e)
@@ -175,6 +284,12 @@ namespace Stroblhowarte.Rotator.MqttGateway
         private void buttonGoto_Click(object sender, EventArgs e)
         {
             if (_arduinoDevice == null) return;
+            if(_arduinoDevice.RotatorIsMoving())
+            {
+                _arduinoDevice.RotatorHalt();
+                buttonGoto.Text = "go";
+                return;
+            }
             try
             {
                 float pos = (float)Convert.ToDouble(textBoxPosition.Text, CultureInfo.InvariantCulture);
@@ -183,9 +298,11 @@ namespace Stroblhowarte.Rotator.MqttGateway
                 if (pos < 0)
                     pos = 0.0f;
                  _arduinoDevice.RotatorMoveAbsolute(pos);
+                buttonGoto.Text = "X";
             } catch(Exception ex)
             {
                 textBoxPosition.Text = _arduinoDevice.RotatorPosition().ToString();
+                buttonGoto.Text = "go";
             }
         }
 
@@ -225,6 +342,120 @@ namespace Stroblhowarte.Rotator.MqttGateway
             {
                 buttonMqtt.Enabled = false;
             }
+        }
+
+        private void FormControl_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if(_mqtt != null)
+            {
+                _mqtt.Disconnect();
+            }
+        }
+        private void FormControl_Load(object sender, EventArgs e)
+        {
+            this.SetStyle(
+                    ControlStyles.AllPaintingInWmPaint |
+                    ControlStyles.UserPaint |
+                    ControlStyles.DoubleBuffer,
+                    true);
+        }
+
+        private void pictureBoxRotator_Paint(object sender, PaintEventArgs e)
+        {
+            if (_arduinoDevice == null) return;
+            Graphics g = e.Graphics;
+            //the central point of the rotation
+            g.DrawLine(Pens.Silver, 100, 110, 100, 110 - 10);
+            g.DrawString("N", SystemFonts.DefaultFont, Brushes.Silver, 100 - 5, 86);
+            g.DrawLine(Pens.Silver, 100, 110, 110, 110);
+            g.DrawString("E", SystemFonts.DefaultFont, Brushes.Silver, 110 + 3, 102);
+            g.TranslateTransform(100, 100);
+            //rotation procedure
+            g.RotateTransform(_arduinoDevice.RotatorPosition());
+            g.DrawEllipse(Pens.Silver, -100, -100, 200, 200);
+            g.DrawRectangle(Pens.Silver, new Rectangle(-50, -30, 100, 60));
+        }
+
+        private void buttonExpand_Click(object sender, EventArgs e)
+        {
+            if(_expandView)
+            {
+                _expandView = false;
+                buttonExpand.Text = ">";
+            }
+            else
+            {
+                _expandView = true;
+                buttonExpand.Text = "<";
+            }
+            ExpandView(_expandView);
+        }
+
+        private void buttonSync_Click(object sender, EventArgs e)
+        {
+            if (_arduinoDevice == null) return;
+            try
+            {
+                float pos = (float)Convert.ToDouble(textBoxSync.Text, CultureInfo.InvariantCulture);
+                _arduinoDevice.RotatorSync(pos);
+            } catch(Exception ex)
+            {
+                textBoxSync.Text = "";
+            }
+        }
+
+        private void buttonFastRight_Click(object sender, EventArgs e)
+        {
+            if (_arduinoDevice == null) return;
+            _arduinoDevice.FocuserMoveRight(_focuserFastSteps);
+        }
+
+        private void buttonFastLeft_Click(object sender, EventArgs e)
+        {
+            if (_arduinoDevice == null) return;
+            _arduinoDevice.FocuserMoveLeft(_focuserFastSteps);
+        }
+
+        private void buttonSlowRight_Click(object sender, EventArgs e)
+        {
+            if (_arduinoDevice == null) return;
+            _arduinoDevice.FocuserMoveRight(_focuserSlowSteps);
+        }
+
+        private void buttonSlowLeft_Click(object sender, EventArgs e)
+        {
+            if (_arduinoDevice == null) return;
+            _arduinoDevice.FocuserMoveLeft(_focuserSlowSteps);
+        }
+
+        private void buttonFocuserGo_Click(object sender, EventArgs e)
+        {
+            if (_arduinoDevice == null) return;
+            try
+            {
+                int istPos = (int)_arduinoDevice.FocuserPosition();
+                int pos = Convert.ToInt32(textBoxFocuserGo.Text);
+                int move = pos - istPos;
+                if (move > 0)
+                {
+                    _arduinoDevice.FocuserMoveRight(move);
+                }
+                if(move < 0)
+                {
+                    _arduinoDevice.FocuserMoveLeft(-move);
+                }
+
+            } catch (Exception ex)
+            {
+
+            }
+        }
+
+        private void buttonFocuserSetup_Click(object sender, EventArgs e)
+        {
+            if (_arduinoDevice == null) return;
+            FormSetupFocuser dlg = new FormSetupFocuser(_arduinoDevice);
+            dlg.ShowDialog();
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace Stroblhowarte.Rotator.MqttGateway
+namespace Stroblhofwarte.Rotator.MqttGateway
 {
     internal static class Program
     {

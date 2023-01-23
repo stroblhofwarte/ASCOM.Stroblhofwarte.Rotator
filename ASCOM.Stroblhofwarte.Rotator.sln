@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.1.32421.90
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31410.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASCOM.Stroblhofwarte.Rotator", "ASCOM.Stroblhofwarte.Rotator\ASCOM.Stroblhofwarte.Rotator.csproj", "{64308775-BD4A-469C-BCAB-3ED830B811AF}"
 EndProject
@@ -12,7 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Firmware", "Firmware", "{B5
 		Firmware\Rotator\Rotator.ino = Firmware\Rotator\Rotator.ino
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stroblhowarte.Rotator.MqttGateway", "Stroblhowarte.Rotator.MqttGateway\Stroblhowarte.Rotator.MqttGateway.csproj", "{3E10302D-A379-47E4-9964-4E057C688E00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stroblhofwarte.Rotator.MqttGateway", "Stroblhowarte.Rotator.MqttGateway\Stroblhofwarte.Rotator.MqttGateway.csproj", "{3E10302D-A379-47E4-9964-4E057C688E00}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASCOM.Stroblhofwarte.mqtt.Rotator", "ASCOM.Stroblhofwarte.mqtt.Rotator\ASCOM.Stroblhofwarte.mqtt.Rotator.csproj", "{9D6F55C7-BBA1-492D-B89C-62008F634810}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,6 +32,10 @@ Global
 		{3E10302D-A379-47E4-9964-4E057C688E00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E10302D-A379-47E4-9964-4E057C688E00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E10302D-A379-47E4-9964-4E057C688E00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D6F55C7-BBA1-492D-B89C-62008F634810}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D6F55C7-BBA1-492D-B89C-62008F634810}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D6F55C7-BBA1-492D-B89C-62008F634810}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D6F55C7-BBA1-492D-B89C-62008F634810}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

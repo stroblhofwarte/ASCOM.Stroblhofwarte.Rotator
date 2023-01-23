@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Stroblhowarte.Rotator.MqttGateway
+namespace Stroblhofwarte.Rotator.MqttGateway
 {
     public partial class FormSetupDevice : Form
     {
@@ -44,16 +44,22 @@ namespace Stroblhowarte.Rotator.MqttGateway
 
         private void buttonSerialTest_Click(object sender, EventArgs e)
         {
-            labelSerialTestInfo.Text = "busy";
-            ArduinoDevice test = new ArduinoDevice(comboBoxComPort.Text);
-            if(test.Open())
+            try
             {
-                labelSerialTestInfo.Text = "Rotator multi device found";
-                test.Close();
-            }
-            else
+                labelSerialTestInfo.Text = "busy";
+                ArduinoDevice test = new ArduinoDevice(comboBoxComPort.Text);
+                if (test.Open())
+                {
+                    labelSerialTestInfo.Text = "Rotator multi device found";
+                    test.Close();
+                }
+                else
+                {
+                    labelSerialTestInfo.Text = "No Rotator device found";
+                }
+            } catch (Exception ex)
             {
-                labelSerialTestInfo.Text = "No Rotator device found";
+                labelSerialTestInfo.Text = ex.Message.ToString();
             }
             
         }
