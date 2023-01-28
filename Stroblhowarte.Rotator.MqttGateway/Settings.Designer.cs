@@ -142,5 +142,17 @@ namespace Stroblhofwarte.Rotator.MqttGateway {
                 this["LeftOvershoot"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("30000")]
+        public int FocuserMaxMovement {
+            get {
+                return ((int)(this["FocuserMaxMovement"]));
+            }
+            set {
+                this["FocuserMaxMovement"] = value;
+            }
+        }
     }
 }

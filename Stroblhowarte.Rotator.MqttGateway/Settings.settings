@@ -32,5 +32,8 @@
     <Setting Name="LeftOvershoot" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
+    <Setting Name="FocuserMaxMovement" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">30000</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -60,6 +60,7 @@
             this.textBoxSync = new System.Windows.Forms.TextBox();
             this.buttonFocuserSetup = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
+            this.timerFocuser = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRotator)).BeginInit();
             this.SuspendLayout();
             // 
@@ -449,6 +450,12 @@
             this.label8.TabIndex = 32;
             this.label8.Text = "Focuser Setup:";
             // 
+            // timerFocuser
+            // 
+            this.timerFocuser.Enabled = true;
+            this.timerFocuser.Interval = 300;
+            this.timerFocuser.Tick += new System.EventHandler(this.timerFocuser_Tick);
+            // 
             // FormControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -529,5 +536,6 @@
         private TextBox textBoxSync;
         private Button buttonFocuserSetup;
         private Label label8;
+        private System.Windows.Forms.Timer timerFocuser;
     }
 }

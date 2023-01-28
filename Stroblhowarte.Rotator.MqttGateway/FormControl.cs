@@ -25,6 +25,9 @@ namespace Stroblhofwarte.Rotator.MqttGateway
         private bool _stepsizeSend = false;
         private bool _expandView = false;
 
+        protected int _focuserMaxMovement;
+        private bool _focuserIsMoving;
+
         #region MQTT Topics
 
         private readonly static string MQTT_ROTATOR_PREFIX = "Stroblhofwarte/Rotator/";
@@ -36,6 +39,13 @@ namespace Stroblhofwarte.Rotator.MqttGateway
         private readonly string MQTT_ROTATOR_STATE = MQTT_ROTATOR_PREFIX + "State";
         private readonly string MQTT_ROTATOR_STEPSIZE = MQTT_ROTATOR_PREFIX + "Stepsize";
 
+        private readonly static string MQTT_FOCUSER_PREFIX = "Stroblhofwarte/Focuser/";
+        private readonly string MQTT_FOCUSER_POSITION = MQTT_FOCUSER_PREFIX + "Position";
+        private readonly string MQTT_FOCUSER_MOVE = MQTT_FOCUSER_PREFIX + "Move";
+        private readonly string MQTT_FOCUSER_RIGHT_TO = MQTT_FOCUSER_PREFIX + "Right";
+        private readonly string MQTT_FOCUSER_LEFT_TO = MQTT_FOCUSER_PREFIX + "Left";
+        private readonly string MQTT_FOCUSER_HALT = MQTT_FOCUSER_PREFIX + "Halt";
+        private readonly string MQTT_FOCUSER_MAX_MOVEMENT = MQTT_FOCUSER_PREFIX + "MaxMovement";
 
         #endregion
         public FormControl()
@@ -62,6 +72,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
         private void LoadSettings()
         {
             _comPort = Settings.Default.ComPort;
+            _focuserMaxMovement = Settings.Default.FocuserMaxMovement;
         }
 
         private void SaveSettings()
@@ -142,10 +153,18 @@ namespace Stroblhofwarte.Rotator.MqttGateway
                 _mqtt.Subscribe(new string[] { MQTT_ROTATOR_MOVE_TO }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
                 _mqtt.Subscribe(new string[] { MQTT_ROTATOR_HALT }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
                 _mqtt.Subscribe(new string[] { MQTT_ROTATOR_SYNC }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+
+                _mqtt.Subscribe(new string[] { MQTT_FOCUSER_RIGHT_TO }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+                _mqtt.Subscribe(new string[] { MQTT_FOCUSER_LEFT_TO }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+                _mqtt.Subscribe(new string[] { MQTT_FOCUSER_HALT }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+
                 _mqtt.MqttMsgPublishReceived += _mqtt_MqttMsgPublishReceived;
 
                 _mqtt.Publish(MQTT_ROTATOR_MAX_MOVEMENT, Encoding.UTF8.GetBytes(_arduinoDevice.RotatorMaxMovement.ToString()), MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, true);
                 _mqtt.Publish(MQTT_ROTATOR_STATE, Encoding.UTF8.GetBytes("0"), MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, false);
+
+                _mqtt.Publish(MQTT_FOCUSER_MAX_MOVEMENT, Encoding.UTF8.GetBytes(_focuserMaxMovement.ToString()), MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, true);
+                
 
                 _mqttConnected = true;
                 return true;
@@ -192,6 +211,69 @@ namespace Stroblhofwarte.Rotator.MqttGateway
                 {
                     // Position value invalid! Do nothing!
                 }
+            }
+            if (e.Topic == MQTT_FOCUSER_RIGHT_TO)
+            {
+                try
+                {
+                    long pos = Convert.ToUInt32(msg, CultureInfo.InvariantCulture);
+                    _arduinoDevice.FocuserMoveRight(pos);
+                }
+                catch (Exception ex)
+                {
+                    // Position value invalid! Do nothing!
+                }
+            }
+            if (e.Topic == MQTT_FOCUSER_LEFT_TO)
+            {
+                try
+                {
+                    long pos = Convert.ToUInt32(msg, CultureInfo.InvariantCulture);
+                    _arduinoDevice.FocuserMoveLeft(pos);
+                }
+                catch (Exception ex)
+                {
+                    // Position value invalid! Do nothing!
+                }
+            }
+            if (e.Topic == MQTT_FOCUSER_HALT)
+            {
+                try
+                {
+                    _arduinoDevice.FocuserHalt();
+                }
+                catch (Exception ex)
+                {
+                    // Position value invalid! Do nothing!
+                }
+            }
+        }
+
+        private void timerFocuser_Tick(object sender, EventArgs e)
+        {
+            if (_arduinoDevice == null) return;
+            bool focuserIsMoving = _arduinoDevice.FocuserIsMoving();
+            if (!focuserIsMoving) buttonFocuserGo.Text = "go";
+            if (_focuserOldPos != _arduinoDevice.FocuserPosition())
+            {
+                _focuserOldPos = (int)_arduinoDevice.FocuserPosition();
+                labelFocuserPosition.Text = _focuserOldPos.ToString();
+                if (_mqttConnected)
+                    _mqtt.Publish(MQTT_FOCUSER_POSITION, Encoding.UTF8.GetBytes(_focuserOldPos.ToString(CultureInfo.InvariantCulture)), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+            }
+            if (_focuserIsMoving != focuserIsMoving)
+            {
+                if (focuserIsMoving)
+                {
+                    if (_mqttConnected)
+                        _mqtt.Publish(MQTT_FOCUSER_MOVE, Encoding.UTF8.GetBytes("1"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+                }
+                else
+                {
+                    if (_mqttConnected)
+                        _mqtt.Publish(MQTT_FOCUSER_MOVE, Encoding.UTF8.GetBytes("0"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+                }
+                _focuserIsMoving = focuserIsMoving;
             }
         }
         private void timerRotatorPosition_Tick(object sender, EventArgs e)
@@ -246,11 +328,6 @@ namespace Stroblhofwarte.Rotator.MqttGateway
                 _arduinoDevice.RotatorMoveAbsolute(pos);
             }
 
-            if (_focuserOldPos != _arduinoDevice.FocuserPosition())
-            {
-                _focuserOldPos = (int)_arduinoDevice.FocuserPosition();
-                labelFocuserPosition.Text = _focuserOldPos.ToString();
-            }
         }
 
         private void buttonRotatorMoveRight_MouseDown(object sender, MouseEventArgs e)
@@ -456,6 +533,9 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             if (_arduinoDevice == null) return;
             FormSetupFocuser dlg = new FormSetupFocuser(_arduinoDevice);
             dlg.ShowDialog();
+            _focuserMaxMovement = Settings.Default.FocuserMaxMovement;
         }
+
+      
     }
 }

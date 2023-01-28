@@ -19,6 +19,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             InitializeComponent();
             textBoxLeftOvershoot.Text = Settings.Default.LeftOvershoot.ToString();
             textBoxRightOvershoot.Text = Settings.Default.RightOvershoot.ToString();
+            textBoxMaxMovement.Text = Settings.Default.FocuserMaxMovement.ToString();
         }
 
         private void buttonRightSet_Click(object sender, EventArgs e)
@@ -64,6 +65,31 @@ namespace Stroblhofwarte.Rotator.MqttGateway
                 textBoxRightOvershoot.Text = "0";
                 textBoxLeftOvershoot.Text = "0";
             }
+        }
+
+        private void buttonSetMax_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                int val = Convert.ToInt32(textBoxMaxMovement.Text);
+                if (val <= 0)
+                {
+                    textBoxLeftOvershoot.Text = "0";
+                    return;
+                }
+                Settings.Default.FocuserMaxMovement = val;
+                Settings.Default.Save();
+                
+            }
+            catch (Exception ex)
+            {
+                textBoxLeftOvershoot.Text = "30000";
+            }
+        }
+
+        private void buttonOk_Click(object sender, EventArgs e)
+        {
+            Hide();
         }
     }
 }
