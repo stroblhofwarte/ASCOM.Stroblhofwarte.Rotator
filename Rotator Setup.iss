@@ -36,7 +36,9 @@ Name: "{cf}\ASCOM\Uninstall\Rotator\StroblRotator"
 [Files]
 Source: "C:\_develop\ASCOM.Stroblhofwarte.Rotator\ASCOM.Stroblhofwarte.Rotator\ASCOM.Stroblhofwarte.Rotator\bin\Release\ASCOM.Stroblhofwarte.Rotator.dll"; DestDir: "{app}"
 Source: "C:\_develop\ASCOM.Stroblhofwarte.Rotator\ASCOM.Stroblhofwarte.Rotator\ASCOM.Stroblhofwarte.mqtt.Rotator\bin\Release\ASCOM.Stroblhofwarte.mqtt.Rotator.dll"; DestDir: "{app}"
+Source: "C:\_develop\ASCOM.Stroblhofwarte.Rotator\ASCOM.Stroblhofwarte.Rotator\ASCOM.Stroblhofwarte.mqtt.Focuser\bin\Release\ASCOM.Stroblhofwarte.mqtt.Focuser.dll"; DestDir: "{app}"
 Source: "C:\_develop\ASCOM.Stroblhofwarte.Rotator\ASCOM.Stroblhofwarte.Rotator\Signed3rdParty\M2Mqtt.Net.dll"; DestDir: "{app}"
+
 ; Require a read-me HTML to appear after installation, maybe driver's Help doc
 Source: "C:\_develop\ASCOM.Stroblhofwarte.Rotator\ASCOM.Stroblhofwarte.Rotator\README.html"; DestDir: "{app}"; Flags: isreadme
 ; TODO: Add other files needed by your driver here (add subfolders above)
@@ -48,6 +50,8 @@ Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Strobl
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Stroblhofwarte.Rotator.dll"""; Flags: runhidden 64bit; Check: IsWin64
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Stroblhofwarte.mqtt.Rotator.dll"""; Flags: runhidden 32bit
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Stroblhofwarte.mqtt.Rotator.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Stroblhofwarte.mqtt.Focuser.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Stroblhofwarte.mqtt.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 
 
@@ -57,6 +61,7 @@ Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Strobl
 ; Only for .NET assembly/in-proc drivers
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Stroblhofwarte.Rotator.dll"""; Flags: runhidden 32bit
 Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Stroblhofwarte.mqtt.Rotator.dll"""; Flags: runhidden 32bit
+Filename: "{dotnet4032}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Stroblhofwarte.mqtt.Focuser.dll"""; Flags: runhidden 32bit
 
 ; This helps to give a clean uninstall
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Stroblhofwarte.Rotator.dll"""; Flags: runhidden 64bit; Check: IsWin64
@@ -65,6 +70,8 @@ Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Stroblhofwart
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Stroblhofwarte.mqtt.Rotator.dll"""; Flags: runhidden 64bit; Check: IsWin64
 Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Stroblhofwarte.mqtt.Rotator.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "/codebase ""{app}\ASCOM.Stroblhofwarte.mqtt.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
+Filename: "{dotnet4064}\regasm.exe"; Parameters: "-u ""{app}\ASCOM.Stroblhofwarte.mqtt.Focuser.dll"""; Flags: runhidden 64bit; Check: IsWin64
 
 
 [Code]

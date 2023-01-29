@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormSetupFocuser));
             this.textBoxRightOvershoot = new System.Windows.Forms.TextBox();
             this.textBoxLeftOvershoot = new System.Windows.Forms.TextBox();
             this.buttonRightSet = new System.Windows.Forms.Button();
@@ -171,6 +172,7 @@
             this.Controls.Add(this.textBoxLeftOvershoot);
             this.Controls.Add(this.textBoxRightOvershoot);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormSetupFocuser";
             this.Text = "Setup Focuser";
             this.ResumeLayout(false);

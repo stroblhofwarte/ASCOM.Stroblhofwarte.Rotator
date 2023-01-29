@@ -35,29 +35,36 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         public bool Open()
         {
-            if (_serial == null)
-                _serial = new SerialPort(_comPort, 9600, Parity.None, 8, StopBits.One);
-            _serial.Open();
-            if (!_serial.IsOpen)
+            try
             {
-                _serial.Dispose();
-                _serial = null;
+                if (_serial == null)
+                    _serial = new SerialPort(_comPort, 9600, Parity.None, 8, StopBits.One);
+                _serial.Open();
+                if (!_serial.IsOpen)
+                {
+                    _serial.Dispose();
+                    _serial = null;
+                    _serialIsConnected = false;
+                    return false;
+                }
+                _serialIsConnected = true;
+                // Check for rotator device
+                string id = SendAndReceive("ID:", '#');
+                if (id != "ROTATOR#")
+                {
+                    _serial.Close();
+                    _serial.Dispose();
+                    _serial = null;
+                    _serialIsConnected = false;
+                    return false;
+                }
+                SendAndReceive("IN:", '#');
+                return true;
+            }catch (Exception ex)
+            {
                 _serialIsConnected = false;
                 return false;
             }
-            _serialIsConnected = true;
-            // Check for rotator device
-            string id = SendAndReceive("ID:", '#');
-            if(id != "ROTATOR#")
-            {
-                _serial.Close();
-                _serial.Dispose();
-                _serial = null;
-                _serialIsConnected = false;
-                return false;
-            }
-            SendAndReceive("IN:", '#');
-            return true;
         }
 
         public void Close()

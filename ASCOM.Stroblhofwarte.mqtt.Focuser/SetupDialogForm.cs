@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
@@ -30,7 +31,15 @@ namespace ASCOM.Stroblhofwarte.mqtt
         {
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
-            Focuser.comPort = (string)comboBoxComPort.SelectedItem;
+            Focuser.mqttHost = textBoxBroker.Text;
+            try
+            {
+                Focuser.mqttPort = Convert.ToInt32(textBoxPort.Text, CultureInfo.InvariantCulture);
+            }
+            catch (Exception ex)
+            {
+                Focuser.mqttPort = 1883;
+            }
             tl.Enabled = chkTrace.Checked;
         }
 
@@ -59,13 +68,32 @@ namespace ASCOM.Stroblhofwarte.mqtt
         private void InitUI()
         {
             chkTrace.Checked = tl.Enabled;
-            // set the list of com ports to those that are currently available
-            comboBoxComPort.Items.Clear();
-            comboBoxComPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());      // use System.IO because it's static
-            // select the current port if possible
-            if (comboBoxComPort.Items.Contains(Focuser.comPort))
+            textBoxBroker.Text = Focuser.mqttHost;
+            textBoxPort.Text = Focuser.mqttPort.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private void buttonTest_Click(object sender, EventArgs e)
+        {
+            int port = 1883;
+            try
             {
-                comboBoxComPort.SelectedItem = Focuser.comPort;
+                port = Convert.ToInt32(textBoxPort.Text, CultureInfo.InvariantCulture);
+            }
+            catch (Exception ex)
+            {
+                port = 1883;
+            }
+            try
+            {
+                labelTestInfo.Text = "Setup broker...";
+                uPLibrary.Networking.M2Mqtt.MqttClient test = new uPLibrary.Networking.M2Mqtt.MqttClient(textBoxBroker.Text, port, false, null, null, uPLibrary.Networking.M2Mqtt.MqttSslProtocols.None);
+                labelTestInfo.Text = "try to connect broker...";
+                test.Connect("testClient");
+                labelTestInfo.Text = "Successfully connected.";
+            }
+            catch (Exception ex)
+            {
+                labelTestInfo.Text = "Connection failed.";
             }
         }
     }

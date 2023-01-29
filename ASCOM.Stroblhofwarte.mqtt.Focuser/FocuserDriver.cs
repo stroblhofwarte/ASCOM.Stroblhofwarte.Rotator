@@ -1,29 +1,54 @@
 //tabs=4
 // --------------------------------------------------------------------------------
-// TODO fill in this information for your driver, then remove this line!
 //
-// ASCOM Focuser driver for Stroblhofwarte.mqtt
+// This file is part of the Stroblhofwarte.Rotator project 
+// (https://github.com/stroblhofwarte/ASCOM.Stroblhofwarte.Rotator).
+// Copyright (c) 2021, Othmar Ehrhardt, https://astro.stroblhof-oberrohrbach.de
 //
-// Description:	Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
-//				nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 
-//				erat, sed diam voluptua. At vero eos et accusam et justo duo 
-//				dolores et ea rebum. Stet clita kasd gubergren, no sea takimata 
-//				sanctus est Lorem ipsum dolor sit amet.
+// This program is free software: you can redistribute it and/or modify  
+// it under the terms of the GNU General Public License as published by  
+// the Free Software Foundation, version 3.
 //
-// Implements:	ASCOM Focuser interface version: <To be completed by driver developer>
-// Author:		(XXX) Your N. Here <your@email.here>
+// This program is distributed in the hope that it will be useful, but 
+// WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License 
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
+//
+// ASCOM Focuser mqtt driver.
+// Precondition for a working setup:
+//    - A running Stroblhofwarte.Rotator.MqttGateway (short: Gateway)
+//    - A mqtt broker, without SSL and authentification
+//
+// Description:	The Stroblhof Rotator is a simple and sturdy rotator device
+//              for astronomical observations. The electronic supports also to connect
+//              beside the rotator stepper motor also a focuser stepper motor.
+//              The electronic itself support four stepper driver. 
+//              The communication between the hardware and the ASCOM driver is done via MQTT.
+//              The mqtt communication to the focuser device:
+//             
+//              Topic: 
+//
+//              Stroblhofwarte/Focuser/Position         Current focuser position (relative seen from device switch on), published by the gateway
+//              Stroblhofwarte/Focuser/Move             "1" when focuser move, otherwise "0", published by the gateway
+//              Stroblhofwarte/Focuser/Right            Move focuser "xxx" steps right, subscribed by the gateway
+//              Stroblhofwarte/Focuser/Left             Move focuser "xxx" steps left, subscribed by the gateway
+//              Stroblhofwarte/Focuser/Halt             Stop a running movemenet. Subscribed by the gateway.
+//              Stroblhofwarte/Focuser/MaxMovement      Max. steps left and right. Published by the gateway.
+//
+// Implements:	ASCOM Rotator interface version: 3.0
+// Author:		Othmar Ehrhardt, <othmar.ehrhardt@t-online.de>, https://astro.stroblhof-oberrohrbach.de
 //
 // Edit Log:
 //
 // Date			Who	Vers	Description
 // -----------	---	-----	-------------------------------------------------------
-// dd-mmm-yyyy	XXX	6.0.0	Initial edit, created from ASCOM driver template
+// 28.01.2023               Prototype setup is working
 // --------------------------------------------------------------------------------
 //
 
-
-// This is used to define code in the template that is specific to one class implementation
-// unused code can be deleted and this definition removed.
 #define Focuser
 
 using ASCOM;
@@ -38,6 +63,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
+using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace ASCOM.Stroblhofwarte.mqtt
 {
@@ -70,12 +96,28 @@ namespace ASCOM.Stroblhofwarte.mqtt
         /// </summary>
         private static string driverDescription = "ASCOM Focuser Driver for Stroblhofwarte.mqtt.";
 
-        internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
-        internal static string comPortDefault = "COM1";
+        internal static string mqttHostName = "MqttHost";
+        internal static string mqttHostDefault = "192.168.0.1";
+        internal static string mqttPortName = "MqttPort";
+        internal static string mqttPortDefault = "1883";
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
-        internal static string comPort; // Variables to hold the current device configuration
+        private readonly static string MQTT_FOCUSER_PREFIX = "Stroblhofwarte/Focuser/";
+        private readonly string MQTT_FOCUSER_POSITION = MQTT_FOCUSER_PREFIX + "Position";
+        private readonly string MQTT_FOCUSER_MOVE = MQTT_FOCUSER_PREFIX + "Move";
+        private readonly string MQTT_FOCUSER_RIGHT_TO = MQTT_FOCUSER_PREFIX + "Right";
+        private readonly string MQTT_FOCUSER_LEFT_TO = MQTT_FOCUSER_PREFIX + "Left";
+        private readonly string MQTT_FOCUSER_HALT = MQTT_FOCUSER_PREFIX + "Halt";
+        private readonly string MQTT_FOCUSER_MAX_MOVEMENT = MQTT_FOCUSER_PREFIX + "MaxMovement";
+
+        internal static string mqttHost; // Variables to hold the current device configuration
+        internal static int mqttPort;
+        private uPLibrary.Networking.M2Mqtt.MqttClient _mqtt = null;
+
+        private bool _isMoving;
+        private int _position;
+        private int _maxMovement;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -219,15 +261,58 @@ namespace ASCOM.Stroblhofwarte.mqtt
 
                 if (value)
                 {
+                    _mqtt = new uPLibrary.Networking.M2Mqtt.MqttClient(mqttHost, mqttPort, false, null, null, uPLibrary.Networking.M2Mqtt.MqttSslProtocols.None);
+                    _mqtt.Subscribe(new string[] { MQTT_FOCUSER_POSITION }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+                    _mqtt.Subscribe(new string[] { MQTT_FOCUSER_MOVE }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+                    _mqtt.Subscribe(new string[] { MQTT_FOCUSER_MAX_MOVEMENT }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+                    _mqtt.MqttMsgPublishReceived += _mqtt_MqttMsgPublishReceived;
+                    _mqtt.Connect("Stroblhofwarte.mqtt.Focuser");
                     connectedState = true;
-                    LogMessage("Connected Set", "Connecting to port {0}", comPort);
-                    // TODO connect to the device
+
                 }
                 else
                 {
                     connectedState = false;
-                    LogMessage("Connected Set", "Disconnecting from port {0}", comPort);
+                    //LogMessage("Connected Set", "Disconnecting from port {0}", comPort);
                     // TODO disconnect from the device
+                }
+            }
+        }
+
+        private void _mqtt_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
+        {
+            if (IsConnected == false) return;
+            string msg = Encoding.ASCII.GetString(e.Message);
+            if (e.Topic == MQTT_FOCUSER_POSITION)
+            {
+                try
+                {
+                    int pos = Convert.ToInt32(msg, CultureInfo.InvariantCulture);
+                    _position = pos;
+                }
+                catch (Exception ex)
+                {
+                    // Position value invalid! Do nothing!
+                }
+            }
+            if (e.Topic == MQTT_FOCUSER_MOVE)
+            {
+                _isMoving = false;
+                if (msg == "1")
+                {
+                    _isMoving = true;
+                }
+            }
+            if (e.Topic == MQTT_FOCUSER_MAX_MOVEMENT)
+            {
+                try
+                {
+                    int pos = Convert.ToInt32(msg, CultureInfo.InvariantCulture);
+                    _maxMovement = pos;
+                }
+                catch (Exception ex)
+                {
+                    // Position value invalid! Do nothing!
                 }
             }
         }
@@ -248,7 +333,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 // TODO customise this driver description
-                string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverInfo = "Stroblhofwarte.mqtt.Focuser.  Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -279,7 +364,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
         {
             get
             {
-                string name = "Short driver name - please customise";
+                string name = "mqtt.Focuser";
                 tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -290,29 +375,29 @@ namespace ASCOM.Stroblhofwarte.mqtt
         #region IFocuser Implementation
 
         private int focuserPosition = 0; // Class level variable to hold the current focuser position
-        private const int focuserSteps = 10000;
-
+        private const int focuserSteps = 300000;
         public bool Absolute
         {
             get
             {
                 tl.LogMessage("Absolute Get", true.ToString());
-                return true; // This is an absolute focuser
+                return false; // This is an relative focuser
             }
         }
 
         public void Halt()
         {
-            tl.LogMessage("Halt", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("Halt");
+            if (IsConnected)
+            {
+                _mqtt.Publish(MQTT_FOCUSER_HALT, Encoding.UTF8.GetBytes("1"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+            }
         }
 
         public bool IsMoving
         {
             get
             {
-                tl.LogMessage("IsMoving Get", false.ToString());
-                return false; // This focuser always moves instantaneously so no need for IsMoving ever to be True
+                return _isMoving;
             }
         }
 
@@ -334,7 +419,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
         {
             get
             {
-                tl.LogMessage("MaxIncrement Get", focuserSteps.ToString());
+                tl.LogMessage("MaxIncrement Get", _maxMovement.ToString());
                 return focuserSteps; // Maximum change in one move
             }
         }
@@ -343,22 +428,35 @@ namespace ASCOM.Stroblhofwarte.mqtt
         {
             get
             {
-                tl.LogMessage("MaxStep Get", focuserSteps.ToString());
+                tl.LogMessage("MaxStep Get", _maxMovement.ToString());
                 return focuserSteps; // Maximum extent of the focuser, so position range is 0 to 10,000
             }
         }
 
         public void Move(int Position)
         {
-            tl.LogMessage("Move", Position.ToString());
-            focuserPosition = Position; // Set the focuser position
+            if(Position > 0)
+            {
+                if (IsConnected)
+                {
+                    _mqtt.Publish(MQTT_FOCUSER_RIGHT_TO, Encoding.UTF8.GetBytes(Position.ToString()), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+                }
+            }
+            if (Position < 0)
+            {
+                if (IsConnected)
+                {
+                    _mqtt.Publish(MQTT_FOCUSER_LEFT_TO, Encoding.UTF8.GetBytes(Position.ToString()), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+                }
+            }
         }
 
         public int Position
         {
             get
             {
-                return focuserPosition; // Return the focuser position
+                tl.LogMessage("Position", "Not implemented");
+                throw new ASCOM.PropertyNotImplementedException("Position", false);
             }
         }
 
@@ -366,8 +464,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
         {
             get
             {
-                tl.LogMessage("StepSize Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("StepSize", false);
+                return 1.0;
             }
         }
 
@@ -516,7 +613,8 @@ namespace ASCOM.Stroblhofwarte.mqtt
             {
                 driverProfile.DeviceType = "Focuser";
                 tl.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
-                comPort = driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
+                mqttHost = driverProfile.GetValue(driverID, mqttHostName, string.Empty, mqttHostDefault);
+                mqttPort = Convert.ToInt32(driverProfile.GetValue(driverID, mqttPortName, string.Empty, mqttPortDefault));
             }
         }
 
@@ -529,7 +627,8 @@ namespace ASCOM.Stroblhofwarte.mqtt
             {
                 driverProfile.DeviceType = "Focuser";
                 driverProfile.WriteValue(driverID, traceStateProfileName, tl.Enabled.ToString());
-                driverProfile.WriteValue(driverID, comPortProfileName, comPort.ToString());
+                driverProfile.WriteValue(driverID, mqttHostName, mqttHost.ToString());
+                driverProfile.WriteValue(driverID, mqttPortName, mqttPort.ToString());
             }
         }
 

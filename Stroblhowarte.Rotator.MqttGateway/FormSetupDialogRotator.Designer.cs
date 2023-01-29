@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormSetupDialogRotator));
             this.buttonOk = new System.Windows.Forms.Button();
             this.textBoxSpeedFactor = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -147,6 +148,7 @@
             this.Controls.Add(this.textBoxSpeedFactor);
             this.Controls.Add(this.buttonOk);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormSetupDialogRotator";
             this.Text = "Setup Rotator Device";
             this.ResumeLayout(false);

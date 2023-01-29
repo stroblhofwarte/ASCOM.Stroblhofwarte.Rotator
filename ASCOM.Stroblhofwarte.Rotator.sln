@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31410.357
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASCOM.Stroblhofwarte.Rotator", "ASCOM.Stroblhofwarte.Rotator\ASCOM.Stroblhofwarte.Rotator.csproj", "{64308775-BD4A-469C-BCAB-3ED830B811AF}"
 EndProject
@@ -17,6 +17,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASCOM.Stroblhofwarte.mqtt.Rotator", "ASCOM.Stroblhofwarte.mqtt.Rotator\ASCOM.Stroblhofwarte.mqtt.Rotator.csproj", "{9D6F55C7-BBA1-492D-B89C-62008F634810}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASCOM.Stroblhofwarte.mqtt.Focuser", "ASCOM.Stroblhofwarte.mqtt.Focuser\ASCOM.Stroblhofwarte.mqtt.Focuser.csproj", "{CDC5143C-981C-445B-B68E-7C173DD8E765}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SetupStroblhofwarteMqttGateway", "SetupStroblhofwarteMqttGateway\SetupStroblhofwarteMqttGateway.vdproj", "{EF421798-B9FD-4FBD-9F13-0D19E834228D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,6 +44,8 @@ Global
 		{CDC5143C-981C-445B-B68E-7C173DD8E765}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CDC5143C-981C-445B-B68E-7C173DD8E765}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDC5143C-981C-445B-B68E-7C173DD8E765}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF421798-B9FD-4FBD-9F13-0D19E834228D}.Debug|Any CPU.ActiveCfg = Debug
+		{EF421798-B9FD-4FBD-9F13-0D19E834228D}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

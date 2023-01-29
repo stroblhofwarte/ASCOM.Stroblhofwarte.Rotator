@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormControl));
             this.buttonConnect = new System.Windows.Forms.Button();
             this.timerRotatorPosition = new System.Windows.Forms.Timer(this.components);
             this.buttonRotatorMoveLeft = new System.Windows.Forms.Button();
@@ -494,6 +495,7 @@
             this.Controls.Add(this.buttonConnect);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormControl";
             this.Text = "Stroblhofwarte.Rotator.MqttGateway";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormControl_FormClosing);

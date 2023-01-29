@@ -240,6 +240,11 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             {
                 try
                 {
+                    if (msg == "1")
+                    {
+                        _mqtt.Publish(MQTT_FOCUSER_HALT, Encoding.UTF8.GetBytes("0"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+                        _arduinoDevice.FocuserHalt();
+                    }
                     _arduinoDevice.FocuserHalt();
                 }
                 catch (Exception ex)
@@ -516,10 +521,12 @@ namespace Stroblhofwarte.Rotator.MqttGateway
                 if (move > 0)
                 {
                     _arduinoDevice.FocuserMoveRight(move);
+                    buttonFocuserGo.Text = "X";
                 }
                 if(move < 0)
                 {
                     _arduinoDevice.FocuserMoveLeft(-move);
+                    buttonFocuserGo.Text = "X";
                 }
 
             } catch (Exception ex)
