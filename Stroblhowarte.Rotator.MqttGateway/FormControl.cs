@@ -55,20 +55,25 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint, true);
             buttonRotatorSetup.Enabled = false;
             buttonFocuserSetup.Enabled = false;
+           
+            ExpandView(_expandView);
+        }
+
+        private void timerStartup_Tick(object sender, EventArgs e)
+        {
+            timerStartup.Stop();
             if (Settings.Default.Autoconnect)
             {
                 buttonConnect_Click(null, null);
             }
-            if(Settings.Default.UseMQtt)
+            if (Settings.Default.UseMQtt)
             {
-                if(ConnectMQTT())
+                if (ConnectMQTT())
                 {
-                    buttonMqtt.Enabled = false;
+                    buttonMqtt.Text = "Close";
                 }
             }
-            ExpandView(_expandView);
         }
-
         private void LoadSettings()
         {
             _comPort = Settings.Default.ComPort;
@@ -405,7 +410,8 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             dlg.ShowDialog();
             if(Settings.Default.UseMQtt)
             {
-                buttonMqtt.Enabled = true;
+                //buttonMqtt.Enabled = true;
+                buttonMqtt.Text = "Close";
                 ConnectMQTT();
             }
             else
@@ -420,9 +426,28 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         private void buttonMqtt_Click(object sender, EventArgs e)
         {
-            if(ConnectMQTT())
+            if (_arduinoDevice == null) return;
+            if (!_mqttConnected)
             {
-                buttonMqtt.Enabled = false;
+                if (ConnectMQTT())
+                {
+                    buttonMqtt.Text = "Close";
+                    //buttonMqtt.Enabled = false;
+                }
+                else
+                {
+                    buttonMqtt.Text = "Connect";
+                }
+            }
+            else
+            {
+                if(_mqtt != null)
+                {
+                    _mqtt.Disconnect();
+                    _mqtt = null;
+                    _mqttConnected = false;
+                }
+                buttonMqtt.Text = "Connect";
             }
         }
 
@@ -543,6 +568,5 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             _focuserMaxMovement = Settings.Default.FocuserMaxMovement;
         }
 
-      
     }
 }

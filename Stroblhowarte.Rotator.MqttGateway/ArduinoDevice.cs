@@ -10,13 +10,14 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 {
     public class ArduinoDevice
     {
+        private readonly int _SERIAL_RECEIVE_TIMEOUT = 600; // ms
+
         private SerialPort _serial = null;
         private string _comPort;
         private bool _serialIsConnected = false;
 
         private double _rotatorInitSpeed = 0.0;
         private double _rotatorSpeed = 0.0;
-
         private object _lock = new object();
 
         public bool RotatorIsReverse { private set; get;}
@@ -85,13 +86,19 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             if (!_serialIsConnected) return string.Empty;
             _serial.Write(command);
             string str = string.Empty;
+            int timeout = _SERIAL_RECEIVE_TIMEOUT;
             char c = '\0';
-            while (c != endSign)
+            while (c != endSign && timeout > 0)
             {
                 if (_serial.BytesToRead > 0)
                 {
                     c = (char)_serial.ReadChar();
                     str += c;
+                }
+                else
+                {
+                    timeout--;
+                    Thread.Sleep(1);
                 }
             }
             return str;
