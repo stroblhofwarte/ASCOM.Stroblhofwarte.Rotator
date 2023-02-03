@@ -17,46 +17,35 @@
 // You should have received a copy of the GNU General Public License 
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 //
-// ASCOM Rotator mqtt driver.
+// ASCOM FilterWheel mqtt driver.
 // Precondition for a working setup:
 //    - A running Stroblhofwarte.Rotator.MqttGateway (short: Gateway)
 //    - A mqtt broker, without SSL and authentification
 //
-// Description:	The Stroblhof Rotator is a simple and sturdy rotator device
-//              for astronomical observations. It could be build without access to
-//              a lathe or milling machine. The rotator device is made out of aluminium
-//              and steel. It is driven by a NEMA 14 stepper motor. The rotator could 
-//              rotate (appromimately) between between 0° and 330°. 
-//              The electronics are made out of a arduino uno and a shield with ST820 driver.
-//              Each stepper driver can be used, the DRV8825 driver supports 32 microsteps for
-//              smooth operation.
-//              The communication between the hardware and the ASCOM driver is done via MQTT.
-//              This enables the hardware to support more than one device type. It is possible 
-//              to support also a focuser and a filter wheel. Each device can be used from
-//              a different ASCOM client.
-//              The mqtt communication to the rotator device:
+// Description:	The Stroblhof Rotator FilterWheel driver is a virtual filter
+//              wheel driver to control the focus point of a DSLR or other
+//              color camera to match the focus point for red, green and blue
+//              light when using a achromatic telescope. The focuser is moved
+//              at each filter change command regarding the settings in the ASCOM
+//              setup dialog. This overcome the purple fringe on such telescope.
+//              This driver use fixed filter names: R,G,B and a fixed number of filters: 3.
 //             
-//              Topic: 
+//              This driver use following topic from the Stroblhofwarte.Focuser: 
 //
-//              Stroblhofwarte/Rotator/Position: Current Position, published by Gateway
-//              Stroblhofwarte/Rotator/Move: Move to (absolute position) subscribed by Gateway
-//              Stroblhofwarte/Rotator/Halt: Halt movement, subscribed by Gateway
-//              Stroblhofwarte/Rotator/Sync: Sync to position, subscribed by Gateway
-//              Stroblhofwarte/Rotator/MaxMovement: Max. movement of Rotator, published by Gateway
-//              Stroblhofwarte/Rotator/State: "1": rotator move, "0": rotator not moving, published by Gateway
+//              Stroblhofwarte/Focuser/Right            Move focuser "xxx" steps right, subscribed by the gateway
+//              Stroblhofwarte/Focuser/Left             Move focuser "xxx" steps left, subscribed by the gateway
 //
-// Implements:	ASCOM Rotator interface version: 3.0
+// Implements:	ASCOM FilterWheel interface
 // Author:		Othmar Ehrhardt, <othmar.ehrhardt@t-online.de>, https://astro.stroblhof-oberrohrbach.de
 //
 // Edit Log:
 //
 // Date			Who	Vers	Description
 // -----------	---	-----	-------------------------------------------------------
-// 23.01.2023               Prototype setup is working
+// 03.02.2023               First impl.
 // --------------------------------------------------------------------------------
 //
-
-#define Rotator
+#define FilterWheel
 
 using ASCOM;
 using ASCOM.Astrometry;
@@ -70,28 +59,39 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace ASCOM.Stroblhofwarte.mqtt
 {
-  
+    //
+    // Your driver's DeviceID is ASCOM.Stroblhofwarte.mqtt.FilterWheel
+    //
+    // The Guid attribute sets the CLSID for ASCOM.Stroblhofwarte.mqtt.FilterWheel
+    // The ClassInterface/None attribute prevents an empty interface called
+    // _Stroblhofwarte.mqtt from being created and used as the [default] interface
+    //
+    // TODO Replace the not implemented exceptions with code to implement the function or
+    // throw the appropriate ASCOM exception.
+    //
+
     /// <summary>
-    /// ASCOM Rotator Driver for Stroblhofwarte.mqtt.
+    /// ASCOM FilterWheel Driver for Stroblhofwarte.mqtt.
     /// </summary>
-    [Guid("ad3f1b6b-05a9-41a4-9a5f-b55e3ecce861")]
+    [Guid("ef728dac-9cfc-4cc3-be4c-0c93dccba1ab")]
     [ClassInterface(ClassInterfaceType.None)]
-    public class Rotator : IRotatorV3
+    public class FilterWheel : IFilterWheelV2
     {
         /// <summary>
         /// ASCOM DeviceID (COM ProgID) for this driver.
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
-        internal static string driverID = "ASCOM.Stroblhofwarte.mqtt.Rotator";
+        internal static string driverID = "ASCOM.Stroblhofwarte.mqtt.FilterWheel";
         // TODO Change the descriptive string for your driver then remove this line
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
-        private static string driverDescription = "ASCOM Rotator Driver for Stroblhofwarte.mqtt.";
+        private static string driverDescription = "ASCOM FilterWheel Driver for Stroblhofwarte.mqtt.";
 
         internal static string mqttHostName = "MqttHost";
         internal static string mqttHostDefault = "192.168.0.1";
@@ -100,24 +100,37 @@ namespace ASCOM.Stroblhofwarte.mqtt
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
-        private readonly static string MQTT_ROTATOR_PREFIX = "Stroblhofwarte/Rotator/";
-        private readonly string MQTT_ROTATOR_POSITION = MQTT_ROTATOR_PREFIX + "Position";
-        private readonly string MQTT_ROTATOR_MOVE_TO = MQTT_ROTATOR_PREFIX + "Move";
-        private readonly string MQTT_ROTATOR_HALT = MQTT_ROTATOR_PREFIX + "Halt";
-        private readonly string MQTT_ROTATOR_SYNC = MQTT_ROTATOR_PREFIX + "Sync";
-        private readonly string MQTT_ROTATOR_MAX_MOVEMENT = MQTT_ROTATOR_PREFIX + "MaxMovement";
-        private readonly string MQTT_ROTATOR_STATE = MQTT_ROTATOR_PREFIX + "State";
-        private readonly string MQTT_ROTATOR_STEPSIZE = MQTT_ROTATOR_PREFIX + "Stepsize";
+        private readonly static string MQTT_FOCUSER_PREFIX = "Stroblhofwarte/Focuser/";
+        private readonly string MQTT_FOCUSER_POSITION = MQTT_FOCUSER_PREFIX + "Position";
+        private readonly string MQTT_FOCUSER_MOVE = MQTT_FOCUSER_PREFIX + "Move";
+        private readonly string MQTT_FOCUSER_RIGHT_TO = MQTT_FOCUSER_PREFIX + "Right";
+        private readonly string MQTT_FOCUSER_LEFT_TO = MQTT_FOCUSER_PREFIX + "Left";
+        private readonly string MQTT_FOCUSER_HALT = MQTT_FOCUSER_PREFIX + "Halt";
+        private readonly string MQTT_FOCUSER_MAX_MOVEMENT = MQTT_FOCUSER_PREFIX + "MaxMovement";
 
         internal static string mqttHost; // Variables to hold the current device configuration
         internal static int mqttPort;
         private uPLibrary.Networking.M2Mqtt.MqttClient _mqtt = null;
 
+        internal static string rawRName = "RawR";
+        internal static string rawRDefault = "0";
+        internal static int rawR;
+        internal static string rawGName = "RawG";
+        internal static string rawGDefault = "0";
+        internal static int rawG;
+        internal static string rawBName = "RawB";
+        internal static string rawBDefault = "0";
+        internal static int rawB;
+
+        internal static int offsetRG = 0;
+        internal static int offsetGB = 0;
+        internal static int offsetBR = 0;
+
         private bool _isMoving;
-        private float _position;
-        private float _maxMovement;
-        private float _stepSize = -1.0f;
-        private bool _reverse = false;
+        private int _position;
+        public int FocuserPosition { get { return _position; } }
+        public bool FocuserIsMoving {  get { return _isMoving; } }
+
         /// <summary>
         /// Private variable to hold the connected state
         /// </summary>
@@ -142,24 +155,24 @@ namespace ASCOM.Stroblhofwarte.mqtt
         /// Initializes a new instance of the <see cref="Stroblhofwarte.mqtt"/> class.
         /// Must be public for COM registration.
         /// </summary>
-        public Rotator()
+        public FilterWheel()
         {
             tl = new TraceLogger("", "Stroblhofwarte.mqtt");
             ReadProfile(); // Read device configuration from the ASCOM Profile store
 
-            tl.LogMessage("Rotator", "Starting initialisation");
+            tl.LogMessage("FilterWheel", "Starting initialisation");
 
             connectedState = false; // Initialise connected to false
             utilities = new Util(); //Initialise util object
             astroUtilities = new AstroUtils(); // Initialise astro-utilities object
             //TODO: Implement your additional construction here
 
-            tl.LogMessage("Rotator", "Completed initialisation");
+            tl.LogMessage("FilterWheel", "Completed initialisation");
         }
 
 
         //
-        // PUBLIC COM INTERFACE IRotatorV3 IMPLEMENTATION
+        // PUBLIC COM INTERFACE IFilterWheelV2 IMPLEMENTATION
         //
 
         #region Common properties and methods.
@@ -172,8 +185,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
         /// </summary>
         public void SetupDialog()
         {
-          
-            using (SetupDialogForm F = new SetupDialogForm(tl))
+            using (SetupDialogForm F = new SetupDialogForm(tl, this))
             {
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
@@ -257,14 +269,12 @@ namespace ASCOM.Stroblhofwarte.mqtt
                 if (value)
                 {
                     _mqtt = new uPLibrary.Networking.M2Mqtt.MqttClient(mqttHost, mqttPort, false, null, null, uPLibrary.Networking.M2Mqtt.MqttSslProtocols.None);
-                    _mqtt.Subscribe(new string[] { MQTT_ROTATOR_POSITION }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
-                    _mqtt.Subscribe(new string[] { MQTT_ROTATOR_STATE }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
-                    _mqtt.Subscribe(new string[] { MQTT_ROTATOR_MAX_MOVEMENT }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
-                    _mqtt.Subscribe(new string[] { MQTT_ROTATOR_STEPSIZE }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+                    _mqtt.Subscribe(new string[] { MQTT_FOCUSER_POSITION }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+                    _mqtt.Subscribe(new string[] { MQTT_FOCUSER_MOVE }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
                     _mqtt.MqttMsgPublishReceived += _mqtt_MqttMsgPublishReceived;
-                    _mqtt.Connect("Stroblhofwarte.mqtt.Rotator");
+                    _mqtt.Connect("Stroblhofwarte.mqtt.FilterWheel");
                     connectedState = true;
-                   
+
                 }
                 else
                 {
@@ -279,11 +289,11 @@ namespace ASCOM.Stroblhofwarte.mqtt
         {
             if (IsConnected == false) return;
             string msg = Encoding.ASCII.GetString(e.Message);
-            if (e.Topic == MQTT_ROTATOR_POSITION)
+            if (e.Topic == MQTT_FOCUSER_POSITION)
             {
                 try
                 {
-                    float pos = (float)Convert.ToDouble(msg, CultureInfo.InvariantCulture);
+                    int pos = Convert.ToInt32(msg, CultureInfo.InvariantCulture);
                     _position = pos;
                 }
                 catch (Exception ex)
@@ -291,7 +301,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
                     // Position value invalid! Do nothing!
                 }
             }
-            if (e.Topic == MQTT_ROTATOR_STATE)
+            if (e.Topic == MQTT_FOCUSER_MOVE)
             {
                 _isMoving = false;
                 if (msg == "1")
@@ -299,32 +309,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
                     _isMoving = true;
                 }
             }
-            if (e.Topic == MQTT_ROTATOR_MAX_MOVEMENT)
-            {
-                try
-                {
-                    float pos = (float)Convert.ToDouble(msg, CultureInfo.InvariantCulture);
-                    _maxMovement = pos;
-                }
-                catch (Exception ex)
-                {
-                    // Position value invalid! Do nothing!
-                }
-            }
-            if(e.Topic == MQTT_ROTATOR_STEPSIZE)
-            {
-                try
-                {
-                    float pos = (float)Convert.ToDouble(msg, CultureInfo.InvariantCulture);
-                    _stepSize = pos;
-                }
-                catch (Exception ex)
-                {
-                    // Position value invalid! Do nothing!
-                }
-            }
         }
-
         public string Description
         {
             // TODO customise this device description
@@ -341,7 +326,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 // TODO customise this driver description
-                string driverInfo = "Stroblhofwarte.mqtt.Rotator. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
+                string driverInfo = "Stroblhofwarte.mqtt.FilterWheel. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
             }
@@ -363,8 +348,8 @@ namespace ASCOM.Stroblhofwarte.mqtt
             // set by the driver wizard
             get
             {
-                LogMessage("InterfaceVersion Get", "3");
-                return Convert.ToInt16("3");
+                LogMessage("InterfaceVersion Get", "2");
+                return Convert.ToInt16("2");
             }
         }
 
@@ -372,7 +357,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
         {
             get
             {
-                string name = "mqtt.Rotator";
+                string name = "mqtt.FilterWheel";
                 tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -380,134 +365,92 @@ namespace ASCOM.Stroblhofwarte.mqtt
 
         #endregion
 
-        #region IRotator Implementation
+        #region IFilerWheel Implementation
+        private int[] fwOffsets = new int[3] { 0, 0, 0 }; //class level variable to hold focus offsets
+        private string[] fwNames = new string[3] { "R", "G", "B" }; //class level variable to hold the filter names
+        private short fwPosition = 0; // class level variable to retain the current filterwheel position
 
-        private float rotatorPosition = 0; // Synced or mechanical position angle of the rotator
-        private float mechanicalPosition = 0; // Mechanical position angle of the rotator
-
-        public bool CanReverse
+        public int[] FocusOffsets
         {
             get
             {
-                tl.LogMessage("CanReverse Get", true.ToString());
-                return true;
+                fwOffsets[0] = offsetRG;
+                fwOffsets[1] = offsetGB;
+                fwOffsets[2] = offsetBR;
+                foreach (int fwOffset in fwOffsets) // Write filter offsets to the log
+                {
+                    tl.LogMessage("FocusOffsets Get", fwOffset.ToString());
+                }
+
+                return fwOffsets;
             }
         }
 
-        public void Halt()
-        {
-            if(IsConnected)
-            {
-                _mqtt.Publish(MQTT_ROTATOR_HALT, Encoding.UTF8.GetBytes("1"), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
-            }
-        }
-
-        public bool IsMoving
-        {
-            get
-            {
-                return _isMoving;
-            }
-        }
-
-        public void Move(float Position)
-        {
-            tl.LogMessage("Move", Position.ToString()); // Move by this amount
-            rotatorPosition += Position;
-            rotatorPosition = (float)astroUtilities.Range(rotatorPosition, 0.0, true, 360.0, false); // Ensure value is in the range 0.0..359.9999...
-            if(IsConnected)
-            {
-                _mqtt.Publish(MQTT_ROTATOR_MOVE_TO, Encoding.UTF8.GetBytes(rotatorPosition.ToString(CultureInfo.InvariantCulture)), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
-            }
-        }
-
-        public void MoveAbsolute(float Position)
-        {
-            tl.LogMessage("MoveAbsolute", Position.ToString()); // Move to this position
-            rotatorPosition = Position;
-            rotatorPosition = (float)astroUtilities.Range(rotatorPosition, 0.0, true, 360.0, false); // Ensure value is in the range 0.0..359.9999...
-            if (IsConnected)
-            {
-                _mqtt.Publish(MQTT_ROTATOR_MOVE_TO, Encoding.UTF8.GetBytes(rotatorPosition.ToString(CultureInfo.InvariantCulture)), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
-            }
-        }
-
-        public float Position
+        public string[] Names
         {
             get
             {
-                tl.LogMessage("Position Get", rotatorPosition.ToString()); // This rotator has instantaneous movement
-                rotatorPosition = _position;
-                return rotatorPosition;
+                foreach (string fwName in fwNames) // Write filter names to the log
+                {
+                    tl.LogMessage("Names Get", fwName);
+                }
+
+                return fwNames;
             }
         }
 
-        public bool Reverse
+        private int _movementStartedTimeout = 0;
+        public short Position
         {
             get
             {
-                return _reverse;
+                tl.LogMessage("Position Get", fwPosition.ToString());
+                if(_movementStartedTimeout > 0)
+                {
+                    _movementStartedTimeout--;
+                    return -1;
+                }
+                if (FocuserIsMoving) return -1;
+                return fwPosition;
             }
             set
             {
-                _reverse = value;
+                // Check if movement is required:
+                if (fwPosition == value) return;
+                tl.LogMessage("Position Set", value.ToString());
+                // Check if the given value is valid:
+                if ((value < 0) | (value > fwNames.Length - 1))
+                {
+                    tl.LogMessage("", "Throwing InvalidValueException - Position: " + value.ToString() + ", Range: 0 to " + (fwNames.Length - 1).ToString());
+                    throw new InvalidValueException("Position", value.ToString(), "0 to " + (fwNames.Length - 1).ToString());
+                }
+                // Move virtual filter wheel:
+                if (fwPosition == 0 && value == 1) // R -> G
+                    MoveFocuser(offsetRG);
+                if (fwPosition == 1 && value == 2) // G -> B
+                    MoveFocuser(offsetGB);
+                if (fwPosition == 2 && value == 0) // B -> R
+                    MoveFocuser(offsetBR);
+
+                if (fwPosition == 1 && value == 0) // G -> R
+                    MoveFocuser(-offsetRG);
+                if (fwPosition == 2 && value == 1) // B -> G
+                    MoveFocuser(-offsetGB);
+                if (fwPosition == 0 && value == 2) // R -> B
+                    MoveFocuser(-offsetBR);
+
+                _movementStartedTimeout = 10;
+                fwPosition = value;
             }
         }
 
-        public float StepSize
+        private bool MoveFocuser(int pos)
         {
-            get
-            {
-                tl.LogMessage("StepSize Get", _stepSize.ToString());
-                return _stepSize;
-            }
-        }
-
-        public float TargetPosition
-        {
-            get
-            {
-                rotatorPosition = _position;
-                tl.LogMessage("TargetPosition Get", rotatorPosition.ToString()); // This rotator has instantaneous movement
-                return rotatorPosition;
-            }
-        }
-
-        // IRotatorV3 methods
-
-        public float MechanicalPosition
-        {
-            get
-            {
-                mechanicalPosition = _position;
-                tl.LogMessage("MechanicalPosition Get", mechanicalPosition.ToString());
-                return mechanicalPosition;
-            }
-        }
-
-        public void MoveMechanical(float Position)
-        {
-            tl.LogMessage("MoveMechanical", Position.ToString()); // Move to this position
-
-            // TODO: Implement correct sync behaviour. i.e. if the rotator has been synced the mechanical and rotator positions won't be the same
-            rotatorPosition = (float)astroUtilities.Range(Position, 0.0, true, 360.0, false); // Ensure value is in the range 0.0..359.9999...
-            tl.LogMessage("MoveAbsolute", Position.ToString()); // Move to this position
-            if (IsConnected)
-            {
-                _mqtt.Publish(MQTT_ROTATOR_MOVE_TO, Encoding.UTF8.GetBytes(rotatorPosition.ToString(CultureInfo.InvariantCulture)), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
-            }
-        }
-
-        public void Sync(float Position)
-        {
-            tl.LogMessage("Sync", Position.ToString()); // Sync to this position
-
-            // TODO: Implement correct sync behaviour. i.e. the rotator mechanical and rotator positions may not be the same
-            rotatorPosition = (float)astroUtilities.Range(Position, 0.0, true, 360.0, false); // Ensure value is in the range 0.0..359.9999...
-            if (IsConnected)
-            {
-                _mqtt.Publish(MQTT_ROTATOR_SYNC, Encoding.UTF8.GetBytes(rotatorPosition.ToString(CultureInfo.InvariantCulture)), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
-            }
+            if(pos > 0)
+                _mqtt.Publish(MQTT_FOCUSER_RIGHT_TO, Encoding.UTF8.GetBytes(pos.ToString()), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+            if(pos < 0)
+                _mqtt.Publish(MQTT_FOCUSER_LEFT_TO, Encoding.UTF8.GetBytes((-pos).ToString()), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+            return true;
         }
 
         #endregion
@@ -515,6 +458,13 @@ namespace ASCOM.Stroblhofwarte.mqtt
         #region Private properties and methods
         // here are some useful properties and methods that can be used as required
         // to help with driver development
+
+        public void CalculateOffsets()
+        {
+            offsetRG = rawG - rawR;
+            offsetGB = rawB - rawG;
+            offsetBR = rawR - rawB;
+        }
 
         #region ASCOM Registration
 
@@ -530,7 +480,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
         {
             using (var P = new ASCOM.Utilities.Profile())
             {
-                P.DeviceType = "Rotator";
+                P.DeviceType = "FilterWheel";
                 if (bRegister)
                 {
                     P.Register(driverID, driverDescription);
@@ -621,10 +571,14 @@ namespace ASCOM.Stroblhofwarte.mqtt
         {
             using (Profile driverProfile = new Profile())
             {
-                driverProfile.DeviceType = "Rotator";
+                driverProfile.DeviceType = "FilterWheel";
                 tl.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
                 mqttHost = driverProfile.GetValue(driverID, mqttHostName, string.Empty, mqttHostDefault);
                 mqttPort = Convert.ToInt32(driverProfile.GetValue(driverID, mqttPortName, string.Empty, mqttPortDefault));
+                rawR = Convert.ToInt32(driverProfile.GetValue(driverID, rawRName, string.Empty, rawRDefault));
+                rawG = Convert.ToInt32(driverProfile.GetValue(driverID, rawGName, string.Empty, rawGDefault));
+                rawB = Convert.ToInt32(driverProfile.GetValue(driverID, rawBName, string.Empty, rawBDefault));
+
             }
         }
 
@@ -635,10 +589,13 @@ namespace ASCOM.Stroblhofwarte.mqtt
         {
             using (Profile driverProfile = new Profile())
             {
-                driverProfile.DeviceType = "Rotator";
+                driverProfile.DeviceType = "FilterWheel";
                 driverProfile.WriteValue(driverID, traceStateProfileName, tl.Enabled.ToString());
                 driverProfile.WriteValue(driverID, mqttHostName, mqttHost.ToString());
                 driverProfile.WriteValue(driverID, mqttPortName, mqttPort.ToString());
+                driverProfile.WriteValue(driverID, rawRName, rawR.ToString());
+                driverProfile.WriteValue(driverID, rawGName, rawG.ToString());
+                driverProfile.WriteValue(driverID, rawBName, rawB.ToString());
             }
         }
 

@@ -168,7 +168,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
             this.Name = "SetupDialogForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Stroblhofwarte.mqtt Setup";
+            this.Text = "Stroblhofwarte.mqtt.Focuser Setup";
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

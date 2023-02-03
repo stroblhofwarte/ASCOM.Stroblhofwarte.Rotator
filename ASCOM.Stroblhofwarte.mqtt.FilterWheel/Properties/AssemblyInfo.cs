@@ -7,11 +7,11 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 //
 // TODO - Add your authorship information here
-[assembly: AssemblyTitle("ASCOM.Stroblhofwarte.mqtt.Focuser")]
-[assembly: AssemblyDescription("ASCOM Focuser driver for Stroblhofwarte.mqtt")]
+[assembly: AssemblyTitle("ASCOM.Stroblhofwarte.mqtt.FilterWheel")]
+[assembly: AssemblyDescription("ASCOM FilterWheel driver for Stroblhofwarte.mqtt")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("The ASCOM Initiative")]
-[assembly: AssemblyProduct("ASCOM Focuser driver for Stroblhofwarte.mqtt")]
+[assembly: AssemblyProduct("ASCOM FilterWheel driver for Stroblhofwarte.mqtt")]
 [assembly: AssemblyCopyright("Copyright © 2023 The ASCOM Initiative")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -22,7 +22,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(true)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("28c5e860-a3a4-4fc9-8c7f-106924c9b74d")]
+[assembly: Guid("70986c8a-d17b-4cf5-892e-bdd1942fb012")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -35,5 +35,5 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 //
 // TODO - Set your driver's version here
-[assembly: AssemblyVersion("6.7.0.0")]
-[assembly: AssemblyFileVersion("6.7.0.0")]
+[assembly: AssemblyVersion("6.8.0.0")]
+[assembly: AssemblyFileVersion("6.8.0.0")]

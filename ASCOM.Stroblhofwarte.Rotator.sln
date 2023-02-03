@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASCOM.Stroblhofwarte.mqtt.F
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SetupStroblhofwarteMqttGateway", "SetupStroblhofwarteMqttGateway\SetupStroblhofwarteMqttGateway.vdproj", "{EF421798-B9FD-4FBD-9F13-0D19E834228D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASCOM.Stroblhofwarte.mqtt.FilterWheel", "ASCOM.Stroblhofwarte.mqtt.FilterWheel\ASCOM.Stroblhofwarte.mqtt.FilterWheel.csproj", "{05683BF7-14FD-41DD-A290-69EF788052F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,6 +48,10 @@ Global
 		{CDC5143C-981C-445B-B68E-7C173DD8E765}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EF421798-B9FD-4FBD-9F13-0D19E834228D}.Debug|Any CPU.ActiveCfg = Debug
 		{EF421798-B9FD-4FBD-9F13-0D19E834228D}.Release|Any CPU.ActiveCfg = Release
+		{05683BF7-14FD-41DD-A290-69EF788052F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05683BF7-14FD-41DD-A290-69EF788052F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05683BF7-14FD-41DD-A290-69EF788052F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05683BF7-14FD-41DD-A290-69EF788052F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

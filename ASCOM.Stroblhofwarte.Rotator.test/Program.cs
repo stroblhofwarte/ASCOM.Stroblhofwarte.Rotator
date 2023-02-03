@@ -23,11 +23,11 @@ namespace ASCOM
             // Uncomment the code that's required
 #if UseChooser
             // choose the device
-            string id = ASCOM.DriverAccess.Focuser.Choose("ASCOM.Stroblhofwarte.Focuser");
+            string id = ASCOM.DriverAccess.FilterWheel.Choose("ASCOM.Stroblhofwarte.mqtt.FilterWheel");
             if (string.IsNullOrEmpty(id))
                 return;
             // create this device
-            ASCOM.DriverAccess.Focuser device = new ASCOM.DriverAccess.Focuser(id);
+            ASCOM.DriverAccess.FilterWheel device = new ASCOM.DriverAccess.FilterWheel(id);
 #else
             // this can be replaced by this code, it avoids the chooser and creates the driver class directly.
             ASCOM.DriverAccess.Focuser device = new ASCOM.DriverAccess.Focuser("ASCOM.Stroblhofwarte.Focuser");
@@ -42,7 +42,7 @@ namespace ASCOM
             // TODO add more code to test the driver.
             device.Connected = true;
 
-            //device.SetupDialog();
+            device.SetupDialog();
      
             while (true)
                 Thread.Sleep(100);

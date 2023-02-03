@@ -38,7 +38,7 @@
 //              Stroblhofwarte/Focuser/Halt             Stop a running movemenet. Subscribed by the gateway.
 //              Stroblhofwarte/Focuser/MaxMovement      Max. steps left and right. Published by the gateway.
 //
-// Implements:	ASCOM Rotator interface version: 3.0
+// Implements:	ASCOM Focuser interface
 // Author:		Othmar Ehrhardt, <othmar.ehrhardt@t-online.de>, https://astro.stroblhof-oberrohrbach.de
 //
 // Edit Log:
@@ -173,11 +173,6 @@ namespace ASCOM.Stroblhofwarte.mqtt
         /// </summary>
         public void SetupDialog()
         {
-            // consider only showing the setup dialog if not connected
-            // or call a different dialog if connected
-            if (IsConnected)
-                System.Windows.Forms.MessageBox.Show("Already connected, just press OK");
-
             using (SetupDialogForm F = new SetupDialogForm(tl))
             {
                 var result = F.ShowDialog();
@@ -446,7 +441,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
             {
                 if (IsConnected)
                 {
-                    _mqtt.Publish(MQTT_FOCUSER_LEFT_TO, Encoding.UTF8.GetBytes(Position.ToString()), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+                    _mqtt.Publish(MQTT_FOCUSER_LEFT_TO, Encoding.UTF8.GetBytes((-Position).ToString()), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
                 }
             }
         }
