@@ -377,8 +377,143 @@ RepeatPositionRead:
                 return false;
             }
         }
-      
 
+        public bool FocuserSetCoefficient(double val /* steps/mm */)
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("FOCCOEFF" + val.ToString(CultureInfo.InvariantCulture) + ":", '#');
+                if (ret == "1#") return true;
+                return false;
+            }
+        }
+        public double FocuserGetCoefficient()
+        {
+            if (!_serialIsConnected) return -1.0;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("FOCGCOEFF:", '#');
+                ret = ret.Replace('#', ' ');
+                ret = ret.Trim();
+                try
+                {
+                    return Convert.ToDouble(ret, CultureInfo.InvariantCulture);
+                }
+                catch (Exception ex)
+                {
+                    return -1.0;
+                }
+            }
+        }
+
+        public bool FocuserSetAbsoluteDevice(bool val)
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                if (val)
+                {
+                    string ret = SendAndReceive("FOCABS:", '#');
+                }
+                else
+                {
+                    string ret = SendAndReceive("FOCREL:", '#');
+                }
+                return true;
+            }
+            
+        }
+
+        public bool FocuserIsAbsoluteDevice()
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("FOCTYP:", '#');
+                if (ret == "ABS#") return true;
+                return false;
+            }
+        }
+
+        public bool FocuserSetPosition(long val)
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("FOCSPOS" + val.ToString() + ":", '#');
+                return true;
+            }
+        }
+
+        public bool FocuserSetMaximalPos(long val)
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("FOCMPOS" + val.ToString() + ":", '#');
+                return true;
+            }
+            
+        }
+
+        public long FocuserGetMaximalPos()
+        {
+            if (!_serialIsConnected) return -1;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("FOCMGPOS:", '#');
+                ret = ret.Replace('#', ' ');
+                ret = ret.Trim();
+                try
+                {
+                    return Convert.ToInt32(ret, CultureInfo.InvariantCulture);
+                }
+                catch (Exception ex)
+                {
+                    return -1;
+                }
+            }
+        }
+
+        public bool FocuserSetAbsPos(long val)
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("FOCMOVABS" + val.ToString() + ":", '#');
+                return true;
+            }
+        }
+
+        public bool FocuserSetReverse(bool val)
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                if (val)
+                {
+                    string ret = SendAndReceive("FOCREV:", '#');
+                }
+                else
+                {
+                    string ret = SendAndReceive("FOCNOR:", '#');
+                }
+                return true;
+            }
+        }
+
+        public bool FocuserIsReverse()
+        {
+            if (!_serialIsConnected) return false;
+            lock (_lock)
+            {
+                string ret = SendAndReceive("FOCGREV:", '#');
+                if (ret == "0#") return false;
+                if (ret == "1#") return true;
+                return false;
+            }
+        }
         #endregion
 
     }

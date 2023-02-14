@@ -267,7 +267,18 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             if (_focuserOldPos != _arduinoDevice.FocuserPosition())
             {
                 _focuserOldPos = (int)_arduinoDevice.FocuserPosition();
-                labelFocuserPosition.Text = _focuserOldPos.ToString();
+                if (!_arduinoDevice.FocuserIsAbsoluteDevice())
+                    labelFocuserPosition.Text = _focuserOldPos.ToString();
+                else
+                {
+                    long basePos = 50;
+                    long maxPos = 125;
+                    long maxSteps = _arduinoDevice.FocuserGetMaximalPos();
+                    double factor = ((double)maxPos - (double)basePos) / (double)maxSteps;
+                    labelFocuserPosition.Text = String.Format("{0:0.00}", ((double)_focuserOldPos / _arduinoDevice.FocuserGetCoefficient())) + " mm";
+                    labelFocuserMax.Text = String.Format("{0:0.00}", (_arduinoDevice.FocuserGetMaximalPos() / _arduinoDevice.FocuserGetCoefficient())) + " mm";
+                    pictureBoxFocuserMove.Location = new Point((int)(basePos + (int)((double)_focuserOldPos * factor)) , pictureBoxFocuserMove.Location.Y);
+                }
                 if (_mqttConnected)
                     _mqtt.Publish(MQTT_FOCUSER_POSITION, Encoding.UTF8.GetBytes(_focuserOldPos.ToString(CultureInfo.InvariantCulture)), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
             }
@@ -540,18 +551,27 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             if (_arduinoDevice == null) return;
             try
             {
-                int istPos = (int)_arduinoDevice.FocuserPosition();
-                int pos = Convert.ToInt32(textBoxFocuserGo.Text);
-                int move = pos - istPos;
-                if (move > 0)
+                if (!_arduinoDevice.FocuserIsAbsoluteDevice())
                 {
-                    _arduinoDevice.FocuserMoveRight(move);
-                    buttonFocuserGo.Text = "X";
+                    int istPos = (int)_arduinoDevice.FocuserPosition();
+                    int pos = Convert.ToInt32(textBoxFocuserGo.Text);
+                    int move = pos - istPos;
+                    if (move > 0)
+                    {
+                        _arduinoDevice.FocuserMoveRight(move);
+                        buttonFocuserGo.Text = "X";
+                    }
+                    if (move < 0)
+                    {
+                        _arduinoDevice.FocuserMoveLeft(-move);
+                        buttonFocuserGo.Text = "X";
+                    }
                 }
-                if(move < 0)
+                else
                 {
-                    _arduinoDevice.FocuserMoveLeft(-move);
-                    buttonFocuserGo.Text = "X";
+                    double pos = Convert.ToDouble(textBoxFocuserGo.Text, CultureInfo.InvariantCulture);
+                    int steps = (int)(pos * _arduinoDevice.FocuserGetCoefficient());
+                    _arduinoDevice.FocuserSetAbsPos(steps);
                 }
 
             } catch (Exception ex)

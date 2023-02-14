@@ -63,7 +63,14 @@
             this.label8 = new System.Windows.Forms.Label();
             this.timerFocuser = new System.Windows.Forms.Timer(this.components);
             this.timerStartup = new System.Windows.Forms.Timer(this.components);
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.pictureBoxFocuserFix = new System.Windows.Forms.PictureBox();
+            this.pictureBoxFocuserMove = new System.Windows.Forms.PictureBox();
+            this.labelFocuserMax = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRotator)).BeginInit();
+            this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxFocuserFix)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxFocuserMove)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonConnect
@@ -283,7 +290,7 @@
             // 
             this.textBoxFocuserGo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
             this.textBoxFocuserGo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBoxFocuserGo.Location = new System.Drawing.Point(23, 471);
+            this.textBoxFocuserGo.Location = new System.Drawing.Point(28, 568);
             this.textBoxFocuserGo.Name = "textBoxFocuserGo";
             this.textBoxFocuserGo.Size = new System.Drawing.Size(128, 23);
             this.textBoxFocuserGo.TabIndex = 20;
@@ -295,7 +302,7 @@
             this.buttonFocuserGo.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.buttonFocuserGo.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
             this.buttonFocuserGo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonFocuserGo.Location = new System.Drawing.Point(149, 470);
+            this.buttonFocuserGo.Location = new System.Drawing.Point(154, 567);
             this.buttonFocuserGo.Name = "buttonFocuserGo";
             this.buttonFocuserGo.Size = new System.Drawing.Size(61, 25);
             this.buttonFocuserGo.TabIndex = 21;
@@ -310,7 +317,7 @@
             this.buttonFastLeft.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.buttonFastLeft.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
             this.buttonFastLeft.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonFastLeft.Location = new System.Drawing.Point(25, 521);
+            this.buttonFastLeft.Location = new System.Drawing.Point(30, 618);
             this.buttonFastLeft.Name = "buttonFastLeft";
             this.buttonFastLeft.Size = new System.Drawing.Size(62, 23);
             this.buttonFastLeft.TabIndex = 22;
@@ -326,7 +333,7 @@
             this.buttonSlowLeft.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.buttonSlowLeft.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
             this.buttonSlowLeft.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonSlowLeft.Location = new System.Drawing.Point(93, 521);
+            this.buttonSlowLeft.Location = new System.Drawing.Point(98, 618);
             this.buttonSlowLeft.Name = "buttonSlowLeft";
             this.buttonSlowLeft.Size = new System.Drawing.Size(75, 23);
             this.buttonSlowLeft.TabIndex = 23;
@@ -342,7 +349,7 @@
             this.buttonSlowRight.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.buttonSlowRight.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
             this.buttonSlowRight.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonSlowRight.Location = new System.Drawing.Point(174, 521);
+            this.buttonSlowRight.Location = new System.Drawing.Point(179, 618);
             this.buttonSlowRight.Name = "buttonSlowRight";
             this.buttonSlowRight.Size = new System.Drawing.Size(75, 23);
             this.buttonSlowRight.TabIndex = 24;
@@ -358,7 +365,7 @@
             this.buttonFastRight.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.buttonFastRight.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
             this.buttonFastRight.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonFastRight.Location = new System.Drawing.Point(255, 521);
+            this.buttonFastRight.Location = new System.Drawing.Point(260, 618);
             this.buttonFastRight.Name = "buttonFastRight";
             this.buttonFastRight.Size = new System.Drawing.Size(62, 23);
             this.buttonFastRight.TabIndex = 25;
@@ -372,7 +379,7 @@
             this.labelFocuserPosition.ForeColor = System.Drawing.Color.Silver;
             this.labelFocuserPosition.Location = new System.Drawing.Point(23, 428);
             this.labelFocuserPosition.Name = "labelFocuserPosition";
-            this.labelFocuserPosition.Size = new System.Drawing.Size(294, 30);
+            this.labelFocuserPosition.Size = new System.Drawing.Size(223, 30);
             this.labelFocuserPosition.TabIndex = 26;
             this.labelFocuserPosition.Text = "0.0 ";
             this.labelFocuserPosition.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -382,7 +389,7 @@
             this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.label9.ForeColor = System.Drawing.Color.Silver;
-            this.label9.Location = new System.Drawing.Point(225, 415);
+            this.label9.Location = new System.Drawing.Point(138, 415);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(92, 13);
             this.label9.TabIndex = 27;
@@ -464,12 +471,56 @@
             this.timerStartup.Interval = 500;
             this.timerStartup.Tick += new System.EventHandler(this.timerStartup_Tick);
             // 
+            // panel1
+            // 
+            this.panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.panel1.Controls.Add(this.pictureBoxFocuserFix);
+            this.panel1.Controls.Add(this.pictureBoxFocuserMove);
+            this.panel1.Location = new System.Drawing.Point(28, 461);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(243, 92);
+            this.panel1.TabIndex = 35;
+            // 
+            // pictureBoxFocuserFix
+            // 
+            this.pictureBoxFocuserFix.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBoxFocuserFix.BackgroundImage")));
+            this.pictureBoxFocuserFix.InitialImage = ((System.Drawing.Image)(resources.GetObject("pictureBoxFocuserFix.InitialImage")));
+            this.pictureBoxFocuserFix.Location = new System.Drawing.Point(0, 9);
+            this.pictureBoxFocuserFix.Name = "pictureBoxFocuserFix";
+            this.pictureBoxFocuserFix.Size = new System.Drawing.Size(150, 80);
+            this.pictureBoxFocuserFix.TabIndex = 34;
+            this.pictureBoxFocuserFix.TabStop = false;
+            // 
+            // pictureBoxFocuserMove
+            // 
+            this.pictureBoxFocuserMove.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.pictureBoxFocuserMove.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBoxFocuserMove.BackgroundImage")));
+            this.pictureBoxFocuserMove.InitialImage = ((System.Drawing.Image)(resources.GetObject("pictureBoxFocuserMove.InitialImage")));
+            this.pictureBoxFocuserMove.Location = new System.Drawing.Point(50, 10);
+            this.pictureBoxFocuserMove.Name = "pictureBoxFocuserMove";
+            this.pictureBoxFocuserMove.Size = new System.Drawing.Size(150, 80);
+            this.pictureBoxFocuserMove.TabIndex = 33;
+            this.pictureBoxFocuserMove.TabStop = false;
+            // 
+            // labelFocuserMax
+            // 
+            this.labelFocuserMax.AutoSize = true;
+            this.labelFocuserMax.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.labelFocuserMax.ForeColor = System.Drawing.Color.Silver;
+            this.labelFocuserMax.Location = new System.Drawing.Point(247, 433);
+            this.labelFocuserMax.Name = "labelFocuserMax";
+            this.labelFocuserMax.Size = new System.Drawing.Size(39, 13);
+            this.labelFocuserMax.TabIndex = 36;
+            this.labelFocuserMax.Text = "max. []";
+            // 
             // FormControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(17)))), ((int)(((byte)(40)))));
-            this.ClientSize = new System.Drawing.Size(665, 576);
+            this.ClientSize = new System.Drawing.Size(665, 668);
+            this.Controls.Add(this.labelFocuserMax);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.buttonFocuserSetup);
             this.Controls.Add(this.buttonSync);
@@ -508,6 +559,9 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormControl_FormClosing);
             this.Load += new System.EventHandler(this.FormControl_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRotator)).EndInit();
+            this.panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxFocuserFix)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxFocuserMove)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -547,5 +601,9 @@
         private Label label8;
         private System.Windows.Forms.Timer timerFocuser;
         private System.Windows.Forms.Timer timerStartup;
+        private PictureBox pictureBoxFocuserMove;
+        private PictureBox pictureBoxFocuserFix;
+        private Panel panel1;
+        private Label labelFocuserMax;
     }
 }

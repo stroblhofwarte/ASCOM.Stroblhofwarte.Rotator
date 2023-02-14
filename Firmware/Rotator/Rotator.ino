@@ -1,4 +1,6 @@
 // ------------------------------------------------ Rotator
+#include <EEPROM.h>
+
 #define STEP 3
 #define DIR  6
 #define EN   8
@@ -118,7 +120,7 @@ long FOC_OVERSHOOT_LEFT= 0;
 
   #define FOC_RIGHT_DIRECTION HIGH
   #define FOC_LEFT_DIRECTION LOW
-  #define FOC_STEP_DELAY_US 1600
+  #define FOC_STEP_DELAY_US 3600
   #define FOC_STEPS_PER_REVOLUTION 3200 * FOC_GEAR_RATIO
 #endif
 
@@ -163,12 +165,30 @@ long FOC_OVERSHOOT_LEFT= 0;
 #define FOC_CMD_MOTOR_POWER_ON "FOCMON"
 #define FOC_CMD_OVERSHOOT_RIGHT "FOCOVERR"
 #define FOC_CMD_OVERSHOOT_LEFT "FOCOVERL"
+#define FOC_CMD_SET_ABSOLUTE_DEVICE "FOCABS" // Set the focuser to a absolute position device -> Clibration required
+#define FOC_CMD_SET_RELATIVE_DEVICE "FOCREL" // Set the focuser to a relative position device
+#define FOC_CMD_GET_TYPE "FOCTYP"            // Return the configured position type
+#define FOC_CMD_SET_REVERSE "FOCREV"
+#define FOC_CMD_RESET_REVERSE "FOCNOR"
+#define FOC_CMD_GET_REVERSE "FOCGREV"
+#define FOC_CMD_SET_POS "FOCSPOS"           // in steps
+#define FOC_CMD_SET_COEFF "FOCCOEFF"        // in steps/mm
+#define FOC_CMD_GET_COEFF "FOCGCOEFF" 
+#define FOC_CMD_SET_MAX_POS "FOCMPOS"       // Set the maximal position afor absolute mode
+#define FOC_CMD_GET_MAX_POS "FOCMGPOS"      // Get maximal position (used only in abs mode)
+#define FOC_CMD_MOVE_ABS "FOCMOVABS"        // In abs mode move the focuser to this position. 
+
+#define FOC_ABS 1
+#define FOC_REL 3
 
 int g_foc_speed;
 long g_foc_pos_mech = 0;
 long g_foc_pos_goal = 0;
-
+float g_foc_coeff = 0;
+bool focIsAbs = false;
 bool _foc_notMotorPowerOff = false;
+long g_foc_abs_max_pos = 0;
+bool g_foc_isReverse = false;
 
 #define FOC_OBVERSHOOT_DONE 0
 #define FOC_OVERSHOOT_DIR_RIGHT 1
@@ -184,6 +204,77 @@ bool g_commandComplete = false;
 String g_info = "Not initialized yet.";
 bool g_focuserOperation = false;
 bool g_rotatorOperation = false;
+
+// ************************************************** Roling EEPROM storage 
+// To prevent EEPROM cell degeneration for one value EEPROM_ROLING_NUMBER*2
+// cells are used and written once each EEPROM_ROLING_NUMBER write cycles.
+#define EEPROM_ROLING_NUMBER 11
+
+#define EEPROM_TYPE_BASE_ADR 0
+#define EEPROM_REVERSE_ADR      24
+#define EEPROM_STEPS_PERMM_0    48
+#define EEPROM_STEPS_PERMM_1    72
+#define EEPROM_STEPS_PERMM_2    96
+#define EEPROM_STEPS_PERMM_3    120
+#define EEPROM_POS_PERMM_LOW    144
+#define EEPROM_POS_PERMM_HIGH   168
+#define EEPROM_POS_MAX_POS_LOW    192
+#define EEPROM_POS_MAX_POS_HIGH   216
+
+
+void Write(int baseAddr, long typ)
+{
+  long maxNumber = 0;
+  long maxAdr = 0;
+  long minNumber = 512;
+  long minAdr = 0;
+
+  for(long i = baseAddr; i < baseAddr + (EEPROM_ROLING_NUMBER*2); i+=2)
+  {
+    long idx = EEPROM.read(i+1);
+    if(idx < minNumber)
+    {
+      minNumber = idx;
+      minAdr = i;
+    }
+    if(idx > maxNumber)
+    {
+      maxNumber = idx;
+      maxAdr = i;
+    }
+  }
+  // Handle when value was written 256*256 times:
+  if(maxNumber +1 > 255)
+  {
+    // Here simply reset the idx's to 0:
+    for(long i = baseAddr; i < baseAddr + (EEPROM_ROLING_NUMBER*2); i+=2)
+    {
+      EEPROM.update(i+1,0);
+    }
+    minAdr = baseAddr;
+    maxNumber = 0;
+  } 
+  EEPROM.update(minAdr, typ);
+  EEPROM.update(minAdr+1, maxNumber + 1);
+}
+
+long Read(int baseAddr)
+{
+  long maxNumber = -1;
+  long maxAdr = 0;
+  for(long i = baseAddr; i < baseAddr + (EEPROM_ROLING_NUMBER*2); i+=2)
+  {
+    long idx = EEPROM.read(i+1);
+    if(idx > maxNumber)
+    {
+      maxNumber = idx;
+      maxAdr = i;
+    }
+  }
+  return EEPROM.read(maxAdr);
+}
+
+// ************************************************************************
 
 void setup() { 
   pinMode(STEP, OUTPUT);
@@ -204,6 +295,28 @@ void setup() {
   g_foc_speed = FOC_STEP_DELAY_US;
   
   Serial.begin(9600);
+
+  if(Read(EEPROM_TYPE_BASE_ADR) == FOC_ABS)
+    focIsAbs = true;
+  if(Read(EEPROM_REVERSE_ADR) == 1)
+    g_foc_isReverse = true;
+
+  long low = Read(EEPROM_POS_MAX_POS_LOW);
+  long high = Read(EEPROM_POS_MAX_POS_HIGH);
+  g_foc_abs_max_pos = 256*high + low;
+  byte* bytes = (byte*)&g_foc_coeff;
+  bytes[0] = Read(EEPROM_STEPS_PERMM_0);
+  bytes[1] = Read(EEPROM_STEPS_PERMM_1);
+  bytes[2] = Read(EEPROM_STEPS_PERMM_2);
+  bytes[3] = Read(EEPROM_STEPS_PERMM_3);
+  // Check if this is a absolute focuser setup:
+  if(focIsAbs)
+  {
+    long low = Read(EEPROM_POS_PERMM_LOW);
+    long high = Read(EEPROM_POS_PERMM_HIGH);
+    g_foc_pos_mech = 256*high + low;
+    g_foc_pos_goal = g_foc_pos_mech;
+  }
 }
 
 void initialize()
@@ -235,6 +348,17 @@ long FocExtract(String cmdid, String cmdstring)
   char tarray[32];
   cmdstring.toCharArray(tarray, sizeof(tarray));
   long steps = atol(tarray);
+  return steps;
+}
+
+float FocFloatExtract(String cmdid, String cmdstring)
+{
+  cmdstring.remove(0, cmdid.length());
+  cmdstring.replace(':', ' ');
+  cmdstring.trim();
+  char tarray[32];
+  cmdstring.toCharArray(tarray, sizeof(tarray));
+  float steps = atof(tarray);
   return steps;
 }
 
@@ -298,6 +422,99 @@ bool FocDispatcher()
     FOC_OVERSHOOT_LEFT = steps;
     FOC_OVERSHOOT_RIGHT  = 0;
     Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_SET_ABSOLUTE_DEVICE))
+  {
+    Write(EEPROM_TYPE_BASE_ADR, FOC_ABS);
+    focIsAbs = true;
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_SET_RELATIVE_DEVICE))
+  {
+    Write(EEPROM_TYPE_BASE_ADR, FOC_REL);
+    focIsAbs = false;
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_GET_TYPE))
+  {
+    if(Read(EEPROM_TYPE_BASE_ADR) == FOC_ABS)
+      Serial.print("ABS");
+    else if(Read(EEPROM_TYPE_BASE_ADR) == FOC_REL)
+      Serial.print("REL");
+    else
+      Serial.print("REL");
+    Serial.print("#");
+  }
+  else if(g_command.startsWith(FOC_CMD_SET_REVERSE))
+  {
+    Write(EEPROM_REVERSE_ADR, 1);
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_RESET_REVERSE))
+  {
+    Write(EEPROM_REVERSE_ADR, 0);
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_GET_REVERSE))
+  {
+    Serial.print(Read(EEPROM_REVERSE_ADR));
+    Serial.print("#");
+  }
+  else if(g_command.startsWith(FOC_CMD_SET_POS))
+  {
+    long val = Extract(FOC_CMD_SET_POS, g_command);
+    g_foc_pos_mech = val;
+    g_foc_pos_goal = val;
+    long high = highByte(val);
+    long low = lowByte(val);
+    Write(EEPROM_POS_PERMM_LOW, low);
+    Write(EEPROM_POS_PERMM_HIGH, high);
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_SET_COEFF))
+  {
+    float val = FocFloatExtract(FOC_CMD_SET_COEFF, g_command);
+    byte* bytes = (byte*)&val;
+    g_foc_coeff = val;
+    Write(EEPROM_STEPS_PERMM_0, bytes[0]);
+    Write(EEPROM_STEPS_PERMM_1, bytes[1]);
+    Write(EEPROM_STEPS_PERMM_2, bytes[2]);
+    Write(EEPROM_STEPS_PERMM_3, bytes[3]);
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_GET_COEFF))
+  {
+    Serial.print(g_foc_coeff);
+    Serial.print("#");
+  }
+  else if(g_command.startsWith(FOC_CMD_SET_MAX_POS))
+  {
+    long val = Extract(FOC_CMD_SET_MAX_POS, g_command);
+    g_foc_abs_max_pos = val;
+    long high = highByte(val);
+    long low = lowByte(val);
+    Write(EEPROM_POS_MAX_POS_LOW, low);
+    Write(EEPROM_POS_MAX_POS_HIGH, high);
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(FOC_CMD_GET_MAX_POS))
+  {
+    Serial.print(g_foc_abs_max_pos);
+    Serial.print("#");
+  }
+  else if(g_command.startsWith(FOC_CMD_MOVE_ABS))
+  {
+    if(focIsAbs)
+    {
+      long val = Extract(FOC_CMD_MOVE_ABS, g_command);
+      if(val <= g_foc_abs_max_pos) 
+      {
+        g_foc_pos_goal = val;
+        Serial.print("1#");
+      }
+      else
+        Serial.print("0#");
+    }
   }
   else
     return false;
@@ -551,6 +768,13 @@ void loop() {
   // ***********************************************   Focuser:
   if(millis() - g_foc_powerOffTimeout > 1000 && g_foc_pos_goal == g_foc_pos_mech)
   {
+    if(focIsAbs && g_focuserOperation)
+    {
+      byte high = highByte(g_foc_pos_mech);
+      byte low = lowByte(g_foc_pos_mech);
+      Write(EEPROM_POS_PERMM_LOW, low);
+      Write(EEPROM_POS_PERMM_HIGH, high);
+    }
     g_focuserOperation = false;
     if(g_foc_pos_goal == g_foc_pos_mech && _foc_notMotorPowerOff == false)
       digitalWrite(FOC_EN, FOC_STEPPER_DISABLE); 
@@ -559,8 +783,8 @@ void loop() {
   {
     g_focuserOperation = true;
     digitalWrite(FOC_EN, FOC_STEPPER_ENABLE);
-    digitalWrite(FOC_DIR, FOC_RIGHT_DIRECTION);
-   
+    if(!g_foc_isReverse) digitalWrite(FOC_DIR, FOC_RIGHT_DIRECTION);
+    else digitalWrite(FOC_DIR, FOC_LEFT_DIRECTION);
     delayMicroseconds(g_foc_speed);
     digitalWrite(FOC_STEP, HIGH); 
     delayMicroseconds(g_foc_speed);
@@ -572,7 +796,8 @@ void loop() {
   {
     g_focuserOperation = true;
     digitalWrite(FOC_EN, FOC_STEPPER_ENABLE);
-    digitalWrite(FOC_DIR, FOC_LEFT_DIRECTION);
+    if(!g_foc_isReverse) digitalWrite(FOC_DIR, FOC_LEFT_DIRECTION);
+    else digitalWrite(FOC_DIR, FOC_RIGHT_DIRECTION);
    
     delayMicroseconds(g_foc_speed);
     digitalWrite(FOC_STEP, HIGH); 
