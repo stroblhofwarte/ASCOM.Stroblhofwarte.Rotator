@@ -63,6 +63,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace ASCOM.Stroblhofwarte.mqtt
@@ -443,6 +444,13 @@ namespace ASCOM.Stroblhofwarte.mqtt
                 {
                     _mqtt.Publish(MQTT_FOCUSER_LEFT_TO, Encoding.UTF8.GetBytes((-Position).ToString()), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
                 }
+            }
+            // make sure the movement is detected via MQTT:
+            int timeout = 100;
+            while (IsMoving != true && timeout > 0)
+            {
+                Thread.Sleep(10);
+                timeout--;
             }
         }
 

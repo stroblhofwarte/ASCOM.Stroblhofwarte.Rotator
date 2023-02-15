@@ -63,12 +63,12 @@
             this.label8 = new System.Windows.Forms.Label();
             this.timerFocuser = new System.Windows.Forms.Timer(this.components);
             this.timerStartup = new System.Windows.Forms.Timer(this.components);
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.panelFocuserImg = new System.Windows.Forms.Panel();
             this.pictureBoxFocuserFix = new System.Windows.Forms.PictureBox();
             this.pictureBoxFocuserMove = new System.Windows.Forms.PictureBox();
             this.labelFocuserMax = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRotator)).BeginInit();
-            this.panel1.SuspendLayout();
+            this.panelFocuserImg.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxFocuserFix)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxFocuserMove)).BeginInit();
             this.SuspendLayout();
@@ -471,15 +471,15 @@
             this.timerStartup.Interval = 500;
             this.timerStartup.Tick += new System.EventHandler(this.timerStartup_Tick);
             // 
-            // panel1
+            // panelFocuserImg
             // 
-            this.panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.panel1.Controls.Add(this.pictureBoxFocuserFix);
-            this.panel1.Controls.Add(this.pictureBoxFocuserMove);
-            this.panel1.Location = new System.Drawing.Point(28, 461);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(243, 92);
-            this.panel1.TabIndex = 35;
+            this.panelFocuserImg.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.panelFocuserImg.Controls.Add(this.pictureBoxFocuserFix);
+            this.panelFocuserImg.Controls.Add(this.pictureBoxFocuserMove);
+            this.panelFocuserImg.Location = new System.Drawing.Point(28, 461);
+            this.panelFocuserImg.Name = "panelFocuserImg";
+            this.panelFocuserImg.Size = new System.Drawing.Size(294, 100);
+            this.panelFocuserImg.TabIndex = 35;
             // 
             // pictureBoxFocuserFix
             // 
@@ -520,7 +520,7 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(17)))), ((int)(((byte)(40)))));
             this.ClientSize = new System.Drawing.Size(665, 668);
             this.Controls.Add(this.labelFocuserMax);
-            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.panelFocuserImg);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.buttonFocuserSetup);
             this.Controls.Add(this.buttonSync);
@@ -559,7 +559,7 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormControl_FormClosing);
             this.Load += new System.EventHandler(this.FormControl_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRotator)).EndInit();
-            this.panel1.ResumeLayout(false);
+            this.panelFocuserImg.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxFocuserFix)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxFocuserMove)).EndInit();
             this.ResumeLayout(false);
@@ -603,7 +603,7 @@
         private System.Windows.Forms.Timer timerStartup;
         private PictureBox pictureBoxFocuserMove;
         private PictureBox pictureBoxFocuserFix;
-        private Panel panel1;
+        private Panel panelFocuserImg;
         private Label labelFocuserMax;
     }
 }

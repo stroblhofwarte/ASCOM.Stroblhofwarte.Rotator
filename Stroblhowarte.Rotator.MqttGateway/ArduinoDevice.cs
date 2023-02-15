@@ -83,7 +83,8 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         private string SendAndReceive(string command, char endSign)
         {
-            if (!_serialIsConnected) return string.Empty;
+            if (_serial == null) return String.Empty;
+            if (!_serial.IsOpen) return string.Empty;
             _serial.Write(command);
             string str = string.Empty;
             int timeout = _SERIAL_RECEIVE_TIMEOUT;
@@ -108,7 +109,8 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         public string RotatorGetInfoString()
         {
-            if (!_serialIsConnected) return "Not connected.";
+            if (_serial == null) return "Not connected.";
+            if (!_serial.IsOpen) return "Not connected.";
             lock (_lock)
             {
                 string str = SendAndReceive("IF:", '#');
@@ -120,7 +122,8 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         public void RotatorInitHardware()
         {
-            if (!_serialIsConnected) return;
+            if (_serial == null) return;
+            if (!_serial.IsOpen) return;
             lock (_lock)
             {
                 SendAndReceive("IN:", '#');
@@ -129,22 +132,25 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         public void RotatorPark()
         {
-            if (!_serialIsConnected) return;
+            if (_serial == null) return;
+            if (!_serial.IsOpen) return;
             lock(_lock)
                 SendAndReceive("PA:", '#');
         }
 
         public void RotatorSetPark(float pp)
         {
-            if (!_serialIsConnected) return;
+            if (_serial == null) return;
+            if (!_serial.IsOpen) return;
             lock (_lock)
                 SendAndReceive("PP" + pp.ToString(CultureInfo.InvariantCulture) + ":", '#');
         }
 
         public void RotatorSetInitSpeed(float val)
         {
+            if (_serial == null) return;
             if (val < 0.5) return;
-            if (!_serialIsConnected) return;
+            if (!_serial.IsOpen) return;
             _rotatorInitSpeed = (double)val;
             lock (_lock)
                 SendAndReceive("IS" + val.ToString(CultureInfo.InvariantCulture) + ":", '#');
@@ -157,8 +163,9 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         public void RotatorSetSpeed(float val)
         {
+            if (_serial == null) return;
             if (val < 0.5) return;
-            if (!_serialIsConnected) return;
+            if (!_serial.IsOpen) return;
             _rotatorSpeed = val;
             lock (_lock)
                 SendAndReceive("SP" + val.ToString(CultureInfo.InvariantCulture) + ":", '#');
@@ -171,14 +178,16 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         public void RotatorHalt()
         {
-            if (!_serialIsConnected) return;
+            if (_serial == null) return;
+            if (!_serial.IsOpen) return;
             lock (_lock)
                 SendAndReceive("ST:", '#');
         }
 
         public bool RotatorIsMoving()
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
                 string ret = SendAndReceive("MV:", '#');
@@ -189,7 +198,8 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         public void RotatorMove(float pos)
         {
-            if (!_serialIsConnected) return;
+            if (_serial == null) return;
+            if (!_serial.IsOpen) return;
             lock (_lock)
             {
                 if (pos > 0)
@@ -207,7 +217,8 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         public bool RotatorMoveAbsolute(float pos)
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
                 string cmd = "TA" + pos.ToString(CultureInfo.InvariantCulture) + ":";
@@ -219,7 +230,8 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         public bool RotatorMotorPowerOn()
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
                 SendAndReceive("MON:",'#');
             RotatorMotorOff = false;
@@ -228,7 +240,8 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         public bool RotatorMotorPowerOff()
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
                 SendAndReceive("MOFF:", '#');
             RotatorMotorOff = true;
@@ -237,7 +250,8 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         public float RotatorPosition()
         {
-            if (!_serialIsConnected) return 0.0f;
+            if (_serial == null) return 0.0f;
+            if (!_serial.IsOpen) return 0.0f;
             lock (_lock)
             {
 RepeatPositionRead:
@@ -255,7 +269,8 @@ RepeatPositionRead:
 
         public float RotatorStepSize()
         {
-            if (!_serialIsConnected) return 0.0f;
+            if (_serial == null) return 0.0f;
+            if (!_serial.IsOpen) return 0.0f;
             lock (_lock)
             {
                 string ret = SendAndReceive("SZ:", '#');
@@ -281,9 +296,15 @@ RepeatPositionRead:
 
         public bool FocuserMoveLeft(long steps)
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
+                if(FocuserIsAbsoluteDevice())
+                {
+                    if (FocuserPosition() <= 0)
+                        return false;
+                }
                 string ret = SendAndReceive("FOCTL" + steps.ToString(CultureInfo.InvariantCulture) + ":", '#');
 
                 if (ret == "1#") return true;
@@ -293,9 +314,15 @@ RepeatPositionRead:
 
         public bool FocuserMoveRight(long steps)
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
+                if (FocuserIsAbsoluteDevice())
+                {
+                    if (FocuserPosition() > FocuserGetMaximalPos())
+                        return false;
+                }
                 string ret = SendAndReceive("FOCTR" + steps.ToString(CultureInfo.InvariantCulture) + ":", '#');
 
                 if (ret == "1#") return true;
@@ -305,7 +332,8 @@ RepeatPositionRead:
 
         public void FocuserHalt()
         {
-            if (!_serialIsConnected) return;
+            if (_serial == null) return;
+            if (!_serial.IsOpen) return;
             lock (_lock)
             {
                 SendAndReceive("FOCST:", '#');
@@ -314,7 +342,8 @@ RepeatPositionRead:
 
         public bool FocuserIsMoving()
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
                 string ret = SendAndReceive("FOCMV:", '#');
@@ -325,7 +354,8 @@ RepeatPositionRead:
 
         public long FocuserPosition()
         {
-            if (!_serialIsConnected) return 0;
+            if (_serial == null) return 0;
+            if (!_serial.IsOpen) return 0;
             lock (_lock)
             {
                 string ret = SendAndReceive("FOCPO:", '#');
@@ -338,7 +368,8 @@ RepeatPositionRead:
 
         public bool FocuserMotorPowerOn()
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
                 SendAndReceive("FOCMON:", '#');
@@ -348,39 +379,18 @@ RepeatPositionRead:
 
         public bool FocuserMotorPowerOff()
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
                 SendAndReceive("FOCMOFF:", '#');
             }
             return true;
         }
-
-        public bool FocuserSetRightOvershoot(long val)
-        {
-            if (!_serialIsConnected) return false;
-            lock (_lock)
-            {
-                string ret = SendAndReceive("FOCOVERR" + val.ToString(CultureInfo.InvariantCulture) + ":", '#');
-                if (ret == "1#") return true;
-                return false;
-            }
-        }
-
-        public bool FocuserSetLeftOvershoot(long val)
-        {
-            if (!_serialIsConnected) return false;
-            lock (_lock)
-            {
-                string ret = SendAndReceive("FOCOVERL" + val.ToString(CultureInfo.InvariantCulture) + ":", '#');
-                if (ret == "1#") return true;
-                return false;
-            }
-        }
-
         public bool FocuserSetCoefficient(double val /* steps/mm */)
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
                 string ret = SendAndReceive("FOCCOEFF" + val.ToString(CultureInfo.InvariantCulture) + ":", '#');
@@ -390,7 +400,8 @@ RepeatPositionRead:
         }
         public double FocuserGetCoefficient()
         {
-            if (!_serialIsConnected) return -1.0;
+            if (_serial == null) return -1.0;
+            if (!_serial.IsOpen) return -1.0;
             lock (_lock)
             {
                 string ret = SendAndReceive("FOCGCOEFF:", '#');
@@ -409,7 +420,8 @@ RepeatPositionRead:
 
         public bool FocuserSetAbsoluteDevice(bool val)
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
                 if (val)
@@ -427,7 +439,8 @@ RepeatPositionRead:
 
         public bool FocuserIsAbsoluteDevice()
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
                 string ret = SendAndReceive("FOCTYP:", '#');
@@ -438,7 +451,8 @@ RepeatPositionRead:
 
         public bool FocuserSetPosition(long val)
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
                 string ret = SendAndReceive("FOCSPOS" + val.ToString() + ":", '#');
@@ -448,7 +462,8 @@ RepeatPositionRead:
 
         public bool FocuserSetMaximalPos(long val)
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
                 string ret = SendAndReceive("FOCMPOS" + val.ToString() + ":", '#');
@@ -459,7 +474,8 @@ RepeatPositionRead:
 
         public long FocuserGetMaximalPos()
         {
-            if (!_serialIsConnected) return -1;
+            if (_serial == null) return -1;
+            if (!_serial.IsOpen) return -1;
             lock (_lock)
             {
                 string ret = SendAndReceive("FOCMGPOS:", '#');
@@ -478,7 +494,8 @@ RepeatPositionRead:
 
         public bool FocuserSetAbsPos(long val)
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
                 string ret = SendAndReceive("FOCMOVABS" + val.ToString() + ":", '#');
@@ -488,7 +505,8 @@ RepeatPositionRead:
 
         public bool FocuserSetReverse(bool val)
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
                 if (val)
@@ -505,7 +523,8 @@ RepeatPositionRead:
 
         public bool FocuserIsReverse()
         {
-            if (!_serialIsConnected) return false;
+            if (_serial == null) return false;
+            if (!_serial.IsOpen) return false;
             lock (_lock)
             {
                 string ret = SendAndReceive("FOCGREV:", '#');

@@ -129,8 +129,6 @@ namespace Stroblhofwarte.Rotator.MqttGateway
                         _arduinoDevice.RotatorMotorPowerOn();
                     }
                     textBoxPosition.Text = _arduinoDevice.RotatorPosition().ToString();
-                    _arduinoDevice.FocuserSetLeftOvershoot(Settings.Default.LeftOvershoot);
-                    _arduinoDevice.FocuserSetRightOvershoot(Settings.Default.RightOvershoot);
                     _arduinoDevice.FocuserMotorPowerOff();
 
                     buttonRotatorSetup.Enabled = true;
@@ -268,16 +266,20 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             {
                 _focuserOldPos = (int)_arduinoDevice.FocuserPosition();
                 if (!_arduinoDevice.FocuserIsAbsoluteDevice())
+                {
                     labelFocuserPosition.Text = _focuserOldPos.ToString();
+                    panelFocuserImg.Hide();
+                }
                 else
                 {
+                    panelFocuserImg.Show();
                     long basePos = 50;
                     long maxPos = 125;
                     long maxSteps = _arduinoDevice.FocuserGetMaximalPos();
                     double factor = ((double)maxPos - (double)basePos) / (double)maxSteps;
                     labelFocuserPosition.Text = String.Format("{0:0.00}", ((double)_focuserOldPos / _arduinoDevice.FocuserGetCoefficient())) + " mm";
                     labelFocuserMax.Text = String.Format("{0:0.00}", (_arduinoDevice.FocuserGetMaximalPos() / _arduinoDevice.FocuserGetCoefficient())) + " mm";
-                    pictureBoxFocuserMove.Location = new Point((int)(basePos + (int)((double)_focuserOldPos * factor)) , pictureBoxFocuserMove.Location.Y);
+                    pictureBoxFocuserMove.Location = new Point((int)(basePos + (int)((double)_focuserOldPos * factor)), pictureBoxFocuserMove.Location.Y);
                 }
                 if (_mqttConnected)
                     _mqtt.Publish(MQTT_FOCUSER_POSITION, Encoding.UTF8.GetBytes(_focuserOldPos.ToString(CultureInfo.InvariantCulture)), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);

@@ -104,9 +104,6 @@ bool _notMotorPowerOff = false;
 
 #define FOC_GEAR_RATIO 1.0
 
-long FOC_OVERSHOOT_RIGHT= 0;
-long FOC_OVERSHOOT_LEFT= 0;
-
 // Enable only one stepper motor driver!
 //#define NODRV
 #define FOC_DRV8825 // TMC2130 SilentStick with SPI jumper closed (Standalone) and all three jumpers open (1/16 µStepping interpolate to 256 steps, realy silent!)
@@ -163,8 +160,6 @@ long FOC_OVERSHOOT_LEFT= 0;
 #define FOC_CMD_POS "FOCPO"
 #define FOC_CMD_MOTOR_POWER_OFF "FOCMOFF"
 #define FOC_CMD_MOTOR_POWER_ON "FOCMON"
-#define FOC_CMD_OVERSHOOT_RIGHT "FOCOVERR"
-#define FOC_CMD_OVERSHOOT_LEFT "FOCOVERL"
 #define FOC_CMD_SET_ABSOLUTE_DEVICE "FOCABS" // Set the focuser to a absolute position device -> Clibration required
 #define FOC_CMD_SET_RELATIVE_DEVICE "FOCREL" // Set the focuser to a relative position device
 #define FOC_CMD_GET_TYPE "FOCTYP"            // Return the configured position type
@@ -190,10 +185,6 @@ bool _foc_notMotorPowerOff = false;
 long g_foc_abs_max_pos = 0;
 bool g_foc_isReverse = false;
 
-#define FOC_OBVERSHOOT_DONE 0
-#define FOC_OVERSHOOT_DIR_RIGHT 1
-#define FOC_OVERSHOOT_DIR_LEFT 2
-int g_foc_overshoot_handling = FOC_OBVERSHOOT_DONE;
 long g_foc_powerOffTimeout = 0;
 #define FOC_POWERTIMEOUT 1000
 
@@ -367,16 +358,14 @@ bool FocDispatcher()
   if(g_command.startsWith(FOC_CMD_TURN_RIGHT))
   {
     long val = Extract(FOC_CMD_TURN_RIGHT, g_command);
-    long steps = val + FOC_OVERSHOOT_RIGHT;
-    g_foc_overshoot_handling = FOC_OVERSHOOT_DIR_RIGHT;
+    long steps = val;
     FocMoveRight(steps);
     Serial.print("1#");
   }
   else if(g_command.startsWith(FOC_CMD_TURN_LEFT))
   {
     long val = Extract(FOC_CMD_TURN_RIGHT, g_command);
-    long steps = val + FOC_OVERSHOOT_LEFT;
-    g_foc_overshoot_handling = FOC_OVERSHOOT_DIR_LEFT;
+    long steps = val;
     FocMoveLeft(steps);
     Serial.print("1#");
   }
@@ -406,22 +395,6 @@ bool FocDispatcher()
   {
     Serial.print(g_foc_pos_mech);
     Serial.print("#");
-  }
-  else if(g_command.startsWith(FOC_CMD_OVERSHOOT_RIGHT))
-  {
-    long val = Extract(FOC_CMD_OVERSHOOT_RIGHT, g_command);
-    long steps = val;
-    FOC_OVERSHOOT_RIGHT = steps;
-    FOC_OVERSHOOT_LEFT = 0;
-    Serial.print("1#");
-  }
-  else if(g_command.startsWith(FOC_CMD_OVERSHOOT_LEFT))
-  {
-    long val = Extract(FOC_CMD_OVERSHOOT_LEFT, g_command);
-    long steps = val;
-    FOC_OVERSHOOT_LEFT = steps;
-    FOC_OVERSHOOT_RIGHT  = 0;
-    Serial.print("1#");
   }
   else if(g_command.startsWith(FOC_CMD_SET_ABSOLUTE_DEVICE))
   {
@@ -805,20 +778,6 @@ void loop() {
     digitalWrite(FOC_STEP, LOW); 
     g_foc_pos_mech--;
     g_foc_powerOffTimeout = millis();
-  }
-  if(g_foc_pos_goal == g_foc_pos_mech && g_foc_overshoot_handling != FOC_OBVERSHOOT_DONE)
-  {
-    // Overshoot handling
-    if(g_foc_overshoot_handling == FOC_OVERSHOOT_DIR_RIGHT)
-    {
-      g_foc_overshoot_handling = FOC_OBVERSHOOT_DONE;
-      FocMoveLeft(FOC_OVERSHOOT_RIGHT);
-    }
-    if(g_foc_overshoot_handling == FOC_OVERSHOOT_DIR_LEFT)
-    {
-      g_foc_overshoot_handling = FOC_OBVERSHOOT_DONE;
-      FocMoveRight(FOC_OVERSHOOT_LEFT);
-    }
   }
 }
 

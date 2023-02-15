@@ -22,8 +22,6 @@ namespace Stroblhofwarte.Rotator.MqttGateway
         {
             _device = device;
             InitializeComponent();
-            textBoxLeftOvershoot.Text = Settings.Default.LeftOvershoot.ToString();
-            textBoxRightOvershoot.Text = Settings.Default.RightOvershoot.ToString();
             textBoxMaxMovement.Text = Settings.Default.FocuserMaxMovement.ToString();
             checkBoxReverse.Checked = _device.RotatorIsReverse;
             if (_device.FocuserIsAbsoluteDevice()) checkBoxAbsolute.Checked = true;
@@ -31,68 +29,18 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             ResetCalibrationWizard();
         }
 
-        private void buttonRightSet_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                int val = Convert.ToInt32(textBoxRightOvershoot.Text);
-                if(val < 0)
-                {
-                    textBoxRightOvershoot.Text = "0";
-                    return;
-                }
-                Settings.Default.RightOvershoot = val;
-                Settings.Default.Save();
-                _device.FocuserSetRightOvershoot(val);
-                textBoxLeftOvershoot.Text = "0";
-                _device.FocuserSetLeftOvershoot(0);
-            } catch (Exception ex)
-            {
-                textBoxRightOvershoot.Text = "0";
-                textBoxLeftOvershoot.Text = "0";
-            }
-        }
-
-        private void buttonLeftSet_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                int val = Convert.ToInt32(textBoxLeftOvershoot.Text);
-                if (val < 0)
-                {
-                    textBoxLeftOvershoot.Text = "0";
-                    return;
-                }
-                Settings.Default.LeftOvershoot = val;
-                Settings.Default.Save();
-                _device.FocuserSetLeftOvershoot(val);
-                textBoxRightOvershoot.Text = "0";
-                _device.FocuserSetRightOvershoot(0);
-            }
-            catch (Exception ex)
-            {
-                textBoxRightOvershoot.Text = "0";
-                textBoxLeftOvershoot.Text = "0";
-            }
-        }
-
         private void buttonSetMax_Click(object sender, EventArgs e)
         {
             try
             {
                 int val = Convert.ToInt32(textBoxMaxMovement.Text);
-                if (val <= 0)
-                {
-                    textBoxLeftOvershoot.Text = "0";
-                    return;
-                }
                 Settings.Default.FocuserMaxMovement = val;
                 Settings.Default.Save();
                 
             }
             catch (Exception ex)
             {
-                textBoxLeftOvershoot.Text = "30000";
+                
             }
         }
 
@@ -135,7 +83,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         private void Step1()
         {
-            checkBoxStep1.Enabled = true;
+            checkBoxStep1.Enabled = false;
             checkBoxStep2.Enabled = false;
             checkBoxStep3.Enabled = false;
             checkBoxStep4.Enabled = false;
@@ -175,7 +123,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
         {
             checkBoxStep1.Enabled = false;
             checkBoxStep2.Enabled = false;
-            checkBoxStep3.Enabled = true;
+            checkBoxStep3.Enabled = false;
             checkBoxStep4.Enabled = false;
             // Step 1
             textBoxMaxLength.Enabled = false;
@@ -195,7 +143,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             checkBoxStep1.Enabled = false;
             checkBoxStep2.Enabled = false;
             checkBoxStep3.Enabled = false;
-            checkBoxStep4.Enabled = true;
+            checkBoxStep4.Enabled = false;
             // Step 1
             textBoxMaxLength.Enabled = false;
             buttonSetMaxLength.Enabled = false;
@@ -248,6 +196,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
                 double coeff = (double)_calMovedSteps / travel;
                 _device.FocuserSetCoefficient(coeff);
                 _device.FocuserSetPosition(_calMovedSteps);
+                checkBoxStep4.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -260,6 +209,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             try
             {
                 _calMaxOutInmm = Convert.ToDouble(textBoxMaxLength.Text, CultureInfo.InvariantCulture);
+                checkBoxStep1.Enabled = true;
             } catch(Exception ex)
             {
                 _calMaxOutInmm = 0.0;
@@ -274,6 +224,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
                 int move = Convert.ToInt32(textBoxMeasMovement.Text, CultureInfo.InvariantCulture);
                 _device.FocuserMoveRight(move);
                 _calMovedSteps = move;
+                checkBoxStep3.Enabled = true;
             }
             catch(Exception ex)
             {
