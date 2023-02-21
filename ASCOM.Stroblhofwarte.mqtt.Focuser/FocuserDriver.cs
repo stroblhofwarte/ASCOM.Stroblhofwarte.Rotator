@@ -103,6 +103,8 @@ namespace ASCOM.Stroblhofwarte.mqtt
         internal static string mqttPortDefault = "1883";
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
+        internal static string absoluteProfileName = "Trace Level";
+        internal static string absoluteDefault = "false";
 
         private readonly static string MQTT_FOCUSER_PREFIX = "Stroblhofwarte/Focuser/";
         private readonly string MQTT_FOCUSER_POSITION = MQTT_FOCUSER_PREFIX + "Position";
@@ -111,6 +113,8 @@ namespace ASCOM.Stroblhofwarte.mqtt
         private readonly string MQTT_FOCUSER_LEFT_TO = MQTT_FOCUSER_PREFIX + "Left";
         private readonly string MQTT_FOCUSER_HALT = MQTT_FOCUSER_PREFIX + "Halt";
         private readonly string MQTT_FOCUSER_MAX_MOVEMENT = MQTT_FOCUSER_PREFIX + "MaxMovement";
+        private readonly string MQTT_FOCUSER_IS_ABS = MQTT_FOCUSER_PREFIX + "IsAbs";
+        private readonly string MQTT_FOCUSER_MOVE_ABS = MQTT_FOCUSER_PREFIX + "MoveAbs";
 
         internal static string mqttHost; // Variables to hold the current device configuration
         internal static int mqttPort;
@@ -119,6 +123,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
         private bool _isMoving;
         private int _position;
         private int _maxMovement;
+        private bool _isAbsoulte = false;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -261,10 +266,12 @@ namespace ASCOM.Stroblhofwarte.mqtt
                     _mqtt.Subscribe(new string[] { MQTT_FOCUSER_POSITION }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
                     _mqtt.Subscribe(new string[] { MQTT_FOCUSER_MOVE }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
                     _mqtt.Subscribe(new string[] { MQTT_FOCUSER_MAX_MOVEMENT }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+                    _mqtt.Subscribe(new string[] { MQTT_FOCUSER_IS_ABS }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+                    
                     _mqtt.MqttMsgPublishReceived += _mqtt_MqttMsgPublishReceived;
                     _mqtt.Connect("Stroblhofwarte.mqtt.Focuser");
-                    connectedState = true;
 
+                    connectedState = true;
                 }
                 else
                 {
@@ -291,6 +298,20 @@ namespace ASCOM.Stroblhofwarte.mqtt
                     // Position value invalid! Do nothing!
                 }
             }
+            if (e.Topic == MQTT_FOCUSER_IS_ABS)
+            {
+                try
+                {
+                    if (msg == "True")
+                        _isAbsoulte = true;
+                }
+                catch (Exception ex)
+                {
+                    _isAbsoulte = true;
+                }
+                WriteProfile();
+            }
+            
             if (e.Topic == MQTT_FOCUSER_MOVE)
             {
                 _isMoving = false;
@@ -376,8 +397,8 @@ namespace ASCOM.Stroblhofwarte.mqtt
         {
             get
             {
-                tl.LogMessage("Absolute Get", true.ToString());
-                return false; // This is an relative focuser
+                tl.LogMessage("Absolute Get", _isAbsoulte.ToString());
+                return _isAbsoulte; // This is an relative focuser
             }
         }
 
@@ -429,20 +450,30 @@ namespace ASCOM.Stroblhofwarte.mqtt
             }
         }
 
-        public void Move(int Position)
+        public void Move(int pos)
         {
-            if(Position > 0)
+            if (_isAbsoulte)
             {
                 if (IsConnected)
                 {
-                    _mqtt.Publish(MQTT_FOCUSER_RIGHT_TO, Encoding.UTF8.GetBytes(Position.ToString()), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+                    _mqtt.Publish(MQTT_FOCUSER_MOVE_ABS, Encoding.UTF8.GetBytes(pos.ToString()), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
                 }
             }
-            if (Position < 0)
+            else
             {
-                if (IsConnected)
+                if (pos > 0)
                 {
-                    _mqtt.Publish(MQTT_FOCUSER_LEFT_TO, Encoding.UTF8.GetBytes((-Position).ToString()), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+                    if (IsConnected)
+                    {
+                        _mqtt.Publish(MQTT_FOCUSER_RIGHT_TO, Encoding.UTF8.GetBytes(pos.ToString()), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+                    }
+                }
+                if (pos < 0)
+                {
+                    if (IsConnected)
+                    {
+                        _mqtt.Publish(MQTT_FOCUSER_LEFT_TO, Encoding.UTF8.GetBytes((-pos).ToString()), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, true);
+                    }
                 }
             }
             // make sure the movement is detected via MQTT:
@@ -458,8 +489,12 @@ namespace ASCOM.Stroblhofwarte.mqtt
         {
             get
             {
-                tl.LogMessage("Position", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Position", false);
+                if (!_isAbsoulte)
+                {
+                    tl.LogMessage("Position", "Not implemented");
+                    throw new ASCOM.PropertyNotImplementedException("Position", false);
+                }
+                return _position;
             }
         }
 
@@ -616,6 +651,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
             {
                 driverProfile.DeviceType = "Focuser";
                 tl.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
+                _isAbsoulte = Convert.ToBoolean(driverProfile.GetValue(driverID, absoluteProfileName, string.Empty, absoluteDefault));
                 mqttHost = driverProfile.GetValue(driverID, mqttHostName, string.Empty, mqttHostDefault);
                 mqttPort = Convert.ToInt32(driverProfile.GetValue(driverID, mqttPortName, string.Empty, mqttPortDefault));
             }
@@ -630,6 +666,7 @@ namespace ASCOM.Stroblhofwarte.mqtt
             {
                 driverProfile.DeviceType = "Focuser";
                 driverProfile.WriteValue(driverID, traceStateProfileName, tl.Enabled.ToString());
+                driverProfile.WriteValue(driverID, absoluteProfileName, _isAbsoulte.ToString());
                 driverProfile.WriteValue(driverID, mqttHostName, mqttHost.ToString());
                 driverProfile.WriteValue(driverID, mqttPortName, mqttPort.ToString());
             }
