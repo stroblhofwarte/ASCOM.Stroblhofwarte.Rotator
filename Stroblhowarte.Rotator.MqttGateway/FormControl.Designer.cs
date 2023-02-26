@@ -67,6 +67,7 @@
             this.pictureBoxFocuserFix = new System.Windows.Forms.PictureBox();
             this.pictureBoxFocuserMove = new System.Windows.Forms.PictureBox();
             this.labelFocuserMax = new System.Windows.Forms.Label();
+            this.checkBoxMoff = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRotator)).BeginInit();
             this.panelFocuserImg.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxFocuserFix)).BeginInit();
@@ -513,12 +514,25 @@
             this.labelFocuserMax.TabIndex = 36;
             this.labelFocuserMax.Text = "max. []";
             // 
+            // checkBoxMoff
+            // 
+            this.checkBoxMoff.AutoSize = true;
+            this.checkBoxMoff.ForeColor = System.Drawing.Color.Silver;
+            this.checkBoxMoff.Location = new System.Drawing.Point(128, 388);
+            this.checkBoxMoff.Name = "checkBoxMoff";
+            this.checkBoxMoff.Size = new System.Drawing.Size(165, 19);
+            this.checkBoxMoff.TabIndex = 37;
+            this.checkBoxMoff.Text = "Power off after movement";
+            this.checkBoxMoff.UseVisualStyleBackColor = true;
+            this.checkBoxMoff.CheckedChanged += new System.EventHandler(this.checkBoxMoff_CheckedChanged);
+            // 
             // FormControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(17)))), ((int)(((byte)(40)))));
             this.ClientSize = new System.Drawing.Size(665, 668);
+            this.Controls.Add(this.checkBoxMoff);
             this.Controls.Add(this.labelFocuserMax);
             this.Controls.Add(this.panelFocuserImg);
             this.Controls.Add(this.label8);
@@ -605,5 +619,6 @@
         private PictureBox pictureBoxFocuserFix;
         private Panel panelFocuserImg;
         private Label labelFocuserMax;
+        private CheckBox checkBoxMoff;
     }
 }

@@ -154,5 +154,17 @@ namespace Stroblhofwarte.Rotator.MqttGateway {
                 this["FocuserMaxMovement"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool FocMotorOff {
+            get {
+                return ((bool)(this["FocMotorOff"]));
+            }
+            set {
+                this["FocMotorOff"] = value;
+            }
+        }
     }
 }

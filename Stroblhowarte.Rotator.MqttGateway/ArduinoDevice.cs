@@ -39,7 +39,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             try
             {
                 if (_serial == null)
-                    _serial = new SerialPort(_comPort, 9600, Parity.None, 8, StopBits.One);
+                    _serial = new SerialPort(_comPort, 115200, Parity.None, 8, StopBits.One);
                 _serial.Open();
                 if (!_serial.IsOpen)
                 {

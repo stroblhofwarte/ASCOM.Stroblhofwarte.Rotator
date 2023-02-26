@@ -35,5 +35,8 @@
     <Setting Name="FocuserMaxMovement" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">30000</Value>
     </Setting>
+    <Setting Name="FocMotorOff" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -130,8 +130,17 @@ namespace Stroblhofwarte.Rotator.MqttGateway
                     {
                         _arduinoDevice.RotatorMotorPowerOn();
                     }
+
+                    if (Settings.Default.FocMotorOff)
+                    {
+                        _arduinoDevice.FocuserMotorPowerOff();
+                    }
+                    else
+                    {
+                        _arduinoDevice.FocuserMotorPowerOn();
+                    }
+                    
                     textBoxPosition.Text = _arduinoDevice.RotatorPosition().ToString();
-                    _arduinoDevice.FocuserMotorPowerOff();
 
                     buttonRotatorSetup.Enabled = true;
                     buttonFocuserSetup.Enabled = true;
@@ -613,7 +622,28 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             FormSetupFocuser dlg = new FormSetupFocuser(_arduinoDevice);
             dlg.ShowDialog();
             _focuserMaxMovement = Settings.Default.FocuserMaxMovement;
+            if (Settings.Default.FocMotorOff)
+            {
+                _arduinoDevice.FocuserMotorPowerOff();
+            }
+            else
+            {
+                _arduinoDevice.FocuserMotorPowerOn();
+            }
         }
 
+        private void checkBoxMoff_CheckedChanged(object sender, EventArgs e)
+        {
+            Settings.Default.FocMotorOff = checkBoxMoff.Checked;
+            Settings.Default.Save();
+            if (Settings.Default.FocMotorOff)
+            {
+                _arduinoDevice.FocuserMotorPowerOff();
+            }
+            else
+            {
+                _arduinoDevice.FocuserMotorPowerOn();
+            }
+        }
     }
 }

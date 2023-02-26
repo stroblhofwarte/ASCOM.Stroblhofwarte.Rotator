@@ -161,6 +161,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         private void buttonStartCalib_Click(object sender, EventArgs e)
         {
+            _device.FocuserMotorPowerOff();
             Step1();
         }
 
@@ -221,6 +222,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
         {
             try
             {
+                _device.FocuserSetMaximalPos(100000);
                 int move = Convert.ToInt32(textBoxMeasMovement.Text, CultureInfo.InvariantCulture);
                 _device.FocuserMoveRight(move);
                 _calMovedSteps = move;
@@ -239,8 +241,17 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 
         private void buttonReCal_Click(object sender, EventArgs e)
         {
+            _device.FocuserMotorPowerOff();
             MessageBox.Show("Please move the Focuser to the \"in\" position and press OK");
             _device.FocuserSetPosition(0);
+            if (Settings.Default.FocMotorOff)
+            {
+                _device.FocuserMotorPowerOff();
+            }
+            else
+            {
+                _device.FocuserMotorPowerOn();
+            }
         }
     }
 }
