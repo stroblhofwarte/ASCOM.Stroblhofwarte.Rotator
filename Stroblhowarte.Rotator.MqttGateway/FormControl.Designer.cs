@@ -63,15 +63,13 @@
             this.label8 = new System.Windows.Forms.Label();
             this.timerFocuser = new System.Windows.Forms.Timer(this.components);
             this.timerStartup = new System.Windows.Forms.Timer(this.components);
-            this.panelFocuserImg = new System.Windows.Forms.Panel();
-            this.pictureBoxFocuserFix = new System.Windows.Forms.PictureBox();
-            this.pictureBoxFocuserMove = new System.Windows.Forms.PictureBox();
             this.labelFocuserMax = new System.Windows.Forms.Label();
             this.checkBoxMoff = new System.Windows.Forms.CheckBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.progressBarFocuser = new System.Windows.Forms.ProgressBar();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRotator)).BeginInit();
-            this.panelFocuserImg.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxFocuserFix)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxFocuserMove)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonConnect
@@ -261,16 +259,16 @@
             this.label5.ForeColor = System.Drawing.Color.Gray;
             this.label5.Location = new System.Drawing.Point(12, 358);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(307, 15);
+            this.label5.Size = new System.Drawing.Size(327, 15);
             this.label5.TabIndex = 17;
-            this.label5.Text = "____________________________________________________________";
+            this.label5.Text = "________________________________________________________________";
             // 
             // label6
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.label6.ForeColor = System.Drawing.Color.Silver;
-            this.label6.Location = new System.Drawing.Point(12, 3);
+            this.label6.Location = new System.Drawing.Point(12, 6);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(108, 32);
             this.label6.TabIndex = 18;
@@ -472,37 +470,6 @@
             this.timerStartup.Interval = 500;
             this.timerStartup.Tick += new System.EventHandler(this.timerStartup_Tick);
             // 
-            // panelFocuserImg
-            // 
-            this.panelFocuserImg.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.panelFocuserImg.Controls.Add(this.pictureBoxFocuserFix);
-            this.panelFocuserImg.Controls.Add(this.pictureBoxFocuserMove);
-            this.panelFocuserImg.Location = new System.Drawing.Point(28, 461);
-            this.panelFocuserImg.Name = "panelFocuserImg";
-            this.panelFocuserImg.Size = new System.Drawing.Size(294, 100);
-            this.panelFocuserImg.TabIndex = 35;
-            // 
-            // pictureBoxFocuserFix
-            // 
-            this.pictureBoxFocuserFix.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBoxFocuserFix.BackgroundImage")));
-            this.pictureBoxFocuserFix.InitialImage = ((System.Drawing.Image)(resources.GetObject("pictureBoxFocuserFix.InitialImage")));
-            this.pictureBoxFocuserFix.Location = new System.Drawing.Point(0, 9);
-            this.pictureBoxFocuserFix.Name = "pictureBoxFocuserFix";
-            this.pictureBoxFocuserFix.Size = new System.Drawing.Size(150, 80);
-            this.pictureBoxFocuserFix.TabIndex = 34;
-            this.pictureBoxFocuserFix.TabStop = false;
-            // 
-            // pictureBoxFocuserMove
-            // 
-            this.pictureBoxFocuserMove.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.pictureBoxFocuserMove.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBoxFocuserMove.BackgroundImage")));
-            this.pictureBoxFocuserMove.InitialImage = ((System.Drawing.Image)(resources.GetObject("pictureBoxFocuserMove.InitialImage")));
-            this.pictureBoxFocuserMove.Location = new System.Drawing.Point(50, 10);
-            this.pictureBoxFocuserMove.Name = "pictureBoxFocuserMove";
-            this.pictureBoxFocuserMove.Size = new System.Drawing.Size(150, 80);
-            this.pictureBoxFocuserMove.TabIndex = 33;
-            this.pictureBoxFocuserMove.TabStop = false;
-            // 
             // labelFocuserMax
             // 
             this.labelFocuserMax.AutoSize = true;
@@ -526,15 +493,57 @@
             this.checkBoxMoff.UseVisualStyleBackColor = true;
             this.checkBoxMoff.CheckedChanged += new System.EventHandler(this.checkBoxMoff_CheckedChanged);
             // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(0, 0);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(44, 15);
+            this.label10.TabIndex = 38;
+            this.label10.Text = "label10";
+            // 
+            // progressBarFocuser
+            // 
+            this.progressBarFocuser.ForeColor = System.Drawing.Color.DarkBlue;
+            this.progressBarFocuser.Location = new System.Drawing.Point(29, 507);
+            this.progressBarFocuser.Name = "progressBarFocuser";
+            this.progressBarFocuser.Size = new System.Drawing.Size(293, 10);
+            this.progressBarFocuser.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+            this.progressBarFocuser.TabIndex = 39;
+            this.progressBarFocuser.Value = 10;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.ForeColor = System.Drawing.Color.Silver;
+            this.label11.Location = new System.Drawing.Point(28, 479);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(106, 15);
+            this.label11.TabIndex = 40;
+            this.label11.Text = "focal point in front";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.ForeColor = System.Drawing.Color.Silver;
+            this.label12.Location = new System.Drawing.Point(216, 479);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(104, 15);
+            this.label12.TabIndex = 41;
+            this.label12.Text = "focal point behind";
+            // 
             // FormControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(17)))), ((int)(((byte)(40)))));
             this.ClientSize = new System.Drawing.Size(665, 668);
+            this.Controls.Add(this.label12);
+            this.Controls.Add(this.label11);
+            this.Controls.Add(this.progressBarFocuser);
+            this.Controls.Add(this.label10);
             this.Controls.Add(this.checkBoxMoff);
             this.Controls.Add(this.labelFocuserMax);
-            this.Controls.Add(this.panelFocuserImg);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.buttonFocuserSetup);
             this.Controls.Add(this.buttonSync);
@@ -573,9 +582,6 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormControl_FormClosing);
             this.Load += new System.EventHandler(this.FormControl_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRotator)).EndInit();
-            this.panelFocuserImg.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxFocuserFix)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxFocuserMove)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -615,10 +621,11 @@
         private Label label8;
         private System.Windows.Forms.Timer timerFocuser;
         private System.Windows.Forms.Timer timerStartup;
-        private PictureBox pictureBoxFocuserMove;
-        private PictureBox pictureBoxFocuserFix;
-        private Panel panelFocuserImg;
         private Label labelFocuserMax;
         private CheckBox checkBoxMoff;
+        private Label label10;
+        private ProgressBar progressBarFocuser;
+        private Label label11;
+        private Label label12;
     }
 }

@@ -10,7 +10,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
 {
     public class ArduinoDevice
     {
-        private readonly int _SERIAL_RECEIVE_TIMEOUT = 600; // ms
+        private readonly int _SERIAL_RECEIVE_TIMEOUT = 200; // ms
 
         private SerialPort _serial = null;
         private string _comPort;
@@ -39,7 +39,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             try
             {
                 if (_serial == null)
-                    _serial = new SerialPort(_comPort, 115200, Parity.None, 8, StopBits.One);
+                    _serial = new SerialPort(_comPort, 9600, Parity.None, 8, StopBits.One);
                 _serial.Open();
                 if (!_serial.IsOpen)
                 {
@@ -294,42 +294,7 @@ RepeatPositionRead:
 
         #region Focuserdevice
 
-        public bool FocuserMoveLeft(long steps)
-        {
-            if (_serial == null) return false;
-            if (!_serial.IsOpen) return false;
-            lock (_lock)
-            {
-                if(FocuserIsAbsoluteDevice())
-                {
-                    if (FocuserPosition() <= 0)
-                        return false;
-                }
-                string ret = SendAndReceive("FOCTL" + steps.ToString(CultureInfo.InvariantCulture) + ":", '#');
-
-                if (ret == "1#") return true;
-                return false;
-            }
-        }
-
-        public bool FocuserMoveRight(long steps)
-        {
-            if (_serial == null) return false;
-            if (!_serial.IsOpen) return false;
-            lock (_lock)
-            {
-                if (FocuserIsAbsoluteDevice())
-                {
-                    if (FocuserPosition() > FocuserGetMaximalPos())
-                        return false;
-                }
-                string ret = SendAndReceive("FOCTR" + steps.ToString(CultureInfo.InvariantCulture) + ":", '#');
-
-                if (ret == "1#") return true;
-                return false;
-            }
-        }
-
+ 
         public void FocuserHalt()
         {
             if (_serial == null) return;
@@ -356,13 +321,19 @@ RepeatPositionRead:
         {
             if (_serial == null) return 0;
             if (!_serial.IsOpen) return 0;
-            lock (_lock)
+            try
             {
-                string ret = SendAndReceive("FOCPO:", '#');
-                ret = ret.Replace('#', ' ');
-                ret = ret.Trim();
-                long pos = (long)Convert.ToInt32(ret, CultureInfo.InvariantCulture);
-                return pos;
+                lock (_lock)
+                {
+                    string ret = SendAndReceive("FOCPO:", '#');
+                    ret = ret.Replace('#', ' ');
+                    ret = ret.Trim();
+                    long pos = (long)Convert.ToInt32(ret, CultureInfo.InvariantCulture);
+                    return pos;
+                }
+            } catch (Exception ex)
+            {
+                return -1;
             }
         }
 
@@ -387,68 +358,7 @@ RepeatPositionRead:
             }
             return true;
         }
-        public bool FocuserSetCoefficient(double val /* steps/mm */)
-        {
-            if (_serial == null) return false;
-            if (!_serial.IsOpen) return false;
-            lock (_lock)
-            {
-                string ret = SendAndReceive("FOCCOEFF" + val.ToString(CultureInfo.InvariantCulture) + ":", '#');
-                if (ret == "1#") return true;
-                return false;
-            }
-        }
-        public double FocuserGetCoefficient()
-        {
-            if (_serial == null) return -1.0;
-            if (!_serial.IsOpen) return -1.0;
-            lock (_lock)
-            {
-                string ret = SendAndReceive("FOCGCOEFF:", '#');
-                ret = ret.Replace('#', ' ');
-                ret = ret.Trim();
-                try
-                {
-                    return Convert.ToDouble(ret, CultureInfo.InvariantCulture);
-                }
-                catch (Exception ex)
-                {
-                    return -1.0;
-                }
-            }
-        }
-
-        public bool FocuserSetAbsoluteDevice(bool val)
-        {
-            if (_serial == null) return false;
-            if (!_serial.IsOpen) return false;
-            lock (_lock)
-            {
-                if (val)
-                {
-                    string ret = SendAndReceive("FOCABS:", '#');
-                }
-                else
-                {
-                    string ret = SendAndReceive("FOCREL:", '#');
-                }
-                return true;
-            }
-            
-        }
-
-        public bool FocuserIsAbsoluteDevice()
-        {
-            if (_serial == null) return false;
-            if (!_serial.IsOpen) return false;
-            lock (_lock)
-            {
-                string ret = SendAndReceive("FOCTYP:", '#');
-                if (ret == "ABS#") return true;
-                return false;
-            }
-        }
-
+        
         public bool FocuserSetPosition(long val)
         {
             if (_serial == null) return false;
@@ -458,18 +368,6 @@ RepeatPositionRead:
                 string ret = SendAndReceive("FOCSPOS" + val.ToString() + ":", '#');
                 return true;
             }
-        }
-
-        public bool FocuserSetMaximalPos(long val)
-        {
-            if (_serial == null) return false;
-            if (!_serial.IsOpen) return false;
-            lock (_lock)
-            {
-                string ret = SendAndReceive("FOCMPOS" + val.ToString() + ":", '#');
-                return true;
-            }
-            
         }
 
         public long FocuserGetMaximalPos()
@@ -496,6 +394,8 @@ RepeatPositionRead:
         {
             if (_serial == null) return false;
             if (!_serial.IsOpen) return false;
+            if (val < 0) return false;
+            if (val > FocuserGetMaximalPos()) return false;
             lock (_lock)
             {
                 string ret = SendAndReceive("FOCMOVABS" + val.ToString() + ":", '#');
@@ -503,36 +403,6 @@ RepeatPositionRead:
             }
         }
 
-        public bool FocuserSetReverse(bool val)
-        {
-            if (_serial == null) return false;
-            if (!_serial.IsOpen) return false;
-            lock (_lock)
-            {
-                if (val)
-                {
-                    string ret = SendAndReceive("FOCREV:", '#');
-                }
-                else
-                {
-                    string ret = SendAndReceive("FOCNOR:", '#');
-                }
-                return true;
-            }
-        }
-
-        public bool FocuserIsReverse()
-        {
-            if (_serial == null) return false;
-            if (!_serial.IsOpen) return false;
-            lock (_lock)
-            {
-                string ret = SendAndReceive("FOCGREV:", '#');
-                if (ret == "0#") return false;
-                if (ret == "1#") return true;
-                return false;
-            }
-        }
         #endregion
 
     }
