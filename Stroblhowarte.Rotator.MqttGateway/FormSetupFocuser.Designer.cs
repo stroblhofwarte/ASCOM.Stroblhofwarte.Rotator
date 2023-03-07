@@ -32,6 +32,10 @@
             this.buttonOk = new System.Windows.Forms.Button();
             this.buttonReCal = new System.Windows.Forms.Button();
             this.label13 = new System.Windows.Forms.Label();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.ColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOk
@@ -41,7 +45,7 @@
             this.buttonOk.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.buttonOk.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
             this.buttonOk.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonOk.Location = new System.Drawing.Point(354, 85);
+            this.buttonOk.Location = new System.Drawing.Point(364, 490);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 4;
@@ -72,12 +76,35 @@
             this.label13.TabIndex = 33;
             this.label13.Text = "After a manual movement a quick recalibration can be done:";
             // 
+            // dataGridView1
+            // 
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.ColumnName,
+            this.ColumnValue});
+            this.dataGridView1.Location = new System.Drawing.Point(33, 129);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.RowTemplate.Height = 25;
+            this.dataGridView1.Size = new System.Drawing.Size(406, 286);
+            this.dataGridView1.TabIndex = 34;
+            // 
+            // ColumnName
+            // 
+            this.ColumnName.HeaderText = "Name";
+            this.ColumnName.Name = "ColumnName";
+            // 
+            // ColumnValue
+            // 
+            this.ColumnValue.HeaderText = "Focuspoint";
+            this.ColumnValue.Name = "ColumnValue";
+            // 
             // FormSetupFocuser
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Gray;
-            this.ClientSize = new System.Drawing.Size(472, 142);
+            this.ClientSize = new System.Drawing.Size(472, 538);
+            this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.label13);
             this.Controls.Add(this.buttonReCal);
             this.Controls.Add(this.buttonOk);
@@ -85,6 +112,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormSetupFocuser";
             this.Text = "Setup Focuser";
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -93,5 +121,8 @@
         private Button buttonOk;
         private Button buttonReCal;
         private Label label13;
+        private DataGridView dataGridView1;
+        private DataGridViewTextBoxColumn ColumnName;
+        private DataGridViewTextBoxColumn ColumnValue;
     }
 }

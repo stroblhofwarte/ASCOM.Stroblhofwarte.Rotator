@@ -33,7 +33,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
         private void buttonReCal_Click(object sender, EventArgs e)
         {
             _device.FocuserMotorPowerOff();
-            MessageBox.Show("Please move the Focuser to the \"in\" position and press OK");
+            MessageBox.Show("Please move the Focuser to the \"in\" position (Cxx turn right) and press OK");
             _device.FocuserSetPosition(0);
             if (Settings.Default.FocMotorOff)
             {

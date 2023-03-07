@@ -86,6 +86,11 @@
 #define CMD_PARK "PA"
 #define CMD_SYNC "SY"
 
+#define STEPPER_MAX_SPEED 1000
+#define ACCEL 600
+
+volatile AccelStepper rotator(AccelStepper::DRIVER,STEP,DIR); 
+
 double g_steps_per_degree;
 long g_pos_mech = 0;
 long g_pos_goal = 0;
@@ -100,6 +105,7 @@ int g_init_speed;
 float g_parkpos;
 
 bool _notMotorPowerOff = false;
+long g_powerOffTimeout = 0;
 
 // ---------------------------------------------------- Focuser
 // Celestron C9.25
@@ -175,7 +181,7 @@ bool _notMotorPowerOff = false;
 // Celestron 9.25 focuser use AccelStepper 
 // and works only as absolute focuser
 volatile AccelStepper focuser(AccelStepper::DRIVER,FOC_STEP,FOC_DIR); 
-
+ 
 int g_foc_speed;
 long g_foc_pos_mech = 0;
 long g_foc_pos_goal = 0;
@@ -298,6 +304,11 @@ void setup() {
 
   focuser.setMaxSpeed(FOC_STEPPER_MAX_SPEED);
   focuser.setAcceleration(FOC_ACCEL);
+
+  rotator.setCurrentPosition(0);
+  rotator.setMaxSpeed(STEPPER_MAX_SPEED);
+  rotator.setAcceleration(ACCEL);
+  rotator.setPinsInverted(true, false, false);
   Timer1.initialize(200);
   Timer1.attachInterrupt(stepperRun); 
 }
@@ -496,16 +507,18 @@ void Dispatcher()
   {
     float val = Extract(CMD_SYNC, g_command);
     g_pos_mech = g_pos_goal = FromDegreeToStep(val);
+    rotator.setCurrentPosition(g_pos_mech);
     Serial.print("1#");
   }
   else if(g_command.startsWith(CMD_POSITION))
   {
-    float val = FromStepToDegree(g_pos_mech);
-    Serial.print(val);
+    Serial.print(FromStepToDegree(rotator.currentPosition()));
     Serial.print('#');
   }
   else if(g_command.startsWith(CMD_STOP))
   {
+    rotator.stop();
+    g_pos_mech = rotator.currentPosition();
     g_pos_goal = g_pos_mech;
     Serial.print("1#");
   }
@@ -583,71 +596,35 @@ void loop() {
   if(g_perform_init == false && g_is_init == false)
       return;
   // ***********************************************   Rotator:
-  if(g_pos_goal > g_pos_mech && g_focuserOperation == false)
+  if(g_pos_goal != g_pos_mech && g_rotatorOperation == false && g_focuserOperation == false)
   {
+    
     g_rotatorOperation = true;
     digitalWrite(EN, STEPPER_ENABLE);
-    digitalWrite(DIR, RIGHT_DIRECTION);
-   
-    if(g_perform_init) delayMicroseconds(g_init_speed);
-    else delayMicroseconds(g_speed);
-    digitalWrite(STEP, HIGH); 
-    if(g_perform_init) delayMicroseconds(g_init_speed);
-    else delayMicroseconds(g_speed);
-    digitalWrite(STEP, LOW); 
-    g_pos_mech++;
+    rotator.moveTo(g_pos_goal);
+    g_powerOffTimeout = millis();
   }
-  if(g_pos_goal < g_pos_mech && g_focuserOperation == false)
+  if(rotator.distanceToGo()!= 0)
+    g_powerOffTimeout = millis();
+
+  if(millis() - g_powerOffTimeout > 1000 && rotator.distanceToGo()== 0)
   {
-    g_rotatorOperation = true;
-    digitalWrite(EN, STEPPER_ENABLE);
-    digitalWrite(DIR, LEFT_DIRECTION);
-   
-    if(g_perform_init) delayMicroseconds(g_init_speed);
-    else delayMicroseconds(g_speed);
-    digitalWrite(STEP, HIGH); 
-    if(g_perform_init) delayMicroseconds(g_init_speed);
-    else delayMicroseconds(g_speed);
-    digitalWrite(STEP, LOW); 
-    g_pos_mech--;
+    if(g_rotatorOperation)
+    {
+      g_pos_mech = g_pos_goal;
+      g_rotatorOperation = false;
+    }
+    if(g_pos_goal == g_pos_mech && _notMotorPowerOff == false)
+      digitalWrite(EN, STEPPER_DISABLE); 
   }
   if(g_perform_init)
   {
-    if(digitalRead(SW) == SW_ACTIVE)
-    {
-      // Init done, limit found:
       g_pos_mech = 0;
       g_pos_goal = 0;
       g_perform_init = false;
       g_is_init = true;
       g_info = "Ready.";
-    }
-    else
-    {
-      if(g_pos_mech == g_pos_goal)
-      {
-        // Limit switch not found!
-        g_info = "ERR: Limit switch not found!";
-        g_perform_init = false;
-        g_is_init = false;
-        digitalWrite(EN, STEPPER_ENABLE);
-        digitalWrite(DIR, RIGHT_DIRECTION);
-        for(int i = 0; i < STEPS_PER_REVOLUTION; i++)
-        {
-          delayMicroseconds(g_init_speed);
-          digitalWrite(STEP, HIGH); 
-          delayMicroseconds(g_init_speed);
-          digitalWrite(STEP, LOW); 
-        }
-        if(_notMotorPowerOff == false)
-          digitalWrite(EN, STEPPER_DISABLE); 
-      }
-    }
   }
-  if(g_pos_goal == g_pos_mech && _notMotorPowerOff == false)
-    digitalWrite(EN, STEPPER_DISABLE); 
-  if(g_pos_goal == g_pos_mech)
-    g_rotatorOperation = false;
   // ***********************************************   Focuser:
   
   if(millis() - g_foc_powerOffTimeout > 1000 && focuser.distanceToGo()== 0)
@@ -679,10 +656,10 @@ void loop() {
 void stepperRun(void)
 {
   focuser.run();
+  rotator.run();
 }
 
 void serialEvent() {
-  if(g_rotatorOperation) return; // TEST TEST TEST
   while (Serial.available()) {
     // get the new byte:
     char inChar = (char)Serial.read();

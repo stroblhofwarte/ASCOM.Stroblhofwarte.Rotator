@@ -142,7 +142,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
                         _arduinoDevice.FocuserMotorPowerOn();
                     }
                     
-                    textBoxPosition.Text = _arduinoDevice.RotatorPosition().ToString();
+                    textBoxPosition.Text = _arduinoDevice.RotatorPosition().ToString(CultureInfo.InvariantCulture);
 
                     buttonRotatorSetup.Enabled = true;
                     buttonFocuserSetup.Enabled = true;
@@ -267,8 +267,24 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             }
         }
 
-        private void timerFocuser_Tick(object sender, EventArgs e)
+        private bool _isRotatorHandler = true;
+        private void timer_Tick(object sender, EventArgs e)
         {
+            if(_isRotatorHandler)
+            {
+                _isRotatorHandler = false;
+                rotatorTimerHandler();
+            }
+            else
+            {
+                _isRotatorHandler = true;
+                focuserTimerHandler();
+            }
+        }
+
+        private void focuserTimerHandler()
+        {
+            
             if (_arduinoDevice == null) return;
             bool focuserIsMoving = _arduinoDevice.FocuserIsMoving();
             if (!focuserIsMoving) buttonFocuserGo.Text = "go";
@@ -278,7 +294,8 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             {
                 labelFocuserMax.Text = focuserMaxMovement.ToString();
                 _focuserMaxMovement = focuserMaxMovement;
-                progressBarFocuser.Maximum = (int)focuserMaxMovement;
+                if(focuserMaxMovement > 0)
+                    progressBarFocuser.Maximum = (int)focuserMaxMovement;
                 if (_mqttConnected)
                 {
                     _mqtt.Publish(MQTT_FOCUSER_MAX_MOVEMENT, Encoding.UTF8.GetBytes(_focuserMaxMovement.ToString()), MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, true);
@@ -313,7 +330,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
             // Calculate microns per step (ASCOM requires this)
 
         }
-        private void timerRotatorPosition_Tick(object sender, EventArgs e)
+        private void rotatorTimerHandler()
         {
             if (_arduinoDevice == null) return;
             bool rotatorIsMoving = _arduinoDevice.RotatorIsMoving();
@@ -353,7 +370,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
                     pos = pos - 10.0f;
                 else
                     pos = 0.0f;
-                _arduinoDevice.RotatorMoveAbsolute(pos);
+                _arduinoDevice.RotatorMoveAbsolute(0.0f);
             }
             if (_rotatorMoveRight)
             {
@@ -362,7 +379,7 @@ namespace Stroblhofwarte.Rotator.MqttGateway
                     pos = _arduinoDevice.RotatorMaxMovement;
                 else
                     pos = pos + 10.0f;
-                _arduinoDevice.RotatorMoveAbsolute(pos);
+                _arduinoDevice.RotatorMoveAbsolute(359);
             }
 
         }

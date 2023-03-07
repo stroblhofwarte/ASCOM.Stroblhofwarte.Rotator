@@ -31,7 +31,6 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormControl));
             this.buttonConnect = new System.Windows.Forms.Button();
-            this.timerRotatorPosition = new System.Windows.Forms.Timer(this.components);
             this.buttonRotatorMoveLeft = new System.Windows.Forms.Button();
             this.buttonRotatorMoveRight = new System.Windows.Forms.Button();
             this.textBoxPosition = new System.Windows.Forms.TextBox();
@@ -61,7 +60,7 @@
             this.textBoxSync = new System.Windows.Forms.TextBox();
             this.buttonFocuserSetup = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
-            this.timerFocuser = new System.Windows.Forms.Timer(this.components);
+            this.timer = new System.Windows.Forms.Timer(this.components);
             this.timerStartup = new System.Windows.Forms.Timer(this.components);
             this.labelFocuserMax = new System.Windows.Forms.Label();
             this.checkBoxMoff = new System.Windows.Forms.CheckBox();
@@ -86,11 +85,6 @@
             this.buttonConnect.Text = "Connect";
             this.buttonConnect.UseVisualStyleBackColor = false;
             this.buttonConnect.Click += new System.EventHandler(this.buttonConnect_Click);
-            // 
-            // timerRotatorPosition
-            // 
-            this.timerRotatorPosition.Enabled = true;
-            this.timerRotatorPosition.Tick += new System.EventHandler(this.timerRotatorPosition_Tick);
             // 
             // buttonRotatorMoveLeft
             // 
@@ -458,11 +452,11 @@
             this.label8.TabIndex = 32;
             this.label8.Text = "Focuser Setup:";
             // 
-            // timerFocuser
+            // timer
             // 
-            this.timerFocuser.Enabled = true;
-            this.timerFocuser.Interval = 300;
-            this.timerFocuser.Tick += new System.EventHandler(this.timerFocuser_Tick);
+            this.timer.Enabled = true;
+            this.timer.Interval = 300;
+            this.timer.Tick += new System.EventHandler(this.timer_Tick);
             // 
             // timerStartup
             // 
@@ -589,7 +583,6 @@
 
         #endregion
         private Button buttonConnect;
-        private System.Windows.Forms.Timer timerRotatorPosition;
         private Button buttonRotatorMoveLeft;
         private Button buttonRotatorMoveRight;
         private TextBox textBoxPosition;
@@ -619,7 +612,7 @@
         private TextBox textBoxSync;
         private Button buttonFocuserSetup;
         private Label label8;
-        private System.Windows.Forms.Timer timerFocuser;
+        private System.Windows.Forms.Timer timer;
         private System.Windows.Forms.Timer timerStartup;
         private Label labelFocuserMax;
         private CheckBox checkBoxMoff;
