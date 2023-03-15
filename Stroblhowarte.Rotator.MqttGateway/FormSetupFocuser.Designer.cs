@@ -28,14 +28,17 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormSetupFocuser));
             this.buttonOk = new System.Windows.Forms.Button();
             this.buttonReCal = new System.Windows.Forms.Button();
             this.label13 = new System.Windows.Forms.Label();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.ColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            this.dataGridViewFocusPoints = new System.Windows.Forms.DataGridView();
+            this.bindingSourceFocusPoints = new System.Windows.Forms.BindingSource(this.components);
+            this.buttonFocuserGoTo = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFocusPoints)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bindingSourceFocusPoints)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOk
@@ -76,27 +79,46 @@
             this.label13.TabIndex = 33;
             this.label13.Text = "After a manual movement a quick recalibration can be done:";
             // 
-            // dataGridView1
+            // dataGridViewFocusPoints
             // 
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.ColumnName,
-            this.ColumnValue});
-            this.dataGridView1.Location = new System.Drawing.Point(33, 129);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.RowTemplate.Height = 25;
-            this.dataGridView1.Size = new System.Drawing.Size(406, 286);
-            this.dataGridView1.TabIndex = 34;
+            this.dataGridViewFocusPoints.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewFocusPoints.Location = new System.Drawing.Point(33, 129);
+            this.dataGridViewFocusPoints.Name = "dataGridViewFocusPoints";
+            this.dataGridViewFocusPoints.RowTemplate.Height = 25;
+            this.dataGridViewFocusPoints.Size = new System.Drawing.Size(375, 286);
+            this.dataGridViewFocusPoints.TabIndex = 34;
+            this.dataGridViewFocusPoints.UserAddedRow += new System.Windows.Forms.DataGridViewRowEventHandler(this.dataGridViewFocusPoints_UserAddedRow);
+            this.dataGridViewFocusPoints.UserDeletingRow += new System.Windows.Forms.DataGridViewRowCancelEventHandler(this.dataGridViewFocusPoints_UserDeletingRow);
             // 
-            // ColumnName
+            // bindingSourceFocusPoints
             // 
-            this.ColumnName.HeaderText = "Name";
-            this.ColumnName.Name = "ColumnName";
+            this.bindingSourceFocusPoints.CurrentChanged += new System.EventHandler(this.bindingSourceFocusPoints_CurrentChanged);
             // 
-            // ColumnValue
+            // buttonFocuserGoTo
             // 
-            this.ColumnValue.HeaderText = "Focuspoint";
-            this.ColumnValue.Name = "ColumnValue";
+            this.buttonFocuserGoTo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonFocuserGoTo.FlatAppearance.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.buttonFocuserGoTo.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.buttonFocuserGoTo.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(128)))));
+            this.buttonFocuserGoTo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonFocuserGoTo.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.buttonFocuserGoTo.Location = new System.Drawing.Point(414, 129);
+            this.buttonFocuserGoTo.Name = "buttonFocuserGoTo";
+            this.buttonFocuserGoTo.Size = new System.Drawing.Size(46, 34);
+            this.buttonFocuserGoTo.TabIndex = 35;
+            this.buttonFocuserGoTo.Text = ">";
+            this.buttonFocuserGoTo.UseVisualStyleBackColor = false;
+            this.buttonFocuserGoTo.Click += new System.EventHandler(this.buttonFocuserGoTo_Click);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.label1.Location = new System.Drawing.Point(33, 106);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(101, 20);
+            this.label1.TabIndex = 36;
+            this.label1.Text = "Focus points:";
             // 
             // FormSetupFocuser
             // 
@@ -104,7 +126,9 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Gray;
             this.ClientSize = new System.Drawing.Size(472, 538);
-            this.Controls.Add(this.dataGridView1);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.buttonFocuserGoTo);
+            this.Controls.Add(this.dataGridViewFocusPoints);
             this.Controls.Add(this.label13);
             this.Controls.Add(this.buttonReCal);
             this.Controls.Add(this.buttonOk);
@@ -112,8 +136,10 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormSetupFocuser";
             this.Text = "Setup Focuser";
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFocusPoints)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.bindingSourceFocusPoints)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -121,8 +147,9 @@
         private Button buttonOk;
         private Button buttonReCal;
         private Label label13;
-        private DataGridView dataGridView1;
-        private DataGridViewTextBoxColumn ColumnName;
-        private DataGridViewTextBoxColumn ColumnValue;
+        private DataGridView dataGridViewFocusPoints;
+        private BindingSource bindingSourceFocusPoints;
+        private Button buttonFocuserGoTo;
+        private Label label1;
     }
 }

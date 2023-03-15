@@ -25,6 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="DataSetFocusPoints.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DataSetFocusPoints.xsd</DependentUpon>
+    </Compile>
     <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -45,6 +50,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="DataSetFocusPoints.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>DataSetFocusPoints.Designer.cs</LastGenOutput>
+    </None>
     <None Update="Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
