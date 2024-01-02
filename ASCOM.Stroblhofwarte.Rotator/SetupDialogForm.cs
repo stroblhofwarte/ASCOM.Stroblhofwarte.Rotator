@@ -49,6 +49,7 @@ namespace ASCOM.Stroblhofwarte
             textBoxInitSpeed.Text = _driver.InitSpeed.ToString(CultureInfo.InvariantCulture);
             textBoxSpeed.Text = _driver.Speed.ToString(CultureInfo.InvariantCulture);
             txtMaxMove.Text = _driver.MaxMovement.ToString(CultureInfo.InvariantCulture);
+            textBoxTelescopeId.Text = _driver.TelescopeId;
         }
 
         private void cmdOK_Click(object sender, EventArgs e) // OK button event handler
@@ -110,6 +111,10 @@ namespace ASCOM.Stroblhofwarte
         private void timerPosition_Tick(object sender, EventArgs e)
         {
             labelPosition.Text = _driver.Position.ToString(CultureInfo.InvariantCulture) + "°";
+            if(_driver.DerotationPossible)
+            {
+                labelAltAzInfo.Text = "Alt/Az: " + _driver.DerotationAltitude + ", " + _driver.DerotationAzimuth;
+            }
         }
 
         private void checkBoxPower_CheckStateChanged(object sender, EventArgs e)
@@ -259,6 +264,12 @@ namespace ASCOM.Stroblhofwarte
         public void SetSetupMode()
         {
             
+        }
+
+        private void buttonTelescopeChoose_Click(object sender, EventArgs e)
+        {
+            _driver.TelescopeId = DriverAccess.Telescope.Choose("");
+            textBoxTelescopeId.Text = _driver.TelescopeId;
         }
     }
 }

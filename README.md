@@ -1,3 +1,6 @@
+Remark: For C9.25 focuser: GT2 mit 155 Zähnen (310mm)
+
+
 # ASCOM.Stroblhofwarte.Rotator
 
 **** PLEASE use tag v1.0.0 for the hardware version described below *****

@@ -60,15 +60,18 @@ using ASCOM;
 using ASCOM.Astrometry;
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.DeviceInterface;
+using ASCOM.DriverAccess;
 using ASCOM.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ASCOM.Stroblhofwarte
@@ -124,6 +127,36 @@ namespace ASCOM.Stroblhofwarte
         internal static string _maxMovementName = "MaxMovement";
         private float _maxMovement = 350.0f;
 
+        internal static string _telescopeIdName = "TelescopeId";
+        private string _telescopeId = "";
+        public string TelescopeId
+        {
+            get { return _telescopeId; }
+            set { 
+                _telescopeId = value;
+                WriteProfile();
+            }
+        }
+        volatile ASCOM.DriverAccess.Telescope _derotationTelescope;
+
+        public double DerotationRate
+        {
+            get; set;
+        }
+
+        public double DerotationAzimuth
+        {
+            get; set;
+        }
+
+        public double DerotationAltitude
+        {
+            get; set;
+        }
+
+        public bool DerotationPossible { get; set; }
+        private BackgroundWorker DerotationTask;
+
         private object _lock = new object();
         /// <summary>
         /// Private variable to hold the connected state
@@ -165,6 +198,26 @@ namespace ASCOM.Stroblhofwarte
             HwAccess.Instance().Setup(tl);
         }
 
+        #region Derotation
+
+        private void Derotation_DoWork(object sender, DoWorkEventArgs e)
+        {
+            while(true)
+            {
+                if (DerotationTask.CancellationPending)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+                if (_derotationTelescope.Connected == false)
+                    _derotationTelescope.Connected = true;
+                DerotationAltitude = _derotationTelescope.Altitude;
+                DerotationAzimuth = _derotationTelescope.Azimuth;
+
+                Thread.Sleep(300);
+            }
+        }
+        #endregion
 
         //
         // PUBLIC COM INTERFACE IRotatorV3 IMPLEMENTATION
@@ -312,6 +365,34 @@ namespace ASCOM.Stroblhofwarte
                             if (connectedState)
                             {
                                 HwAccess.Instance().InitHardware();
+
+                                DerotationPossible = false;
+                                try
+                                {
+                                    _derotationTelescope = new Telescope(_telescopeId);
+                                    DerotationPossible = true;
+                                }
+                                catch
+                                {
+
+                                }
+
+                                if (DerotationPossible)
+                                {
+                                    DerotationTask = new BackgroundWorker
+                                    {
+                                        WorkerReportsProgress = false,
+                                        WorkerSupportsCancellation = true
+                                    };
+
+                                    DerotationTask.DoWork += Derotation_DoWork;
+
+                                    if (!DerotationTask.IsBusy)
+                                    {
+                                        // Start the background worker
+                                        DerotationTask.RunWorkerAsync();
+                                    }
+                                }
                             }
                             else
                             {
@@ -331,7 +412,10 @@ namespace ASCOM.Stroblhofwarte
                 }
                 else
                 {
-                 
+                    if(DerotationPossible)
+                    {
+                        DerotationTask.CancelAsync();
+                    }
                     connectedState = false;
                     HwAccess.Instance().RotatorUsage = false;
                     HwAccess.Instance().Close();
@@ -386,7 +470,8 @@ namespace ASCOM.Stroblhofwarte
         {
             get
             {
-                string name = "Stroblhofwarte.Rotator";
+                //string name = "Stroblhofwarte.Rotator";
+                string name = "Optec Pyxis Universal";
                 tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -688,6 +773,7 @@ namespace ASCOM.Stroblhofwarte
                 _initSpeed = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _initSpeedName, string.Empty, "1.0"), CultureInfo.InvariantCulture);
                 _speed = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _speedName, string.Empty, "1.0"), CultureInfo.InvariantCulture);
                 _maxMovement = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _maxMovementName, string.Empty, "350.0"),CultureInfo.InvariantCulture);
+                _telescopeId = driverProfile.GetValue(driverID, _telescopeIdName, string.Empty, "");
 
             }
         }
@@ -707,6 +793,7 @@ namespace ASCOM.Stroblhofwarte
                 driverProfile.WriteValue(driverID, _initSpeedName, _initSpeed.ToString(CultureInfo.InvariantCulture));
                 driverProfile.WriteValue(driverID, _speedName, _speed.ToString(CultureInfo.InvariantCulture));
                 driverProfile.WriteValue(driverID, _maxMovementName, _maxMovement.ToString(CultureInfo.InvariantCulture));
+                driverProfile.WriteValue(driverID, _telescopeIdName, _telescopeId);
             }
         }
 
