@@ -5,13 +5,13 @@
 [Setup]
 AppID={{402ba3d5-8078-4399-babd-cf1d10a2f847}
 AppName=ASCOM StroblRotator Rotator Driver
-AppVerName=ASCOM StroblRotator Rotator Driver 1.1.1
-AppVersion=1.1.1
+AppVerName=ASCOM StroblRotator Rotator Driver 1.2.1
+AppVersion=1.2.1
 AppPublisher=Othmar Ehrhardt <othmar.ehrhardt@t-online.de>
 AppPublisherURL=mailto:othmar.ehrhardt@t-online.de
 AppSupportURL=https://ascomtalk.groups.io/g/Help
 AppUpdatesURL=https://ascom-standards.org/
-VersionInfoVersion=1.0.0
+VersionInfoVersion=1.2.1
 MinVersion=6.1.7601
 DefaultDirName="{cf}\ASCOM\Rotator"
 DisableDirPage=yes
