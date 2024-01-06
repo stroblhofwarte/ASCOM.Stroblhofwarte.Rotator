@@ -42,7 +42,7 @@ namespace ASCOM
             // TODO add more code to test the driver.
             device.Connected = true;
 
-            //device.SetupDialog();
+            device.SetupDialog();
      
             while (true)
                 Thread.Sleep(100);

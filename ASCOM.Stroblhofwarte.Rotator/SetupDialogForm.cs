@@ -42,6 +42,7 @@ namespace ASCOM.Stroblhofwarte
             tl = driver.Logger;
             driver.ReadProfile();
             checkBoxPower.Checked = _driver.DoNotSwitchOffMotorPower;
+            checkBoxDerotation.Checked = _driver.DerotationActive;
             // Initialise current values of user settings from the ASCOM Profile
             InitUI();
 
@@ -114,6 +115,7 @@ namespace ASCOM.Stroblhofwarte
             if(_driver.DerotationPossible)
             {
                 labelAltAzInfo.Text = "Alt/Az: " + _driver.DerotationAltitude + ", " + _driver.DerotationAzimuth;
+                labelDerotationRate.Text = _driver.DerotationRate.ToString(CultureInfo.InvariantCulture) + " arcsec/sec";
             }
         }
 
@@ -270,6 +272,11 @@ namespace ASCOM.Stroblhofwarte
         {
             _driver.TelescopeId = DriverAccess.Telescope.Choose("");
             textBoxTelescopeId.Text = _driver.TelescopeId;
+        }
+
+        private void checkBoxDerotation_CheckStateChanged(object sender, EventArgs e)
+        {
+            _driver.DerotationActive = checkBoxDerotation.Checked;
         }
     }
 }

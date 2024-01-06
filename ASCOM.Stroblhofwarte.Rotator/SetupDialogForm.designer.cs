@@ -81,6 +81,8 @@ namespace ASCOM.Stroblhofwarte
             this.buttonTelescopeChoose = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.labelAltAzInfo = new System.Windows.Forms.Label();
+            this.checkBoxDerotation = new System.Windows.Forms.CheckBox();
+            this.labelDerotationRate = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -92,7 +94,7 @@ namespace ASCOM.Stroblhofwarte
             this.cmdOK.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmdOK.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cmdOK.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.cmdOK.Location = new System.Drawing.Point(678, 445);
+            this.cmdOK.Location = new System.Drawing.Point(678, 482);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(71, 24);
             this.cmdOK.TabIndex = 0;
@@ -108,7 +110,7 @@ namespace ASCOM.Stroblhofwarte
             this.cmdCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.cmdCancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cmdCancel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.cmdCancel.Location = new System.Drawing.Point(604, 445);
+            this.cmdCancel.Location = new System.Drawing.Point(604, 482);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(68, 24);
             this.cmdCancel.TabIndex = 1;
@@ -130,7 +132,7 @@ namespace ASCOM.Stroblhofwarte
             // 
             this.chkTrace.AutoSize = true;
             this.chkTrace.ForeColor = System.Drawing.Color.Silver;
-            this.chkTrace.Location = new System.Drawing.Point(519, 449);
+            this.chkTrace.Location = new System.Drawing.Point(519, 486);
             this.chkTrace.Name = "chkTrace";
             this.chkTrace.Size = new System.Drawing.Size(69, 17);
             this.chkTrace.TabIndex = 6;
@@ -147,7 +149,7 @@ namespace ASCOM.Stroblhofwarte
             // 
             // textBoxAngle
             // 
-            this.textBoxAngle.Location = new System.Drawing.Point(249, 449);
+            this.textBoxAngle.Location = new System.Drawing.Point(249, 486);
             this.textBoxAngle.Name = "textBoxAngle";
             this.textBoxAngle.Size = new System.Drawing.Size(100, 20);
             this.textBoxAngle.TabIndex = 8;
@@ -160,7 +162,7 @@ namespace ASCOM.Stroblhofwarte
             this.buttonMove.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonMove.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonMove.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.buttonMove.Location = new System.Drawing.Point(355, 446);
+            this.buttonMove.Location = new System.Drawing.Point(355, 483);
             this.buttonMove.Name = "buttonMove";
             this.buttonMove.Size = new System.Drawing.Size(75, 23);
             this.buttonMove.TabIndex = 9;
@@ -377,7 +379,7 @@ namespace ASCOM.Stroblhofwarte
             this.buttonMoveRight.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonMoveRight.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonMoveRight.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.buttonMoveRight.Location = new System.Drawing.Point(114, 433);
+            this.buttonMoveRight.Location = new System.Drawing.Point(114, 470);
             this.buttonMoveRight.Name = "buttonMoveRight";
             this.buttonMoveRight.Size = new System.Drawing.Size(75, 37);
             this.buttonMoveRight.TabIndex = 34;
@@ -398,7 +400,7 @@ namespace ASCOM.Stroblhofwarte
             this.buttonMoveLeft.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonMoveLeft.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.buttonMoveLeft.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.buttonMoveLeft.Location = new System.Drawing.Point(23, 433);
+            this.buttonMoveLeft.Location = new System.Drawing.Point(23, 470);
             this.buttonMoveLeft.Name = "buttonMoveLeft";
             this.buttonMoveLeft.Size = new System.Drawing.Size(75, 37);
             this.buttonMoveLeft.TabIndex = 35;
@@ -471,12 +473,36 @@ namespace ASCOM.Stroblhofwarte
             this.labelAltAzInfo.TabIndex = 39;
             this.labelAltAzInfo.Text = ",";
             // 
+            // checkBoxDerotation
+            // 
+            this.checkBoxDerotation.AutoSize = true;
+            this.checkBoxDerotation.ForeColor = System.Drawing.Color.Silver;
+            this.checkBoxDerotation.Location = new System.Drawing.Point(572, 433);
+            this.checkBoxDerotation.Name = "checkBoxDerotation";
+            this.checkBoxDerotation.Size = new System.Drawing.Size(130, 17);
+            this.checkBoxDerotation.TabIndex = 40;
+            this.checkBoxDerotation.Text = "Derotate Alt-Az Mount";
+            this.checkBoxDerotation.UseVisualStyleBackColor = true;
+            this.checkBoxDerotation.CheckStateChanged += new System.EventHandler(this.checkBoxDerotation_CheckStateChanged);
+            // 
+            // labelDerotationRate
+            // 
+            this.labelDerotationRate.AutoSize = true;
+            this.labelDerotationRate.ForeColor = System.Drawing.Color.Silver;
+            this.labelDerotationRate.Location = new System.Drawing.Point(572, 453);
+            this.labelDerotationRate.Name = "labelDerotationRate";
+            this.labelDerotationRate.Size = new System.Drawing.Size(10, 13);
+            this.labelDerotationRate.TabIndex = 41;
+            this.labelDerotationRate.Text = ",";
+            // 
             // SetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(34)))), ((int)(((byte)(34)))), ((int)(((byte)(34)))));
-            this.ClientSize = new System.Drawing.Size(801, 489);
+            this.ClientSize = new System.Drawing.Size(801, 525);
+            this.Controls.Add(this.labelDerotationRate);
+            this.Controls.Add(this.checkBoxDerotation);
             this.Controls.Add(this.labelAltAzInfo);
             this.Controls.Add(this.textBoxTelescopeId);
             this.Controls.Add(this.buttonTelescopeChoose);
@@ -559,5 +585,7 @@ namespace ASCOM.Stroblhofwarte
         private System.Windows.Forms.Button buttonTelescopeChoose;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label labelAltAzInfo;
+        private System.Windows.Forms.CheckBox checkBoxDerotation;
+        private System.Windows.Forms.Label labelDerotationRate;
     }
 }

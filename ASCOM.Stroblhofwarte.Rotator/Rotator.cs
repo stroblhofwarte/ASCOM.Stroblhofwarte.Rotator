@@ -70,6 +70,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -113,6 +114,9 @@ namespace ASCOM.Stroblhofwarte
         internal static string _doNotSwitchPoerOffProfileName = "DoNotSwitchPowerOff";
         private bool _doNotSwitchPowerOff = false;
 
+        internal static string _derotationActiveName = "DerotationActive";
+        private bool _derotationActive = false;
+
         private float _targetPosition = 0.0f;
 
         internal static string _parkPositionName = "ParkPos";
@@ -150,6 +154,11 @@ namespace ASCOM.Stroblhofwarte
         }
 
         public double DerotationAltitude
+        {
+            get; set;
+        }
+
+        public double DerotationLatitude
         {
             get; set;
         }
@@ -202,7 +211,12 @@ namespace ASCOM.Stroblhofwarte
 
         private void Derotation_DoWork(object sender, DoWorkEventArgs e)
         {
-            while(true)
+            double stepSize = HwAccess.Instance().RO_StepSize();
+            double arcsecPerStep = stepSize / (1.0 / 3600.0);
+            double oldStepRate = 0.0;
+            double R;
+            double stepRate;
+            while (true)
             {
                 if (DerotationTask.CancellationPending)
                 {
@@ -211,10 +225,32 @@ namespace ASCOM.Stroblhofwarte
                 }
                 if (_derotationTelescope.Connected == false)
                     _derotationTelescope.Connected = true;
+
+                if(DerotationActive == false)
+                {
+                    stepRate = 0.0;
+                    if (stepRate != oldStepRate)
+                    {
+                        HwAccess.Instance().RO_SetDerotationRate(stepRate);
+                        oldStepRate = stepRate;
+                    }
+                    Thread.Sleep(5000);
+                    continue;
+                }
+
                 DerotationAltitude = _derotationTelescope.Altitude;
                 DerotationAzimuth = _derotationTelescope.Azimuth;
-
-                Thread.Sleep(300);
+                DerotationLatitude = _derotationTelescope.SiteLatitude;
+                R = 15.04106858 * (Math.Cos(DerotationLatitude * Math.PI / 180) * Math.Cos(DerotationAzimuth * Math.PI / 180)) / Math.Cos(DerotationAltitude * Math.PI / 180);
+                DerotationRate = R;
+                double secsBeforeOneStep = arcsecPerStep / R;
+                stepRate = 1.0 / secsBeforeOneStep;
+                if (stepRate != oldStepRate)
+                {
+                    HwAccess.Instance().RO_SetDerotationRate(stepRate);
+                    oldStepRate = stepRate;
+                }
+                Thread.Sleep(1000);
             }
         }
         #endregion
@@ -266,6 +302,19 @@ namespace ASCOM.Stroblhofwarte
                 {
                     HwAccess.Instance().RO_MotorPowerOff();
                 }
+            }
+        }
+
+        public bool DerotationActive
+        {
+            get
+            {
+                return _derotationActive;
+            }
+            set
+            {
+                _derotationActive = value;
+                WriteProfile();
             }
         }
         public ArrayList SupportedActions
@@ -769,6 +818,7 @@ namespace ASCOM.Stroblhofwarte
                 tl.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
                 comPort = driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
                 _doNotSwitchPowerOff = Convert.ToBoolean(driverProfile.GetValue(driverID, _doNotSwitchPoerOffProfileName, string.Empty, "false"));
+                _derotationActive = Convert.ToBoolean(driverProfile.GetValue(driverID, _derotationActiveName, string.Empty, "false"));
                 _parkPosition = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _parkPositionName, string.Empty, "0.0"), CultureInfo.InvariantCulture);
                 _initSpeed = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _initSpeedName, string.Empty, "1.0"), CultureInfo.InvariantCulture);
                 _speed = (float)Convert.ToDouble(driverProfile.GetValue(driverID, _speedName, string.Empty, "1.0"), CultureInfo.InvariantCulture);
@@ -789,6 +839,7 @@ namespace ASCOM.Stroblhofwarte
                 driverProfile.WriteValue(driverID, traceStateProfileName, tl.Enabled.ToString());
                 driverProfile.WriteValue(driverID, comPortProfileName, comPort.ToString());
                 driverProfile.WriteValue(driverID, _doNotSwitchPoerOffProfileName, _doNotSwitchPowerOff.ToString());
+                driverProfile.WriteValue(driverID, _derotationActiveName, _derotationActive.ToString());
                 driverProfile.WriteValue(driverID, _parkPositionName, _parkPosition.ToString(CultureInfo.InvariantCulture));
                 driverProfile.WriteValue(driverID, _initSpeedName, _initSpeed.ToString(CultureInfo.InvariantCulture));
                 driverProfile.WriteValue(driverID, _speedName, _speed.ToString(CultureInfo.InvariantCulture));

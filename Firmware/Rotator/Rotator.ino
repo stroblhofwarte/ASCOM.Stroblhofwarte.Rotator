@@ -85,7 +85,8 @@
 #define CMD_SET_PARK "PP"
 #define CMD_PARK "PA"
 #define CMD_SYNC "SY"
-
+#define CMD_RATE "RA" // Derotation rate in steps/sec (float value)
+#define CMD_GET_RATE "GR" // Get current derotation rate
 #define STEPPER_MAX_SPEED 1000
 #define ACCEL 600
 
@@ -106,6 +107,10 @@ float g_parkpos;
 
 bool _notMotorPowerOff = false;
 long g_powerOffTimeout = 0;
+double g_derotation_steps = 0.0; // steps for derotation per second.
+double g_derotation_goal = 0;
+long g_derotationTimeout = 0; // once per second
+#define DEROTATION_PERIOD 1000
 
 // ---------------------------------------------------- Focuser
 // Celestron C9.25
@@ -418,14 +423,14 @@ bool FocDispatcher()
 
 // Region: Rotator
 
-long FromDegreeToStep(float deg)
+long FromDegreeToStep(double deg)
 {
   return (long)(deg * g_steps_per_degree);
 }
 
-float FromStepToDegree(long step)
+double FromStepToDegree(long step)
 {
-  return (float)(step / g_steps_per_degree);
+  return (double)(step / g_steps_per_degree);
 }
 
 void MoveRight(long steps)
@@ -450,10 +455,10 @@ void MoveLeft(long steps)
   g_pos_goal = g_pos_mech -  steps;
 }
 
-void Move(float angle)
+void Move(double angle)
 {
-  float setAngle = FromStepToDegree(g_pos_mech);
-  float diff = angle - setAngle;
+  double setAngle = FromStepToDegree(g_pos_mech);
+  double diff = angle - setAngle;
 
   if(diff < 0.0)
   {
@@ -468,12 +473,12 @@ void Move(float angle)
   }
 }
 
-float Extract(String cmdid, String cmdstring)
+double Extract(String cmdid, String cmdstring)
 {
   cmdstring.remove(0, cmdid.length());
   cmdstring.replace(':', ' ');
   cmdstring.trim();
-  return cmdstring.toFloat();
+  return cmdstring.toDouble();
 }
 
 void Dispatcher()
@@ -546,8 +551,9 @@ void Dispatcher()
   }
   else if (g_command.startsWith(CMD_STEP_SIZE))
   {
-    double stepSize = 360.0/(double)STEPS_PER_REVOLUTION;
-    Serial.print(stepSize);
+    double dblRevolution = STEPS_PER_REVOLUTION; // double calculation error if STEPS_PER_REVOLUTION is used directly!
+    double stepSize = 360.0/dblRevolution;
+    Serial.print(stepSize,6);
     Serial.print("#");
   }
   else if(g_command.startsWith(CMD_INIT))
@@ -578,6 +584,18 @@ void Dispatcher()
     Move(g_parkpos);
     Serial.print("1#");
   }
+  else if(g_command.startsWith(CMD_RATE))
+  {
+    float val = Extract(CMD_RATE, g_command);
+    g_derotation_steps = val;
+    Serial.print("1#");
+  }
+  else if(g_command.startsWith(CMD_GET_RATE))
+  {
+    float val = Extract(CMD_RATE, g_command);
+    Serial.print(g_derotation_steps,6);
+    Serial.print("#");
+  }
   else
   {
     if(!FocDispatcher())
@@ -596,6 +614,19 @@ void loop() {
   if(g_perform_init == false && g_is_init == false)
       return;
   // ***********************************************   Rotator:
+  if(millis() - g_derotationTimeout >= DEROTATION_PERIOD)
+  {
+    g_derotationTimeout = millis();
+    // Integration of the derotation frequency:
+    g_derotation_goal += g_derotation_steps;
+    // Transfer to the goal:
+    long temp_goal = g_pos_goal;
+    g_pos_goal += (long)(g_derotation_goal); 
+    if(g_pos_goal != temp_goal)
+    {
+      g_derotation_goal = g_derotation_goal - ((double)(g_pos_goal - temp_goal));
+    }
+  }
   if(g_pos_goal != g_pos_mech && g_rotatorOperation == false && g_focuserOperation == false)
   {
     
@@ -614,7 +645,7 @@ void loop() {
       g_pos_mech = g_pos_goal;
       g_rotatorOperation = false;
     }
-    if(g_pos_goal == g_pos_mech && _notMotorPowerOff == false)
+    if(g_pos_goal == g_pos_mech && _notMotorPowerOff == false && g_derotation_steps == 0)
       digitalWrite(EN, STEPPER_DISABLE); 
   }
   if(g_perform_init)

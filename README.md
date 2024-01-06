@@ -8,6 +8,7 @@ Remark: For C9.25 focuser: GT2 mit 155 Zähnen (310mm)
 **** The master branch contains a development version for a hardware version without zero position switch ****
 
 **** Development: Derotation for Alt/Az mounts ****
+Derotation formula: Field Rotation Rate (arcsec/sec) = R =  15.04 (deg/hr) COS(Latitude)*COS(Azimuth Angle) / COS(Altitude Angle)
 
 The Stroblhof Rotator is a simple and sturdy rotator device
 for astronomical observations. It could be build without access to

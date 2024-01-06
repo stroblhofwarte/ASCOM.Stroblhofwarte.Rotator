@@ -262,6 +262,21 @@ namespace ASCOM.Stroblhofwarte
             return true;
         }
 
+        public bool RO_SetDerotationRate(double rate)
+        {
+            if (SetupRequired) return false;
+            if (!Connected) return false;
+            if (!RotatorUsage) return false;
+            lock (_lock)
+            {
+                LogMessage("SetDerotationRate", rate.ToString()); // derotate with this rate (steps/sec)
+                string cmd = "RA" + rate.ToString(CultureInfo.InvariantCulture) + ":";
+                _serial.Transmit(cmd);
+                string ret = _serial.ReceiveTerminated("#");
+            }
+            return true;
+        }
+
 
         public bool RO_MotorPowerOn()
         {
