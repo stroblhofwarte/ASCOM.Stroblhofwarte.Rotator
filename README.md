@@ -45,7 +45,8 @@ IS:             1#              Set the motor speed factor f for initialization 
 SP:             1#              Set the motor speed factor f for normal movements (base speed * f)
 PPxxx.xx:       1#              Set the park position to xxx.xx°
 PA:             1#              Move the rotator to the park position
-RAxxx.xx:       1#              Set derotation rate for Alt-Az mounts. In steps/sec. Can be positive or negative. Set this to 0.0 for derotation off.
+RAxxx.xx:       1#              Set derotation rate for Alt-Az mounts. In steps/sec.
+                                Can be positive or negative. Set this to 0.0 for derotation off.
 GR:             xxx.xx#         Return the current derotation rate.
 ```
 
