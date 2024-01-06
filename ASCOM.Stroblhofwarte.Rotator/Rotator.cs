@@ -519,8 +519,7 @@ namespace ASCOM.Stroblhofwarte
         {
             get
             {
-                //string name = "Stroblhofwarte.Rotator";
-                string name = "Optec Pyxis Universal";
+                string name = "Stroblhofwarte.Rotator";
                 tl.LogMessage("Name Get", name);
                 return name;
             }
