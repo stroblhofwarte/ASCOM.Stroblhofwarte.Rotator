@@ -1,4 +1,5 @@
 Webpage movet to: https://astro.karglhoefchen-aldersbach.de/2021/06/27/der-dreh-am-himmel-ein-rotator/
+and for the focuser part: https://astro.karglhoefchen-aldersbach.de/2023/04/09/ein-neuer-focuser-fuer-das-c9-25/
 
 Remark: For C9.25 focuser: GT2 mit 155 Zähnen (310mm)
 
