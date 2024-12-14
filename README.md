@@ -1,3 +1,5 @@
+Webpage movet to: https://astro.karglhoefchen-aldersbach.de/2021/06/27/der-dreh-am-himmel-ein-rotator/
+
 Remark: For C9.25 focuser: GT2 mit 155 Zähnen (310mm)
 
 
